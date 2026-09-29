@@ -1,0 +1,19 @@
+# Thông tin đăng nhập / phiên — KHÔNG commit
+session.json
+cookies.txt
+browser_cookies.txt
+config.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Ảnh captcha / file tạm khi debug
+captcha*.png
+cap_*.png
+c_*.png
+page__*.html
+*.log
+.DS_Store
