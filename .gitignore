@@ -10,6 +10,9 @@ __pycache__/
 .venv/
 venv/
 
+# Chrome sinh ra khi nạp extension
+extension/_metadata/
+
 # Ảnh captcha / file tạm khi debug
 captcha*.png
 cap_*.png

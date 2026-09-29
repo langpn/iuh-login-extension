@@ -1,0 +1,12 @@
+# iuh_login.py KHÔNG cần thư viện ngoài (chỉ Python chuẩn).
+#
+# iuh_browser.py cần Playwright:
+playwright>=1.40
+#
+# Sau khi cài, tải trình duyệt cho Playwright:
+#     playwright install chromium
+#
+# Tuỳ chọn: OCR captcha (chỉ dùng cho iuh_login.py --captcha ocr)
+# - macOS:  brew install tesseract
+# - Ubuntu: sudo apt install tesseract-ocr
+# - Windows: https://github.com/UB-Mannheim/tesseract/wiki
