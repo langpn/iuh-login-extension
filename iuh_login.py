@@ -52,9 +52,12 @@ import urllib.parse
 import urllib.request
 
 BASE = "https://sv.iuh.edu.vn"
+LMS_BASE = "https://lms.iuh.edu.vn"
+LMS_LOGIN = "/login/index.php"
 UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/125.0 Safari/537.36")
 DEFAULT_SESSION_FILE = "session.json"
+DEFAULT_LMS_SESSION_FILE = "lms_session.json"
 DEFAULT_COOKIES_FILE = "cookies.txt"
 DEFAULT_CONFIG_FILE = "config.json"
 
@@ -174,7 +177,7 @@ class CaptchaRequiredError(LoginError):
 
 
 class Session:
-    def __init__(self, timeout=30):
+    def __init__(self, timeout=30, base=None):
         self.cj = http.cookiejar.CookieJar()
         self.opener = urllib.request.build_opener(
             urllib.request.HTTPCookieProcessor(self.cj),
@@ -182,32 +185,36 @@ class Session:
         )
         self.timeout = timeout
         self.username = None
+        self.base = base or BASE
+
+    def _url(self, path):
+        return path if path.startswith("http") else self.base + path
 
     # ---- request ----
     def get(self, path, headers=None):
-        url = path if path.startswith("http") else BASE + path
+        url = self._url(path)
         req = urllib.request.Request(url, headers={"User-Agent": UA, **(headers or {})})
         return self.opener.open(req, timeout=self.timeout)
 
     def post(self, path, data, referer=None, headers=None):
-        url = path if path.startswith("http") else BASE + path
+        url = self._url(path)
         body = urllib.parse.urlencode(data).encode()
         req = urllib.request.Request(url, data=body, headers={
             "User-Agent": UA,
             "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
             "X-Requested-With": "XMLHttpRequest",
-            "Referer": referer or (BASE + "/sinh-vien-dang-nhap.html"),
+            "Referer": referer or (self.base + "/sinh-vien-dang-nhap.html"),
             **(headers or {}),
         })
         return self.opener.open(req, timeout=self.timeout)
 
     def post_json(self, path, obj, referer=None):
-        url = path if path.startswith("http") else BASE + path
+        url = self._url(path)
         req = urllib.request.Request(url, data=json.dumps(obj).encode(), headers={
             "User-Agent": UA,
             "Content-Type": "application/json; charset=utf-8",
             "X-Requested-With": "XMLHttpRequest",
-            "Referer": referer or (BASE + "/dashboard.html"),
+            "Referer": referer or (self.base + "/dashboard.html"),
         })
         return self.opener.open(req, timeout=self.timeout)
 
@@ -263,6 +270,7 @@ class Session:
     def save(self, path, username=None):
         data = {
             "username": username or self.username,
+            "base": self.base,
             "saved_at": _dt.datetime.now().isoformat(timespec="seconds"),
             "cookies": [
                 {"domain": c.domain, "path": c.path or "/", "name": c.name,
@@ -281,7 +289,7 @@ class Session:
     def load(cls, path):
         with open(path, encoding="utf-8") as f:
             data = json.load(f)
-        s = cls()
+        s = cls(base=data.get("base") or BASE)
         for c in data.get("cookies", []):
             s.cj.set_cookie(http.cookiejar.Cookie(
                 version=0, name=c["name"], value=c.get("value") or "",
@@ -482,6 +490,61 @@ def is_logged_in(s):
 
 
 # ===========================================================================
+# 4b. LMS (Moodle) — lms.iuh.edu.vn
+#   Moodle dùng logintoken + POST form thường, KHÔNG captcha, KHÔNG mã hoá.
+# ===========================================================================
+def lms_login(username, password, session=None, debug=False):
+    s = session or Session(base=LMS_BASE)
+    s.base = LMS_BASE
+
+    if debug:
+        print("[lms] GET %s" % LMS_LOGIN)
+    _, html = s.fetch(LMS_LOGIN)
+
+    m = re.search(r'name="logintoken"\s+value="([^"]+)"', html)
+    token = m.group(1) if m else ""
+
+    if debug:
+        print("[lms] logintoken = %s" % (token[:24] or "(không có)"))
+        print("[lms] captcha     = %s" % ("có" if "captcha" in html.lower() else "không"))
+
+    data = {
+        "anchor": "",
+        "logintoken": token,
+        "username": username,
+        "password": password,
+        "rememberusername": "1",
+    }
+    resp = s.post(LMS_LOGIN, data, referer=LMS_BASE + LMS_LOGIN,
+                  headers={"X-Requested-With": ""})
+    final = resp.geturl()
+    body = s.text(resp)
+
+    ok = ("/login/index.php" not in final) or ("MoodleSession" in [c.name for c in s.cj])
+    if not ok:
+        msg = ""
+        e = re.search(r'class="loginerrors[^"]*"[^>]*>(.*?)</div>', body, re.S)
+        if e:
+            msg = clean(e.group(1))
+        raise LoginError("LMS: %s" % (msg or "đăng nhập thất bại"))
+
+    s.username = username
+    if debug:
+        print("[lms] ✓ vào %s" % final)
+    return s
+
+
+def is_lms_logged_in(s):
+    try:
+        url, body = s.fetch("/my/")
+    except Exception:
+        return False
+    if "/login/index.php" in url:
+        return False
+    return "MoodleSession" in [c.name for c in s.cj] and "loginform" not in body
+
+
+# ===========================================================================
 # 5. Tiện ích HTML
 # ===========================================================================
 def clean(text):
@@ -599,10 +662,13 @@ def get_grades(s):
 
 # Bảng quy đổi tiết -> giờ của IUH (theo lịch tuần).
 TIET_GIO = {
+    # Buổi sáng
     1: ("06:30", "07:20"), 2: ("07:20", "08:10"), 3: ("08:10", "09:00"),
     4: ("09:10", "10:00"), 5: ("10:00", "10:50"), 6: ("10:50", "11:40"),
+    # Buổi chiều
     7: ("12:30", "13:20"), 8: ("13:20", "14:10"), 9: ("14:10", "15:00"),
     10: ("15:10", "16:00"), 11: ("16:00", "16:50"), 12: ("16:50", "17:40"),
+    # Buổi tối
     13: ("18:00", "18:50"), 14: ("18:50", "19:40"), 15: ("19:50", "20:40"),
     16: ("20:40", "21:30"),
 }
@@ -781,7 +847,7 @@ def main(argv=None):
                "  iuh_login.py keepalive --interval 600\n")
     ap.add_argument("command", nargs="?", default="login",
                     choices=["login", "check", "keepalive", "get", "grades",
-                             "schedule", "info", "cookie", "logout"])
+                             "schedule", "info", "cookie", "logout", "lms"])
     ap.add_argument("arg", nargs="?", help="với `login`: MSSV; với `get`: đường dẫn trang")
     ap.add_argument("arg2", nargs="?", help="với `login`: mật khẩu")
     ap.add_argument("--config", default=DEFAULT_CONFIG_FILE, help="file cấu hình JSON")
@@ -835,6 +901,38 @@ def main(argv=None):
         print("  session :", path)
         print("  cookies :", [c.name for c in s.cj])
         out = args.save_cookies or cfg.get("cookies_file")
+        if out:
+            s.save_cookies_netscape(out)
+            print("  file    :", out)
+        return 0
+
+    # ---------- LMS (Moodle) ----------
+    if args.command == "lms":
+        user, pw = resolve_credentials(args, cfg)
+        path = args.session or cfg.get("lms_session_file") or DEFAULT_LMS_SESSION_FILE
+        # Tái dùng session còn sống nếu có, tránh đăng nhập lại.
+        s = None
+        if not args.force and os.path.exists(path):
+            try:
+                cand = Session.load(path)
+                if is_lms_logged_in(cand):
+                    s = cand
+                    print("✓ Session LMS còn sống (%s)" % path)
+            except Exception:
+                s = None
+        if s is None:
+            if not user or not pw:
+                ap.error("Thiếu username/password (truyền trực tiếp, config.json hoặc IUH_USER/IUH_PASS)")
+            try:
+                s = lms_login(user, pw, debug=args.debug)
+            except LoginError as e:
+                print("✗ Đăng nhập LMS thất bại:", e)
+                return 1
+            s.save(path, username=user)
+            print("✓ Đăng nhập LMS thành công (%.2fs)" % (time.time() - t0))
+        print("  session :", path)
+        print("  cookies :", [c.name for c in s.cj])
+        out = args.save_cookies or cfg.get("lms_cookies_file")
         if out:
             s.save_cookies_netscape(out)
             print("  file    :", out)
