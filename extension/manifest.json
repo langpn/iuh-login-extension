@@ -20,6 +20,11 @@
       "matches": ["*://lms.iuh.edu.vn/login/index.php*"],
       "js": ["lms.js"],
       "run_at": "document_idle"
+    },
+    {
+      "matches": ["*://sv.iuh.edu.vn/lich-theo-tuan.html*"],
+      "js": ["schedule.js"],
+      "run_at": "document_idle"
     }
   ],
   "background": {
