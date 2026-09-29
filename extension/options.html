@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IUH Fast Login — Tuỳ chọn</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { max-width: 620px; margin: 0 auto; padding: 28px 20px;
+           font: 14px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    h1 { font-size: 20px; }
+    h2 { font-size: 15px; margin-top: 26px; }
+    label { display: block; margin: 12px 0 4px; font-weight: 600; }
+    input[type="text"], input[type="password"] {
+      width: 100%; box-sizing: border-box; padding: 9px 11px;
+      border: 1px solid #b9b9b9; border-radius: 7px; font-size: 14px;
+    }
+    .row { display: flex; gap: 10px; align-items: center; margin-top: 16px; }
+    button { padding: 9px 16px; border: 0; border-radius: 7px;
+             background: #0b6e99; color: #fff; font-weight: 600; cursor: pointer; }
+    button.ghost { background: #6b7280; }
+    #msg { margin-top: 12px; min-height: 18px; }
+    .ok { color: #0a7d2c; } .err { color: #b00020; }
+    ol, ul { padding-left: 22px; }
+    code { background: rgba(127,127,127,.16); padding: 1px 5px; border-radius: 4px; }
+    .note { border-left: 3px solid #0b6e99; padding: 8px 12px;
+            background: rgba(11,110,153,.08); border-radius: 0 6px 6px 0; }
+  </style>
+</head>
+<body>
+  <h1>IUH Fast Login</h1>
+  <p>Tự động đăng nhập <code>sv.iuh.edu.vn</code> mà không cần nhập captcha.</p>
+
+  <label for="username">Mã sinh viên (MSSV)</label>
+  <input id="username" type="text" autocomplete="username" placeholder="vd: YOUR_STUDENT_ID" />
+
+  <label for="password">Mật khẩu</label>
+  <input id="password" type="password" autocomplete="current-password" />
+
+  <div class="row">
+    <label style="margin:0;font-weight:400;display:flex;align-items:center;gap:6px">
+      <input id="autoLogin" type="checkbox" checked /> Tự động đăng nhập khi mở trang
+    </label>
+  </div>
+
+  <div class="row">
+    <button id="save">Lưu</button>
+    <button id="clear" class="ghost">Xoá tài khoản đã lưu</button>
+  </div>
+  <div id="msg"></div>
+
+  <h2>Cách hoạt động</h2>
+  <ol>
+    <li>Extension chặn request ảnh captcha <code>/WebCommon/GetCaptcha</code> ngay ở tầng mạng
+        (declarativeNetRequest).</li>
+    <li>Server chỉ bật kiểm tra captcha khi ảnh đó đã được tải trong phiên — nên khi bị chặn,
+        server bỏ qua captcha.</li>
+    <li>Content script điền MSSV/mật khẩu và bấm nút đăng nhập; JS của trang tự mã hoá mật khẩu.</li>
+  </ol>
+
+  <div class="note">
+    <strong>Lưu ý:</strong> server giới hạn tần suất đăng nhập (~10 giây/lần). Nếu đăng nhập liên tục
+    sẽ bị từ chối; extension tự chờ rồi thử lại.
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

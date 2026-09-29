@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IUH Fast Login</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      width: 300px; margin: 0; padding: 14px;
+      font: 13px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    h1 { font-size: 15px; margin: 0 0 10px; }
+    label { display: block; margin: 8px 0 3px; font-weight: 600; }
+    input[type="text"], input[type="password"] {
+      width: 100%; box-sizing: border-box; padding: 7px 9px;
+      border: 1px solid #b9b9b9; border-radius: 6px; font-size: 13px;
+    }
+    .row { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+    button {
+      flex: 1; padding: 8px 10px; border: 0; border-radius: 6px;
+      background: #0b6e99; color: #fff; font-weight: 600; cursor: pointer;
+    }
+    button.ghost { background: #6b7280; }
+    button:hover { filter: brightness(1.08); }
+    #msg { margin-top: 9px; font-size: 12px; min-height: 16px; }
+    .ok { color: #0a7d2c; } .err { color: #b00020; }
+    .hint { margin-top: 10px; font-size: 11px; opacity: .75; }
+  </style>
+</head>
+<body>
+  <h1>IUH Fast Login</h1>
+
+  <label for="username">Mã sinh viên (MSSV)</label>
+  <input id="username" type="text" autocomplete="username" placeholder="vd: YOUR_STUDENT_ID" />
+
+  <label for="password">Mật khẩu</label>
+  <input id="password" type="password" autocomplete="current-password" placeholder="mật khẩu" />
+
+  <div class="row">
+    <label style="margin:0;font-weight:400;display:flex;align-items:center;gap:6px">
+      <input id="autoLogin" type="checkbox" checked /> Tự động đăng nhập
+    </label>
+  </div>
+
+  <div class="row">
+    <button id="save">Lưu</button>
+    <button id="open" class="ghost">Mở trang login</button>
+  </div>
+
+  <div id="msg"></div>
+  <div class="hint">
+    Mật khẩu chỉ lưu trên máy này (chrome.storage.local), không gửi đi đâu khác.
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

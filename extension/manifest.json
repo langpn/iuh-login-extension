@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "IUH Fast Login",
+  "version": "1.0.0",
+  "description": "Tự động đăng nhập cổng sinh viên IUH (sv.iuh.edu.vn) — không cần nhập captcha.",
+  "permissions": ["storage", "declarativeNetRequest"],
+  "host_permissions": ["*://sv.iuh.edu.vn/*"],
+  "declarative_net_request": {
+    "rule_resources": [
+      { "id": "block_captcha", "enabled": true, "path": "rules.json" }
+    ]
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://sv.iuh.edu.vn/sinh-vien-dang-nhap.html*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "scripts": ["background.js"]
+  },
+  "action": {
+    "default_title": "IUH Fast Login",
+    "default_popup": "popup.html"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "iuh-fast-login@langpn",
+      "strict_min_version": "113.0"
+    }
+  }
+}
