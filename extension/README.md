@@ -5,6 +5,8 @@ Chromium và Firefox:
 
 - **Cổng sinh viên** `sv.iuh.edu.vn` — không cần nhập captcha.
 - **LMS Moodle** `lms.iuh.edu.vn` — điền form và đăng nhập (Moodle không có captcha).
+- **Lịch theo tuần** `sv.iuh.edu.vn/.../lich-theo-tuan.html` — đổi *“Tiết: X - Y”*
+  thành **giờ cụ thể** (ví dụ *Tiết 7 - 9 → 12:30 - 15:00*) ngay trên trang.
 
 ## Cách hoạt động (tóm tắt)
 
@@ -15,6 +17,8 @@ Chromium và Firefox:
 3. `content.js` điền MSSV + mật khẩu rồi bấm nút đăng nhập cổng SV. Mật khẩu do
    **JS của chính trang** mã hoá (extension không tự mã hoá, tránh sai thuật toán).
 4. `lms.js` điền form Moodle (`#username`/`#password` + `logintoken`) và submit.
+5. `schedule.js` chạy trên trang lịch tuần, thay số tiết bằng khung giờ tương ứng
+   (bảng quy đổi tiết → giờ của IUH) và theo dõi DOM để cập nhật cả nội dung nạp bằng AJAX.
 
 ## Cài đặt
 
