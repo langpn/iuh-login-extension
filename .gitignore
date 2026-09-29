@@ -1,5 +1,6 @@
 # Thông tin đăng nhập / phiên — KHÔNG commit
 session.json
+lms_session.json
 cookies.txt
 browser_cookies.txt
 config.json
