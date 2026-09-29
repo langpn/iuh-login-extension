@@ -41,7 +41,7 @@ Firefox: mở `about:debugging#/runtime/this-firefox` → **Load Temporary Add-o
 
 ```bash
 pip install playwright
-python3 iuh_browser.py YOUR_STUDENT_ID YOUR_PASSWORD            # mở Chrome, tự đăng nhập rồi để đó dùng tiếp
+python3 iuh_browser.py <MSSV> <MATKHAU>            # mở Chrome, tự đăng nhập rồi để đó dùng tiếp
 python3 iuh_browser.py --headless                   # chạy ẩn, đọc IUH_USER / IUH_PASS
 python3 iuh_browser.py --channel msedge             # dùng Edge
 python3 iuh_browser.py --save-cookies cookies.txt   # lưu cookie để dùng với curl
@@ -56,7 +56,7 @@ Tùy chọn: `--headless`, `--channel chrome|chromium|msedge`, `--keep-open`, `-
 Không cần cài gì (Python chuẩn).
 
 ```bash
-python3 iuh_login.py login YOUR_STUDENT_ID YOUR_PASSWORD     # đăng nhập, lưu session.json
+python3 iuh_login.py login <MSSV> <MATKHAU>     # đăng nhập, lưu session.json
 python3 iuh_login.py check                       # session còn sống không
 python3 iuh_login.py grades                      # bảng điểm
 python3 iuh_login.py schedule                    # lịch học tuần này (giờ cụ thể)
@@ -79,8 +79,8 @@ python3 iuh_login.py grades --json > diem.json
 Không muốn gõ mật khẩu mỗi lần, chọn một trong hai:
 
 ```bash
-export IUH_USER=YOUR_STUDENT_ID
-export IUH_PASS=YOUR_PASSWORD
+export IUH_USER=<MSSV>
+export IUH_PASS=<MATKHAU>
 ```
 
 Hoặc copy `config.example.json` → `config.json` rồi điền (file này đã bị `.gitignore`).
