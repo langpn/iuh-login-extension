@@ -1,150 +1,144 @@
 // ==UserScript==
-// @name         IUH Auto Login (sv.iuh.edu.vn)
-// @namespace    https://sv.iuh.edu.vn/
-// @version      1.0.0
-// @description  Tự động điền tài khoản và bấm đăng nhập trang sinh viên IUH
+// @name         IUH Fast Login
+// @namespace    https://github.com/langpn/iuh-bypass-login
+// @version      2.1.0
+// @description  Tự động đăng nhập cổng sinh viên IUH. Chặn ảnh captcha ở tầng mạng nên server bỏ qua captcha.
+// @author       langpn
 // @match        https://sv.iuh.edu.vn/sinh-vien-dang-nhap.html*
-// @match        https://sv.iuh.edu.vn/*
-// @run-at       document-idle
-// @grant        GM_getValue
 // @grant        GM_setValue
+// @grant        GM_getValue
 // @grant        GM_registerMenuCommand
+// @run-at       document-start
+// @noframes
+// @webRequest   [{"selector":"*://sv.iuh.edu.vn/WebCommon/GetCaptcha*","action":"cancel"}]
 // ==/UserScript==
 
-/* ------------------------------------------------------------------
- * Cách dùng
- *   1. Cài Tampermonkey (Chrome/Edge/Firefox/Safari).
- *   2. Tạo script mới, dán toàn bộ file này, lưu lại.
- *   3. Mở https://sv.iuh.edu.vn/sinh-vien-dang-nhap.html
- *      - Lần đầu script sẽ hỏi MSSV + mật khẩu và tự đăng nhập.
- *      - Các lần sau tự đăng nhập luôn.
- *   4. Muốn đổi tài khoản: menu Tampermonkey > "IUH: xoá tài khoản đã lưu".
- *
- * Lưu ý
- *   - Mật khẩu được lưu bằng GM_setValue (kho của Tampermonkey, nằm trên
- *     máy bạn). Không dùng chung máy với người khác nếu không muốn bị đọc.
- *   - Nếu trang có captcha, script sẽ điền sẵn tài khoản/mật khẩu rồi
- *     dừng lại để bạn tự nhập mã captcha và bấm Đăng nhập.
- * ------------------------------------------------------------------ */
-
 (function () {
-  'use strict';
+  "use strict";
 
-  const KEY_USER = 'iuh_user';
-  const KEY_PASS = 'iuh_pass';
+  if (!location.pathname.endsWith("sinh-vien-dang-nhap.html")) return;
 
-  // Chỉ chạy ở trang đăng nhập (trang này có form #form-login).
-  function isLoginPage() {
-    return !!document.querySelector('#form-login, #UserName, form[action*="dang-nhap"]');
-  }
+  const RETRY_WAIT_MS = 12000; // chờ khi bị giới hạn tần suất
+  const MAX_ATTEMPTS = 2;
+  const STATE_KEY = "iuh_autologin_state";
 
-  if (!isLoginPage()) return;
+  // -------------------- lưu/đọc tài khoản --------------------
+  const getCreds = () => ({
+    u: GM_getValue("iuh_user", ""),
+    p: GM_getValue("iuh_pass", ""),
+  });
+  const saveCreds = (u, p) => {
+    GM_setValue("iuh_user", u);
+    GM_setValue("iuh_pass", p);
+  };
 
+  GM_registerMenuCommand("Đặt tài khoản IUH…", () => {
+    const c = getCreds();
+    const u = prompt("Mã sinh viên:", c.u || "");
+    if (u === null) return;
+    const p = prompt("Mật khẩu:", c.p || "");
+    if (p === null) return;
+    saveCreds(u.trim(), p);
+    alert("Đã lưu. Mở lại trang đăng nhập để dùng.");
+  });
+
+  GM_registerMenuCommand("Xoá tài khoản đã lưu", () => {
+    saveCreds("", "");
+    alert("Đã xoá.");
+  });
+
+  // -------------------- tiện ích --------------------
+  const $ = (sel) => document.querySelector(sel);
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-  // Đặt giá trị vào input + phát sự kiện để framework trong trang nhận ra.
-  function setInput(el, value) {
-    if (!el) return;
-    const proto = Object.getPrototypeOf(el);
-    const setter = Object.getOwnPropertyDescriptor(proto, 'value')?.set;
+  function setValue(el, value) {
+    const proto = el instanceof HTMLTextAreaElement
+      ? HTMLTextAreaElement.prototype
+      : HTMLInputElement.prototype;
+    const setter = Object.getOwnPropertyDescriptor(proto, "value")?.set;
     if (setter) setter.call(el, value);
     else el.value = value;
-    el.dispatchEvent(new Event('input', { bubbles: true }));
-    el.dispatchEvent(new Event('change', { bubbles: true }));
+    el.dispatchEvent(new Event("input", { bubbles: true }));
+    el.dispatchEvent(new Event("change", { bubbles: true }));
   }
 
-  function getCreds() {
-    const user = GM_getValue(KEY_USER, '');
-    const pass = GM_getValue(KEY_PASS, '');
-    return { user, pass };
-  }
-
-  function saveCreds(user, pass) {
-    GM_setValue(KEY_USER, user);
-    GM_setValue(KEY_PASS, pass);
-  }
-
-  function askCreds() {
-    const user = window.prompt('MSSV / mã hồ sơ đăng nhập IUH:', '');
-    if (!user) return null;
-    const pass = window.prompt('Mật khẩu IUH:', '');
-    if (!pass) return null;
-    return { user: user.trim(), pass: pass.trim() };
-  }
-
-  function findLoginButton() {
-    return (
-      document.querySelector('#btnLogin') ||
-      document.querySelector('input[type="submit"]') ||
-      document.querySelector('button[type="submit"]')
-    );
-  }
-
-  function captchaVisible() {
-    const c = document.querySelector('#Captcha');
-    if (!c) return false;
-    const img = document.querySelector('#newcaptcha, .captchaContainer img, img[src*="GetCaptcha"]');
-    return !!img && img.offsetParent !== null;
-  }
-
-  async function doLogin(creds, attempt) {
-    attempt = attempt || 0;
-    if (attempt > 20) return; // form chưa render xong, bỏ qua
-
-    const userEl = document.querySelector('#UserName');
-    const passEl = document.querySelector('#Password');
-    if (!userEl || !passEl) {
-      await sleep(300);
-      return doLogin(creds, attempt + 1);
+  function banner(text, color) {
+    let el = $("#iuh-banner");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "iuh-banner";
+      el.style.cssText =
+        "position:fixed;top:0;left:0;right:0;z-index:2147483647;" +
+        "padding:8px 12px;font:13px/1.4 system-ui,sans-serif;color:#fff;" +
+        "text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.25)";
+      (document.body || document.documentElement).appendChild(el);
     }
+    el.style.background = color || "#0b6e99";
+    el.textContent = text;
+  }
 
-    // Tránh điền đè nếu người dùng đang nhập tay.
-    if (userEl.value && passEl.value) return;
-
-    setInput(userEl, creds.user);
-    setInput(passEl, creds.pass);
-
-    // Không tự bấm nếu đang có captcha -> nhường cho người dùng nhập mã.
-    if (captchaVisible()) {
-      const cap = document.querySelector('#Captcha');
-      if (cap) {
-        cap.focus();
-        console.info('[IUH] Có captcha, hãy nhập mã rồi bấm Đăng nhập.');
-      }
+  // -------------------- luồng chính --------------------
+  async function main() {
+    const { u, p } = getCreds();
+    if (!u || !p) {
+      banner("IUH: chưa cấu hình tài khoản (menu Tampermonkey → Đặt tài khoản IUH…)", "#a15c00");
       return;
     }
 
-    await sleep(150);
-    const btn = findLoginButton();
-    if (btn) btn.click();
-  }
-
-  function clearSaved() {
-    GM_setValue(KEY_USER, '');
-    GM_setValue(KEY_PASS, '');
-    alert('Đã xoá tài khoản IUH đã lưu.');
-  }
-
-  if (typeof GM_registerMenuCommand === 'function') {
-    GM_registerMenuCommand('IUH: xoá tài khoản đã lưu', clearSaved);
-    GM_registerMenuCommand('IUH: đăng nhập lại ngay', () => {
-      const c = askCreds();
-      if (c) {
-        saveCreds(c.user, c.pass);
-        doLogin(c);
-      }
-    });
-  }
-
-  async function main() {
-    let creds = getCreds();
-    if (!creds.user || !creds.pass) {
-      creds = askCreds();
-      if (!creds) return;
-      saveCreds(creds.user, creds.pass);
+    let userEl, passEl;
+    for (let i = 0; i < 60; i++) {
+      userEl = $("#UserName") || $("input[name=UserName]");
+      passEl = $("#Password") || $("input[name=Password]");
+      if (userEl && passEl) break;
+      await sleep(150);
     }
-    await doLogin(creds);
+    if (!userEl || !passEl) {
+      console.warn("[IUH] Không tìm thấy form đăng nhập.");
+      return;
+    }
+
+    let state = null;
+    try { state = JSON.parse(sessionStorage.getItem(STATE_KEY) || "null"); } catch (e) {}
+    const attempts = (state && Date.now() - state.t < 60000) ? (state.n || 0) : 0;
+
+    if (attempts >= MAX_ATTEMPTS) {
+      banner("IUH: đã thử 2 lần nhưng chưa vào được. Kiểm tra lại tài khoản.", "#b00020");
+      return;
+    }
+
+    if (attempts > 0) {
+      banner(`IUH: chờ ${Math.round(RETRY_WAIT_MS / 1000)}s rồi thử lại…`, "#a15c00");
+      await sleep(RETRY_WAIT_MS);
+    } else {
+      banner("IUH: đang tự động đăng nhập…", "#0b6e99");
+    }
+
+    sessionStorage.setItem(STATE_KEY, JSON.stringify({ n: attempts + 1, t: Date.now() }));
+
+    setValue(userEl, u);
+    setValue(passEl, p);
+
+    // Captcha đã bị @webRequest chặn → để trống là được.
+    const cap = $("#Captcha") || $("input[name=Captcha]");
+    if (cap) setValue(cap, "");
+
+    await sleep(250);
+
+    const btn = $("#btnLogin") ||
+      $("#form-login button[type=submit]") ||
+      $("#form-login input[type=submit]") ||
+      $("button[type=submit]") ||
+      $("input[type=submit]");
+    if (btn) btn.click();
+    else {
+      const form = $("#form-login") || $("form");
+      if (form) form.submit();
+    }
   }
 
-  main();
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", main, { once: true });
+  } else {
+    main();
+  }
 })();
