@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         IUH Fast Login
 // @namespace    https://github.com/langpn/iuh-bypass-login
-// @version      2.1.0
-// @description  Tự động đăng nhập cổng sinh viên IUH. Chặn ảnh captcha ở tầng mạng nên server bỏ qua captcha.
+// @version      2.2.0
+// @description  Tự động đăng nhập cổng sinh viên IUH (sv.iuh.edu.vn) và LMS (lms.iuh.edu.vn). Cổng SV chặn ảnh captcha ở tầng mạng nên server bỏ qua captcha; LMS (Moodle) đăng nhập POST thường.
 // @author       langpn
 // @match        https://sv.iuh.edu.vn/sinh-vien-dang-nhap.html*
+// @match        https://lms.iuh.edu.vn/login/index.php*
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_registerMenuCommand
@@ -16,9 +17,7 @@
 (function () {
   "use strict";
 
-  if (!location.pathname.endsWith("sinh-vien-dang-nhap.html")) return;
-
-  const RETRY_WAIT_MS = 12000; // chờ khi bị giới hạn tần suất
+  const RETRY_WAIT_MS = 12000; // chờ khi bị giới hạn tần suất (cổng SV)
   const MAX_ATTEMPTS = 2;
   const STATE_KEY = "iuh_autologin_state";
 
@@ -77,8 +76,10 @@
     el.textContent = text;
   }
 
-  // -------------------- luồng chính --------------------
-  async function main() {
+  // ===================================================================
+  // Cổng sinh viên sv.iuh.edu.vn
+  // ===================================================================
+  async function mainPortal() {
     const { u, p } = getCreds();
     if (!u || !p) {
       banner("IUH: chưa cấu hình tài khoản (menu Tampermonkey → Đặt tài khoản IUH…)", "#a15c00");
@@ -136,9 +137,46 @@
     }
   }
 
+  // ===================================================================
+  // LMS lms.iuh.edu.vn (Moodle) — POST thường, không captcha
+  // ===================================================================
+  async function mainLms() {
+    const { u, p } = getCreds();
+    if (!u || !p) {
+      banner("IUH LMS: chưa cấu hình tài khoản (menu Tampermonkey → Đặt tài khoản IUH…)", "#a15c00");
+      return;
+    }
+
+    let userEl, passEl, form;
+    for (let i = 0; i < 60; i++) {
+      form = $("#login") || $("form.login-form");
+      userEl = $("#username") || $("input[name=username]");
+      passEl = $("#password") || $("input[name=password]");
+      if (form && userEl && passEl) break;
+      await sleep(150);
+    }
+    if (!form || !userEl || !passEl) {
+      console.warn("[IUH LMS] Không tìm thấy form đăng nhập.");
+      return;
+    }
+
+    banner("IUH LMS: đang tự động đăng nhập…", "#0b6e99");
+    setValue(userEl, u);
+    setValue(passEl, p);
+
+    // logintoken đã có sẵn trong form; chỉ cần submit.
+    await sleep(250);
+    const btn = $("#loginbtn") || $("button[type=submit]") || $("input[type=submit]");
+    if (btn) btn.click();
+    else form.submit();
+  }
+
+  // -------------------- định tuyến theo host --------------------
+  const run = location.hostname === "lms.iuh.edu.vn" ? mainLms : mainPortal;
+
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", main, { once: true });
+    document.addEventListener("DOMContentLoaded", run, { once: true });
   } else {
-    main();
+    run();
   }
 })();
