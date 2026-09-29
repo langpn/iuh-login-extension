@@ -1,10 +1,39 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""iuh_login - giai doan 3: lay du lieu (diem, lich theo tuan, thong tin SV).
+"""
+iuh_login - Tool auto login cổng thông tin sinh viên IUH (https://sv.iuh.edu.vn)
 
-Lich theo tuan duoc quy doi tu so tiet sang gio cu the theo bang gio cua IUH.
+Cơ chế đăng nhập của site (đã reverse-engineer từ sinh-vien-dang-nhap.html):
+
+  1. GET  /sinh-vien-dang-nhap.html
+         -> lấy __RequestVerificationToken + cookie ASP.NET_SessionId
+  2. GET  /Common/GetPrivateKey?salt=<MSSV>
+         -> trả về 1 private key (hex, random mỗi lần)
+  3. Mật khẩu mã hoá client-side bằng AES-128-CBC rồi Base64:
+         key = PBKDF2-HMAC-SHA1(private_key.encode(), b"CryptographyPMT-EMS", 1000, 16)
+         iv  = e84ad660c4721ae0e84ad660c4721ae0
+         Password = base64(AES-CBC-PKCS7(plaintext))
+  4. POST /sinh-vien-dang-nhap.html
+         -> thành công: redirect /dashboard.html + cookie ASC.AUTH
+
+Về captcha: server chỉ bắt captcha nếu session đã tải ảnh /WebCommon/GetCaptcha.
+Vì vậy mặc định tool KHÔNG tải ảnh captcha. Có sẵn chế độ --captcha ocr|manual|text
+cho trường hợp server đổi luật.
+
+Tool chỉ dùng thư viện chuẩn Python 3.8+ (không cần pip install gì).
+
+Ví dụ:
+    python3 iuh_login.py login YOUR_MSSV 'matkhau'
+    python3 iuh_login.py check
+    python3 iuh_login.py info --json
+    python3 iuh_login.py grades
+    python3 iuh_login.py schedule --week -1
+    python3 iuh_login.py keepalive --interval 600
+    python3 iuh_login.py cookie
+    python3 iuh_login.py get /dashboard.html
 """
 
+import argparse
 import base64
 import datetime as _dt
 import hashlib
@@ -21,6 +50,13 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+
+BASE = "https://sv.iuh.edu.vn"
+UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+      "(KHTML, like Gecko) Chrome/125.0 Safari/537.36")
+DEFAULT_SESSION_FILE = "session.json"
+DEFAULT_COOKIES_FILE = "cookies.txt"
+DEFAULT_CONFIG_FILE = "config.json"
 
 # ===========================================================================
 # 1. AES-128-CBC thuần Python (không cần pycryptodome)
@@ -101,6 +137,7 @@ def aes_cbc_encrypt(plaintext, key, iv):
         out += prev
     return bytes(out)
 
+
 # ===========================================================================
 # 2. Đặc thù IUH
 # ===========================================================================
@@ -112,6 +149,7 @@ CAPTCHA_URL = "/WebCommon/GetCaptcha"
 def encrypt_password(password: str, private_key: str) -> str:
     key = hashlib.pbkdf2_hmac("sha1", private_key.encode(), AES_SALT, 1000, 16)
     return base64.b64encode(aes_cbc_encrypt(password.encode("utf-8"), key, AES_IV)).decode()
+
 
 # ===========================================================================
 # 3. HTTP session
@@ -257,6 +295,7 @@ class Session:
             ))
         s.username = data.get("username")
         return s
+
 
 # ===========================================================================
 # 4. Đăng nhập
@@ -441,6 +480,7 @@ def is_logged_in(s):
         return False
     return 'id="form-login"' not in body and "ĐĂNG NHẬP HỆ THỐNG" not in body
 
+
 # ===========================================================================
 # 5. Tiện ích HTML
 # ===========================================================================
@@ -527,6 +567,7 @@ def _kv_pairs(html_text):
         if key and key not in out:
             out[key] = val
     return out
+
 
 # ===========================================================================
 # 6. Lấy dữ liệu
@@ -655,3 +696,225 @@ def get_info(s):
     data = _kv_pairs(block)
     m = re.search(r"<img[^>]*src=\"(data:image/[^;]+;base64[^\"]*)\"", body)
     return {"fields": data, "anh_the": m.group(1) if m else None}
+
+
+# ===========================================================================
+# 7. Cấu hình + tiện ích
+# ===========================================================================
+def load_config(path):
+    if path and os.path.exists(path):
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    return {}
+
+
+def resolve_credentials(args, cfg):
+    use_pos = getattr(args, "command", "login") == "login"
+    user = (args.username or (args.arg if use_pos else None)
+            or cfg.get("username") or os.environ.get("IUH_USER"))
+    pw = (args.password or (args.arg2 if use_pos else None)
+          or cfg.get("password") or os.environ.get("IUH_PASS"))
+    return user, pw
+
+
+def open_session(args, cfg):
+    """Dùng lại session đã lưu, nếu hết hạn thì đăng nhập lại."""
+    path = args.session or cfg.get("session_file") or DEFAULT_SESSION_FILE
+    if os.path.exists(path) and not args.force:
+        try:
+            s = Session.load(path)
+            if is_logged_in(s):
+                if args.debug:
+                    print("[debug] dùng lại session:", path)
+                return s, path
+        except Exception as e:
+            if args.debug:
+                print("[debug] lỗi đọc session:", e)
+        if args.debug:
+            print("[debug] session hết hạn → đăng nhập lại")
+    user, pw = resolve_credentials(args, cfg)
+    if not user or not pw:
+        raise LoginError("Thiếu tài khoản/mật khẩu (config.json hoặc IUH_USER/IUH_PASS)")
+    s = login(user, pw, uid=str(cfg.get("uid", args.uid)),
+              captcha=cfg.get("captcha", args.captcha), debug=args.debug)
+    s.save(path, username=user)
+    return s, path
+
+
+def _print_json(obj):
+    print(json.dumps(obj, ensure_ascii=False, indent=2))
+
+
+# ===========================================================================
+# 8. CLI
+# ===========================================================================
+def _print_schedule(data, exam=False):
+    """In lịch theo tuần, hiển thị giờ cụ thể thay cho số tiết."""
+    if not data:
+        print("(tuần này không có lịch)")
+        return
+    order = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ nhật"]
+    data = sorted(data, key=lambda x: (order.index(x["thu"]) if x["thu"] in order else 9,
+                                       x["gio"][0]))
+    for x in data:
+        print("%-9s %-10s | %-6s | %-14s | %-40s | %-26s | %s" % (
+            x["thu"], x["ngay"], x["buoi"], x["gio"], x["mon"][:40],
+            x["lop"][:26], x["gv"]))
+        if x.get("phong") or x.get("ghi_chu"):
+            print(" " * 29 + "└ %s%s" % (
+                ("Tiết %s · " % x["tiet"]) if x.get("tiet") else "",
+                " · ".join(v for v in [x.get("phong"), x.get("ghi_chu")] if v)))
+    total = sum(tiet_to_phut(x.get("tiet")) for x in data)
+    print("\nTổng: %d buổi, %d giờ %02d phút" % (
+        len(data), total // 60, total % 60))
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(
+        prog="iuh_login",
+        description="Auto login + lấy dữ liệu cổng sinh viên IUH (sv.iuh.edu.vn)",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="Ví dụ:\n"
+               "  iuh_login.py login YOUR_MSSV matkhau\n"
+               "  iuh_login.py grades --json\n"
+               "  iuh_login.py schedule --week -1\n"
+               "  iuh_login.py keepalive --interval 600\n")
+    ap.add_argument("command", nargs="?", default="login",
+                    choices=["login", "check", "keepalive", "get", "grades",
+                             "schedule", "info", "cookie", "logout"])
+    ap.add_argument("arg", nargs="?", help="với `login`: MSSV; với `get`: đường dẫn trang")
+    ap.add_argument("arg2", nargs="?", help="với `login`: mật khẩu")
+    ap.add_argument("--config", default=DEFAULT_CONFIG_FILE, help="file cấu hình JSON")
+    ap.add_argument("--session", help="file session (mặc định session.json)")
+    ap.add_argument("--username", help="MSSV")
+    ap.add_argument("--password", help="mật khẩu")
+    ap.add_argument("--uid", default="88")
+    ap.add_argument("--captcha", default="skip",
+                    help="skip | ocr | manual | text:<mã>")
+    ap.add_argument("--force", action="store_true", help="bỏ session cũ, đăng nhập lại")
+    ap.add_argument("--json", action="store_true", help="xuất JSON")
+    ap.add_argument("--save-cookies", metavar="FILE", help="lưu cookie kiểu Netscape")
+    ap.add_argument("--week", type=int, default=0, help="lệch tuần cho `schedule`")
+    ap.add_argument("--exam", action="store_true", help="lịch thi thay vì lịch học")
+    ap.add_argument("--interval", type=int, default=600, help="giây giữa 2 lần keepalive")
+    ap.add_argument("--once", action="store_true", help="keepalive chạy 1 lần rồi thoát")
+    ap.add_argument("--retries", type=int, default=3,
+                    help="số lần thử lại khi bị chặn đăng nhập liên tiếp")
+    ap.add_argument("--retry-wait", type=int, default=8,
+                    help="giây chờ giữa các lần thử lại")
+    ap.add_argument("--debug", action="store_true")
+    args = ap.parse_args(argv)
+    cfg = load_config(args.config)
+    t0 = time.time()
+
+    # ---------- logout ----------
+    if args.command == "logout":
+        path = args.session or cfg.get("session_file") or DEFAULT_SESSION_FILE
+        if os.path.exists(path):
+            try:
+                Session.load(path).get("/SinhVien/Logout").read()
+            except Exception:
+                pass
+            os.remove(path)
+        print("✓ Đã xoá session:", path)
+        return 0
+
+    # ---------- login ----------
+    if args.command == "login":
+        user, pw = resolve_credentials(args, cfg)
+        if not user or not pw:
+            ap.error("Thiếu username/password (truyền trực tiếp, config.json hoặc IUH_USER/IUH_PASS)")
+        try:
+            s = login(user, pw, uid=args.uid, captcha=args.captcha, debug=args.debug)
+        except LoginError as e:
+            print("✗ Đăng nhập thất bại:", e)
+            return 1
+        path = args.session or cfg.get("session_file") or DEFAULT_SESSION_FILE
+        s.save(path, username=user)
+        print("✓ Đăng nhập thành công (%.2fs)" % (time.time() - t0))
+        print("  session :", path)
+        print("  cookies :", [c.name for c in s.cj])
+        out = args.save_cookies or cfg.get("cookies_file")
+        if out:
+            s.save_cookies_netscape(out)
+            print("  file    :", out)
+        return 0
+
+    # ---------- các lệnh cần session ----------
+    try:
+        s, path = open_session(args, cfg)
+    except LoginError as e:
+        print("✗ Đăng nhập thất bại:", e)
+        return 1
+
+    if args.command == "check":
+        ok = is_logged_in(s)
+        print(("✓ Session còn sống" if ok else "✗ Session đã hết hạn")
+              + " (%s, %.2fs)" % (path, time.time() - t0))
+        return 0 if ok else 1
+
+    if args.command == "cookie":
+        print(s.cookie_header())
+        return 0
+
+    if args.command == "get":
+        url, body = s.fetch(args.arg or "/dashboard.html")
+        print(body)
+        return 0
+
+    if args.command == "grades":
+        data = get_grades(s)
+        if args.json:
+            _print_json(data)
+        else:
+            for g in data:
+                print("%-12s %-36s %2s tc | TK: %-5s | %-3s | %s" % (
+                    g["Mã lớp học phần"][:12], g["Tên môn học/học phần"][:36],
+                    g["Số tín chỉ"], g["Điểm tổng kết"], g["Điểm chữ"], g["Xếp loại"]))
+        return 0
+
+    if args.command == "schedule":
+        data = get_schedule(s, args.week, args.exam)
+        if args.json:
+            _print_json(data)
+        else:
+            _print_schedule(data, exam=args.exam)
+        return 0
+
+    if args.command == "info":
+        data = get_info(s)
+        if args.json:
+            _print_json({k: v for k, v in data.items() if k != "anh_the"})
+        else:
+            for k, v in data["fields"].items():
+                print("%-20s: %s" % (k, v))
+        return 0
+
+    if args.command == "keepalive":
+        interval = max(30, args.interval)
+        print("Giữ session sống mỗi %ds (Ctrl+C để dừng)" % interval)
+        while True:
+            stamp = _dt.datetime.now().strftime("%H:%M:%S")
+            if is_logged_in(s):
+                print("  [%s] ✓ session OK" % stamp)
+            else:
+                print("  [%s] session hết hạn → đăng nhập lại" % stamp)
+                user, pw = resolve_credentials(args, cfg)
+                try:
+                    s = login(user, pw, uid=args.uid, captcha=args.captcha, debug=args.debug)
+                    s.save(path, username=user)
+                    print("  [%s] ✓ đã đăng nhập lại" % stamp)
+                except LoginError as e:
+                    print("  [%s] ✗ %s" % (stamp, e))
+            if args.once:
+                return 0
+            time.sleep(interval)
+
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except KeyboardInterrupt:
+        print("\nĐã dừng.")

@@ -1,0 +1,7 @@
+{
+  "_comment": "Mẫu cấu hình cho iuh_login. Copy thành config.json rồi điền thông tin.",
+  "username": "YOUR_MSSV",
+  "password": "mat_khau_cua_ban",
+  "uid": "88",
+  "keep_alive_minutes": 10
+}
