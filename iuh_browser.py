@@ -30,6 +30,8 @@ except ImportError:
 BASE = "https://sv.iuh.edu.vn"
 LOGIN_URL = BASE + "/sinh-vien-dang-nhap.html"
 DASHBOARD = BASE + "/dashboard.html"
+LMS_BASE = "https://lms.iuh.edu.vn"
+LMS_LOGIN_URL = LMS_BASE + "/login/index.php"
 
 DEFAULT_UA = (
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -145,6 +147,55 @@ def login(user, password, headless=False, channel="chrome", debug=False,
         return ok, info
 
 
+def lms_login(user, password, headless=False, channel="chrome", debug=False,
+              timeout=30000, keep_open=False):
+    """Đăng nhập LMS Moodle (lms.iuh.edu.vn). Trả về (success, info)."""
+    with sync_playwright() as p:
+        launch_kwargs = {"headless": headless}
+        if channel:
+            launch_kwargs["channel"] = channel
+        browser = p.chromium.launch(**launch_kwargs)
+        ctx = browser.new_context(user_agent=DEFAULT_UA, locale="vi-VN")
+        page = ctx.new_page()
+        page.set_default_timeout(timeout)
+        if debug:
+            page.on("console", lambda m: print("[console]", m.text))
+
+        page.goto(LMS_LOGIN_URL, wait_until="domcontentloaded")
+        page.wait_for_selector("#username", timeout=timeout)
+        page.fill("#username", user)
+        page.fill("#password", password)
+        if debug:
+            print("[debug] submit form LMS...")
+        btn = page.query_selector("#loginbtn, button[type=submit], input[type=submit]")
+        if btn:
+            btn.click()
+        else:
+            page.press("#password", "Enter")
+
+        try:
+            page.wait_for_url("**/my/**", timeout=timeout)
+        except Exception:
+            pass
+
+        ok = "/login/index.php" not in page.url
+        info = {
+            "url": page.url,
+            "title": page.title(),
+            "flash": "" if ok else "Đăng nhập LMS thất bại",
+        }
+
+        if keep_open:
+            print("Trình duyệt đang mở. Nhấn Enter để đóng...")
+            try:
+                input()
+            except EOFError:
+                time.sleep(30)
+
+        browser.close()
+        return ok, info
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description="Đăng nhập IUH tự động bằng trình duyệt")
     ap.add_argument("user", nargs="?", help="mã sinh viên")
@@ -155,6 +206,7 @@ def main(argv=None):
     ap.add_argument("--channel", default="chrome", help="chrome | chromium | msedge")
     ap.add_argument("--save-cookies", help="lưu cookie kiểu Netscape để dùng với curl")
     ap.add_argument("--keep-open", action="store_true", help="giữ trình duyệt mở sau khi login")
+    ap.add_argument("--lms", action="store_true", help="đăng nhập LMS Moodle (lms.iuh.edu.vn) thay vì cổng SV")
     ap.add_argument("--debug", action="store_true")
     args = ap.parse_args(argv)
 
@@ -163,14 +215,16 @@ def main(argv=None):
     if not user or not password:
         ap.error("cần mã sinh viên và mật khẩu (tham số hoặc IUH_USER/IUH_PASS)")
 
-    ok, info = login(
-        user, password,
+    fn = lms_login if args.lms else login
+    kwargs = dict(
         headless=args.headless,
         channel=args.channel,
         debug=args.debug,
-        save_cookies=args.save_cookies,
         keep_open=args.keep_open,
     )
+    if not args.lms:
+        kwargs["save_cookies"] = args.save_cookies
+    ok, info = fn(user, password, **kwargs)
 
     print(json.dumps(info, ensure_ascii=False, indent=2))
     if ok:
