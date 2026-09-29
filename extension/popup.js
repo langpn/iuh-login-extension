@@ -38,6 +38,9 @@ $("save").addEventListener("click", save);
 $("open").addEventListener("click", () => {
   api.tabs.create({ url: "https://sv.iuh.edu.vn/sinh-vien-dang-nhap.html" });
 });
+$("openLms").addEventListener("click", () => {
+  api.tabs.create({ url: "https://lms.iuh.edu.vn/login/index.php" });
+});
 $("password").addEventListener("keydown", (e) => {
   if (e.key === "Enter") save();
 });

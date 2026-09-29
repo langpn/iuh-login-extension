@@ -2,9 +2,9 @@
   "manifest_version": 3,
   "name": "IUH Fast Login",
   "version": "1.0.0",
-  "description": "Tự động đăng nhập cổng sinh viên IUH (sv.iuh.edu.vn) — không cần nhập captcha.",
+  "description": "Tự động đăng nhập IUH: cổng sinh viên (sv.iuh.edu.vn, bỏ qua captcha) và LMS Moodle (lms.iuh.edu.vn).",
   "permissions": ["storage", "declarativeNetRequest"],
-  "host_permissions": ["*://sv.iuh.edu.vn/*"],
+  "host_permissions": ["*://sv.iuh.edu.vn/*", "*://lms.iuh.edu.vn/*"],
   "declarative_net_request": {
     "rule_resources": [
       { "id": "block_captcha", "enabled": true, "path": "rules.json" }
@@ -14,6 +14,11 @@
     {
       "matches": ["*://sv.iuh.edu.vn/sinh-vien-dang-nhap.html*"],
       "js": ["content.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["*://lms.iuh.edu.vn/login/index.php*"],
+      "js": ["lms.js"],
       "run_at": "document_idle"
     }
   ],
