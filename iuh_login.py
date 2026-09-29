@@ -1,17 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""iuh_login - giai doan 2: HTTP session + luong dang nhap IUH.
+"""iuh_login - giai doan 3: lay du lieu (diem, lich theo tuan, thong tin SV).
 
-Da reverse-engineer tu sinh-vien-dang-nhap.html:
-  1. GET  /sinh-vien-dang-nhap.html  -> __RequestVerificationToken
-  2. GET  /Common/GetPrivateKey?salt=<MSSV> -> private key (random)
-  3. POST /sinh-vien-dang-nhap.html voi Password da ma hoa
-  4. Thanh cong -> redirect /dashboard.html + cookie ASC.AUTH
+Lich theo tuan duoc quy doi tu so tiet sang gio cu the theo bang gio cua IUH.
 """
 
 import base64
 import datetime as _dt
 import hashlib
+import html as _html
 import http.cookiejar
 import json
 import os
@@ -443,3 +440,218 @@ def is_logged_in(s):
     if "sinh-vien-dang-nhap" in url:
         return False
     return 'id="form-login"' not in body and "ĐĂNG NHẬP HỆ THỐNG" not in body
+
+# ===========================================================================
+# 5. Tiện ích HTML
+# ===========================================================================
+def clean(text):
+    text = re.sub(r"<[^>]+>", " ", text)
+    return re.sub(r"\s+", " ", _html.unescape(text)).strip()
+
+
+def parse_table(html_text, table_id=None, raw=False):
+    """Đọc <table> thành list hàng, đã xử lý rowspan/colspan.
+
+    raw=False: cell là text đã làm sạch; raw=True: giữ nguyên HTML bên trong cell.
+    """
+    if table_id:
+        m = re.search(r'<table[^>]*id="%s"[^>]*>' % re.escape(table_id), html_text)
+        if not m:
+            return []
+        start = m.start()
+    else:
+        start = html_text.find("<table")
+        if start < 0:
+            return []
+    end = html_text.find("</table>", start)
+    table = html_text[start:end if end > 0 else len(html_text)]
+
+    m = re.search(r"<tbody[^>]*>(.*?)</tbody>", table, re.S)
+    if m:
+        body = m.group(1)
+    else:
+        m = re.search(r"</thead>(.*)", table, re.S)
+        body = m.group(1) if m else table
+
+    rows, pending = [], {}
+    for tr in re.findall(r"<tr[^>]*>(.*?)</tr>", body, re.S):
+        cells = re.findall(r"<t[dh]([^>]*)>(.*?)</t[dh]>", tr, re.S)
+        row, col, used = [], 0, set()
+        it = iter(cells)
+        while True:
+            if col in pending and col not in used:
+                left, text = pending[col]
+                row.append(text)
+                used.add(col)
+                if left - 1 <= 0:
+                    del pending[col]
+                else:
+                    pending[col] = (left - 1, text)
+                col += 1
+                continue
+            try:
+                attrs, content = next(it)
+            except StopIteration:
+                while col in pending:
+                    left, text = pending[col]
+                    row.append(text)
+                    if left - 1 <= 0:
+                        del pending[col]
+                    else:
+                        pending[col] = (left - 1, text)
+                    col += 1
+                break
+            cs = re.search(r'colspan="(\d+)"', attrs)
+            rs = re.search(r'rowspan="(\d+)"', attrs)
+            cs = int(cs.group(1)) if cs else 1
+            rs = int(rs.group(1)) if rs else 1
+            text = content if raw else clean(content)
+            for k in range(cs):
+                row.append(text)
+                if rs > 1:
+                    pending[col + k] = (rs - 1, text)
+                used.add(col + k)
+            col += cs
+        rows.append(row)
+    return rows
+
+
+def _kv_pairs(html_text):
+    """Lấy các cặp 'Nhãn: giá trị' trong khối thông tin (label/b/span)."""
+    out = {}
+    for label, value in re.findall(
+            r"<span[^>]*>(.*?)</span>\s*:\s*<(?:b|span)[^>]*>(.*?)</(?:b|span)>",
+            html_text, re.S):
+        key = clean(label).rstrip(":").strip()
+        val = clean(value)
+        if key and key not in out:
+            out[key] = val
+    return out
+
+# ===========================================================================
+# 6. Lấy dữ liệu
+# ===========================================================================
+GRADE_COLS = ["STT", "Mã lớp học phần", "Tên môn học/học phần", "Số tín chỉ",
+              "Giữa kỳ", "TX1", "TX2", "TX3", "TX4", "TX5", "TX6", "TX7", "TX8", "TX9",
+              "TH1", "TH2", "TH3", "TH4", "TH5", "Cuối kỳ",
+              "Điểm tổng kết", "Thang điểm 4", "Điểm chữ", "Xếp loại", "Ghi chú"]
+
+
+def get_grades(s):
+    body = s.text(s.get("/ket-qua-hoc-tap.html"))
+    rows = parse_table(body, "xemDiem_aaa")
+    out, hoc_ky = [], None
+    for r in rows:
+        if not r or not any(r):
+            continue
+        if len(set(x for x in r if x)) == 1 and re.match(r"^HK\d+\s*\(", r[0].strip() or " "):
+            hoc_ky = r[0].strip()
+            continue
+        if not re.match(r"^\d+$", (r[0] or "").strip()):
+            continue
+        item = {"hoc_ky": hoc_ky}
+        for i, name in enumerate(GRADE_COLS):
+            item[name] = (r[i] if i < len(r) else "").strip()
+        out.append(item)
+    return out
+
+
+# Bảng quy đổi tiết -> giờ của IUH (theo lịch tuần).
+TIET_GIO = {
+    1: ("06:30", "07:20"), 2: ("07:20", "08:10"), 3: ("08:10", "09:00"),
+    4: ("09:10", "10:00"), 5: ("10:00", "10:50"), 6: ("10:50", "11:40"),
+    7: ("12:30", "13:20"), 8: ("13:20", "14:10"), 9: ("14:10", "15:00"),
+    10: ("15:10", "16:00"), 11: ("16:00", "16:50"), 12: ("16:50", "17:40"),
+    13: ("18:00", "18:50"), 14: ("18:50", "19:40"), 15: ("19:50", "20:40"),
+    16: ("20:40", "21:30"),
+}
+
+
+def tiet_to_gio(tiet):
+    """Chuỗi '13 - 15' -> '18:00 - 20:40'. Trả '' nếu không đọc được tiết."""
+    nums = [int(n) for n in re.findall(r"\d+", str(tiet))]
+    if not nums:
+        return ""
+    start, end = nums[0], nums[-1]
+    if start not in TIET_GIO or end not in TIET_GIO:
+        return ""
+    return "%s - %s" % (TIET_GIO[start][0], TIET_GIO[end][1])
+
+
+def tiet_to_phut(tiet):
+    """Số phút của khoảng tiết, dùng để tính tổng giờ học."""
+    nums = [int(n) for n in re.findall(r"\d+", str(tiet))]
+    if not nums or nums[0] not in TIET_GIO or nums[-1] not in TIET_GIO:
+        return 0
+    a, b = TIET_GIO[nums[0]][0], TIET_GIO[nums[-1]][1]
+    to_min = lambda t: int(t[:2]) * 60 + int(t[3:])
+    return to_min(b) - to_min(a)
+
+
+def get_schedule(s, week_offset=0, exam=False):
+    """Lịch theo tuần -> list [{thu, ngay, buoi, mon, ma_lop, lop, tiet, gio, phong, gv}]."""
+    day = _dt.date.today() + _dt.timedelta(days=7 * week_offset)
+    loai = 2 if exam else 1
+    resp = s.post("/SinhVien/GetDanhSachLichTheoTuan",
+                  {"pNgayHienTai": day.strftime("%d/%m/%Y"), "pLoaiLich": loai},
+                  referer="%s/lich-theo-tuan.html?pLoaiLich=%d" % (BASE, loai))
+    html_text = s.text(resp)
+
+    rows = parse_table(html_text, raw=True)
+
+    # Header (thead) chứa tên thứ + ngày: bỏ ô đầu tiên ("Ca học").
+    days = []
+    head = re.search(r"<thead[^>]*>(.*?)</thead>", html_text, re.S)
+    if head:
+        for attrs, content in re.findall(r"<t[dh]([^>]*)>(.*?)</t[dh]>",
+                                         head.group(1), re.S):
+            txt = clean(content)
+            d = re.search(r"(\d{2}/\d{2}/\d{4})", txt)
+            ten = re.sub(r"\(?\s*\d{2}/\d{2}/\d{4}\s*\)?", "", txt).strip()
+            days.append((ten, d.group(1) if d else ""))
+        days = days[1:]
+
+    out = []
+    for r in rows:
+        if not r:
+            continue
+        buoi = clean(r[0])
+        if buoi not in ("Sáng", "Chiều", "Tối"):
+            continue
+        for idx, cell in enumerate(r[1:1 + len(days)]):
+            if not cell or "<div" not in cell:
+                continue
+            for block in re.findall(r'<div class="content[^"]*"[^>]*>(.*?)(?=<div class="content|</td>|$)',
+                                    cell, re.S):
+                mon = re.search(r"<a[^>]*>(.*?)</a>", block, re.S)
+                lop = re.search(r"<p>(.*?)</p>", block, re.S)
+                tiet = re.search(r"Tiết</span>\s*:\s*([^<]+)", block)
+                phong = re.search(r"Phòng</span>\s*:\s*<font>([^<]+)", block)
+                gv = re.search(r"GV</span>\s*:\s*<font>([^<]+)", block)
+                ghi = re.search(r"Ghi chú[^<]*</span>\s*:\s*([^<]+)", block)
+                lop_txt = clean(lop.group(1)) if lop else ""
+                ma = re.search(r"-\s*([0-9A-Za-z_]+)\s*$", lop_txt)
+                tiet_txt = clean(tiet.group(1)) if tiet else ""
+                out.append({
+                    "thu": days[idx][0], "ngay": days[idx][1], "buoi": buoi,
+                    "mon": clean(mon.group(1)) if mon else "",
+                    "lop": lop_txt,
+                    "ma_lop": ma.group(1) if ma else "",
+                    "tiet": tiet_txt,
+                    "gio": tiet_to_gio(tiet_txt),
+                    "phong": clean(phong.group(1)) if phong else "",
+                    "gv": clean(gv.group(1)) if gv else "",
+                    "ghi_chu": clean(ghi.group(1)) if ghi else "",
+                })
+    return out
+
+
+def get_info(s):
+    body = s.text(s.get("/thong-tin-sinh-vien.html"))
+    # Chỉ lấy trong khối thông tin sinh viên để tránh dính menu/CSS/JS
+    start = body.find("Thông tin học vấn")
+    end = body.find("Quan hệ gia đình", start)
+    block = body[start:end if end > 0 else len(body)]
+    data = _kv_pairs(block)
+    m = re.search(r"<img[^>]*src=\"(data:image/[^;]+;base64[^\"]*)\"", body)
+    return {"fields": data, "anh_the": m.group(1) if m else None}
