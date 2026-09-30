@@ -126,11 +126,53 @@ function injectLayoutStyles() {
       width: 100% !important;
     }
 
+    /* BẢNG THỜI KHÓA BIỂU: CHIA ĐỀU TẤT CẢ CÁC CỘT CHUẨN XÁC 100% */
     .table-responsive,
+    .table-responsive table,
     table.fl-table,
     table[id*="Lich"] {
+      table-layout: fixed !important;
       width: 100% !important;
       max-width: 100% !important;
+    }
+
+    /* Cột đầu tiên: Ca học (Sáng / Chiều / Tối) - thu gọn vừa vặn */
+    .table-responsive table thead th:first-child,
+    table.fl-table thead th:first-child,
+    table[id*="Lich"] thead th:first-child,
+    .table-responsive table tbody tr td:first-child,
+    table.fl-table tbody tr td:first-child,
+    table[id*="Lich"] tbody tr td:first-child {
+      width: 75px !important;
+      min-width: 70px !important;
+      max-width: 80px !important;
+      text-align: center !important;
+      box-sizing: border-box !important;
+    }
+
+    /* 7 Cột các ngày trong tuần (Thứ 2 -> Chủ nhật): CHIA ĐỀU TUYỆT ĐỐI */
+    .table-responsive table thead th:not(:first-child),
+    table.fl-table thead th:not(:first-child),
+    table[id*="Lich"] thead th:not(:first-child),
+    .table-responsive table tbody tr td:not(:first-child),
+    table.fl-table tbody tr td:not(:first-child),
+    table[id*="Lich"] tbody tr td:not(:first-child) {
+      width: calc((100% - 75px) / 7) !important;
+      box-sizing: border-box !important;
+      word-break: break-word !important;
+      overflow-wrap: break-word !important;
+    }
+
+    /* Nếu bảng có thẻ colgroup / col */
+    .table-responsive table col:first-child,
+    table.fl-table col:first-child,
+    table[id*="Lich"] col:first-child {
+      width: 75px !important;
+    }
+    .table-responsive table col:not(:first-child),
+    table.fl-table col:not(:first-child),
+    table[id*="Lich"] col:not(:first-child) {
+      width: calc((100% - 75px) / 7) !important;
     }
   `;
   (document.head || document.documentElement).appendChild(style);
@@ -240,13 +282,33 @@ function thayThe(root) {
   });
 }
 
+// 4. Chia đều khoảng cách các cột thời khóa biểu chuẩn xác 100%
+function equalizeColumns() {
+  const tables = document.querySelectorAll("table.fl-table, table[id*='Lich'], .table-responsive table, table");
+  tables.forEach((table) => {
+    const ths = table.querySelectorAll("thead th, tr:first-child th");
+    if (ths.length >= 8) {
+      table.style.setProperty("table-layout", "fixed", "important");
+      table.style.setProperty("width", "100%", "important");
+      ths[0].style.setProperty("width", "75px", "important");
+      ths[0].style.setProperty("max-width", "80px", "important");
+      for (let i = 1; i < ths.length; i++) {
+        ths[i].style.setProperty("width", "calc((100% - 75px) / 7)", "important");
+        ths[i].style.setProperty("word-break", "break-word", "important");
+      }
+    }
+  });
+}
+
 function main() {
   injectLayoutStyles();
   setupSidebarCollapse();
+  equalizeColumns();
   thayThe(document);
 
   const obs = new MutationObserver(() => {
     setupSidebarCollapse();
+    equalizeColumns();
     thayThe(document);
   });
   obs.observe(document.body, { childList: true, subtree: true });
