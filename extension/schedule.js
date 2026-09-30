@@ -174,6 +174,17 @@ function injectLayoutStyles() {
     table[id*="Lich"] col:not(:first-child) {
       width: calc((100% - 75px) / 7) !important;
     }
+
+    /* IN ĐẬM THỜI GIAN TRONG TIẾT VÀ TÊN GIẢNG VIÊN (ÁP DỤNG CHO TẤT CẢ) */
+    .iuh-time-bold,
+    b.iuh-time-bold,
+    .iuh-gv-bold,
+    b.iuh-gv-bold,
+    font.iuh-gv-bold,
+    .content span[lang="lichtheotuan-giangvien"] ~ font,
+    .content span[lang="lichtheotuan-giangvien"] + font {
+      font-weight: 700 !important;
+    }
   `;
   (document.head || document.documentElement).appendChild(style);
 }
@@ -262,7 +273,7 @@ function setupSidebarCollapse() {
   }
 }
 
-// 3. Đổi "Tiết: X - Y" thành giờ cụ thể
+// 3. Đổi "Tiết: X - Y" thành giờ cụ thể và IN ĐẬM thời gian học
 function thayThe(root) {
   const spans = root.querySelectorAll('span[lang="lichtheotuan-tiet"]');
   spans.forEach((sp) => {
@@ -277,12 +288,103 @@ function thayThe(root) {
     const b = gioCua(t2);
     if (!a || !b) return;
     const gio = `${a.split(" - ")[0]} - ${b.split(" - ")[1]}`;
-    after.nodeValue = after.nodeValue.replace(m[0], `${m[1]}${gio}`);
+
+    // Tạo thẻ in đậm riêng cho thời gian
+    const bTime = document.createElement("b");
+    bTime.className = "iuh-time-bold";
+    bTime.style.setProperty("font-weight", "bold", "important");
+    bTime.textContent = gio;
+
+    const colon = document.createTextNode(m[1]);
+    const remainingText = after.nodeValue.slice(m[0].length);
+    const parent = after.parentNode;
+    parent.insertBefore(colon, after);
+    parent.insertBefore(bTime, after);
+    if (remainingText) {
+      parent.insertBefore(document.createTextNode(remainingText), after);
+    }
+    parent.removeChild(after);
     sp.dataset.iuhGio = "1";
   });
 }
 
-// 4. Chia đều khoảng cách các cột thời khóa biểu chuẩn xác 100%
+// 4. In đậm tên Giảng viên (áp dụng cho tất cả các môn)
+function boldTeacherName(root) {
+  // Cách 1: Tìm qua thẻ span lichtheotuan-giangvien
+  const gvSpans = root.querySelectorAll('span[lang="lichtheotuan-giangvien"]');
+  gvSpans.forEach((sp) => {
+    let cur = sp.nextSibling;
+    while (cur) {
+      if (cur.nodeType === Node.ELEMENT_NODE) {
+        if (cur.tagName === "FONT" || cur.tagName === "SPAN") {
+          cur.classList.add("iuh-gv-bold");
+          cur.style.setProperty("font-weight", "bold", "important");
+          break;
+        }
+        if (cur.tagName === "BR" || (cur.className && cur.className.includes("content"))) {
+          break;
+        }
+      } else if (cur.nodeType === Node.TEXT_NODE && cur.nodeValue && cur.nodeValue.trim().length > 0) {
+        const val = cur.nodeValue;
+        const m = val.match(/^(\s*:?\s*)([^\n\r<]+)/);
+        if (m && m[2].trim()) {
+          const bGv = document.createElement("b");
+          bGv.className = "iuh-gv-bold";
+          bGv.style.setProperty("font-weight", "bold", "important");
+          bGv.textContent = m[2].trim();
+          const prefix = document.createTextNode(m[1]);
+          const p = cur.parentNode;
+          p.insertBefore(prefix, cur);
+          p.insertBefore(bGv, cur);
+          const rest = val.slice(m[0].length);
+          if (rest) p.insertBefore(document.createTextNode(rest), cur);
+          p.removeChild(cur);
+          break;
+        }
+      }
+      cur = cur.nextSibling;
+    }
+  });
+
+  // Cách 2: Quét tất cả thẻ chứa text "GV:" trong các card lịch
+  const contents = root.querySelectorAll(".content");
+  contents.forEach((card) => {
+    if (card.dataset.iuhGvBold === "1") return;
+    const walker = document.createTreeWalker(card, NodeFilter.SHOW_TEXT);
+    let node;
+    while ((node = walker.nextNode())) {
+      if (node.nodeValue && node.nodeValue.includes("GV:")) {
+        const parts = node.nodeValue.split(/(GV:\s*)/);
+        if (parts.length >= 3 && parts[2].trim()) {
+          const name = parts[2].trim();
+          const bGv = document.createElement("b");
+          bGv.className = "iuh-gv-bold";
+          bGv.style.setProperty("font-weight", "bold", "important");
+          bGv.textContent = name;
+          const p = node.parentNode;
+          p.insertBefore(document.createTextNode(parts[0] + parts[1]), node);
+          p.insertBefore(bGv, node);
+          p.removeChild(node);
+          break;
+        }
+      }
+    }
+    card.dataset.iuhGvBold = "1";
+  });
+}
+
+// 5. Sửa lỗi hiển thị "Tr?c tuy?n" thành "Trực tuyến"
+function fixBrokenText(root) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  let n;
+  while ((n = walker.nextNode())) {
+    if (n.nodeValue && n.nodeValue.includes("Tr?c tuy?n")) {
+      n.nodeValue = n.nodeValue.replace(/Tr\?c tuy\?n/g, "Trực tuyến");
+    }
+  }
+}
+
+// 6. Chia đều khoảng cách các cột thời khóa biểu chuẩn xác 100%
 function equalizeColumns() {
   const tables = document.querySelectorAll("table.fl-table, table[id*='Lich'], .table-responsive table, table");
   tables.forEach((table) => {
@@ -305,11 +407,15 @@ function main() {
   setupSidebarCollapse();
   equalizeColumns();
   thayThe(document);
+  boldTeacherName(document);
+  fixBrokenText(document);
 
   const obs = new MutationObserver(() => {
     setupSidebarCollapse();
     equalizeColumns();
     thayThe(document);
+    boldTeacherName(document);
+    fixBrokenText(document);
   });
   obs.observe(document.body, { childList: true, subtree: true });
 }
