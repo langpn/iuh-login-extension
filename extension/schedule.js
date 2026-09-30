@@ -1127,6 +1127,8 @@ function thayThe(root) {
 function boldTeacherName(root) {
   const gvSpans = root.querySelectorAll('span[lang="lichtheotuan-giangvien"]');
   gvSpans.forEach((sp) => {
+    if (sp.dataset.iuhGvBold === "1") return;
+    sp.dataset.iuhGvBold = "1";
     let cur = sp.nextSibling;
     while (cur) {
       if (cur.nodeType === Node.ELEMENT_NODE) {
@@ -1339,17 +1341,26 @@ function highlightTodayColumn(root) {
 
     if (todayIndex === -1) return;
 
-    // Làm nổi bật Header cột hôm nay
     const todayTh = ths[todayIndex];
-    todayTh.classList.add("iuh-today-header");
-    if (!todayTh.querySelector(".iuh-today-badge")) {
-      const badge = document.createElement("span");
-      badge.className = "iuh-today-badge";
-      badge.textContent = "HÔM NAY";
-      todayTh.appendChild(badge);
+    if (todayTh.classList.contains("iuh-today-header") && todayTh.querySelector(".iuh-today-badge")) {
+      // Đã có highlight hôm nay rồi, không lặp lại
+      return;
     }
 
-    // Làm nổi bật tất cả các ô trong cột hôm nay (Sáng, Chiều, Tối)
+    // Reset highlight cũ nếu có
+    table.querySelectorAll(".iuh-today-col, .iuh-today-header").forEach((el) => {
+      el.classList.remove("iuh-today-col", "iuh-today-header");
+    });
+    table.querySelectorAll(".iuh-today-badge").forEach((el) => el.remove());
+
+    // Highlight header
+    todayTh.classList.add("iuh-today-header");
+    const badge = document.createElement("span");
+    badge.className = "iuh-today-badge";
+    badge.textContent = "HÔM NAY";
+    todayTh.appendChild(badge);
+
+    // Highlight body cells
     const rows = table.querySelectorAll("tbody tr");
     rows.forEach((r) => {
       const cells = r.querySelectorAll("td");
@@ -1399,21 +1410,17 @@ function applyThemeMode(mode) {
   toggleBtn.innerHTML = isDark ? "☀️ Chế độ sáng" : "🌙 Chế độ tối";
 }
 
-function main() {
-  setupThemeMode("dark");
-  removeLogo();
-  removeZoomButton();
-  setupSidebarCollapse();
-  removeOneUniQR();
-  equalizeColumns();
-  ensureRadioRow();
-  thayThe(document);
-  boldTeacherName(document);
-  fixBrokenText(document);
-  centerLegend(document);
-  highlightTodayColumn(document);
+let isUpdating = false;
+let updateTimer = null;
+let obs = null;
 
-  const obs = new MutationObserver(() => {
+function runAll() {
+  if (isUpdating) return;
+  isUpdating = true;
+  try {
+    // Tạm ngắt observer để tránh vòng lặp DOM mutation gây treo tab
+    if (obs) obs.disconnect();
+
     removeLogo();
     removeZoomButton();
     setupSidebarCollapse();
@@ -1425,7 +1432,24 @@ function main() {
     fixBrokenText(document);
     centerLegend(document);
     highlightTodayColumn(document);
-  });
+  } finally {
+    if (obs) {
+      obs.observe(document.body, { childList: true, subtree: true });
+    }
+    isUpdating = false;
+  }
+}
+
+function scheduleUpdate() {
+  if (updateTimer) clearTimeout(updateTimer);
+  updateTimer = setTimeout(runAll, 300);
+}
+
+function main() {
+  setupThemeMode("dark");
+  runAll();
+
+  obs = new MutationObserver(scheduleUpdate);
   obs.observe(document.body, { childList: true, subtree: true });
 }
 
