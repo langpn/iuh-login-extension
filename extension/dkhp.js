@@ -1,8 +1,10 @@
 // =====================================================================
 // IUH Fast Login — Content Script cho Đăng ký học phần (DKHP)
 // ---------------------------------------------------------------------
-// Thiết kế: Tối giản, Tự nhiên, Đẹp mắt, Không chữ thừa, Không lệch.
-// Tự động điền MSSV, Mật khẩu, hiển thị 4 ô ký tự sắc nét và tự động hóa.
+// Thiết kế: Tinh tế, Hiện đại, Gọn gàng, Hiển thị song song:
+//   1. Ảnh gốc phóng to sắc nét (không bị bóp méo, đầy đủ 100% nét).
+//   2. 4 ô ký tự đã khử sạch nhiễu & căn chuẩn tâm (Center-of-Mass).
+//   3. Tự động điền MSSV & Mật khẩu + Tự in hoa + Tự submit khi gõ đủ 4 ký tự.
 // =====================================================================
 
 (() => {
@@ -47,7 +49,7 @@
     }
   }
 
-  // Tinh chỉnh form input và nút đăng nhập cho hiện đại, đồng bộ, không lệch
+  // Tinh chỉnh form gọn gàng, hiện đại
   function injectCleanTheme() {
     if ($("#iuh-clean-theme")) return;
     const style = document.createElement("style");
@@ -113,7 +115,18 @@
     (document.head || document.documentElement).appendChild(style);
   }
 
-  // Khử nhiễu hạt, gạch ngang và chia thành 4 ô ký tự tách biệt rõ nét
+  // Vẽ ảnh gốc phóng to sắc nét (không bị bóp méo hình ảnh)
+  function renderOriginalCanvas(imgEl) {
+    const canvas = $("#iuh-orig-canvas");
+    if (!canvas || !imgEl || !imgEl.complete || imgEl.naturalWidth < 10) return;
+    canvas.width = 154;
+    canvas.height = 49;
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(imgEl, 0, 0, 154, 49);
+  }
+
+  // Khử sạch nhiễu hạt, gạch ngang và chia thành 4 ô ký tự tách biệt rõ nét theo tâm điểm khối lượng (Center of Mass)
   function renderCleanPanels(imgEl) {
     if (!imgEl || !imgEl.complete || imgEl.naturalWidth < 10) return false;
 
@@ -183,7 +196,7 @@
       }
     }
 
-    // 4. Thuật toán tìm tâm tự động (Vertical Projection Profile)
+    // 4. Thuật toán tìm tâm từng ký tự bằng Center of Mass (không bao giờ bị mất ký tự thứ 4)
     const proj = new Float32Array(w);
     for (let j = 0; j < w; j++) {
       let count = 0;
@@ -193,45 +206,34 @@
       proj[j] = count;
     }
 
-    const smoothed = new Float32Array(w);
-    for (let j = 0; j < w; j++) {
-      const prev = j > 0 ? proj[j - 1] : proj[j];
-      const next = j < w - 1 ? proj[j + 1] : proj[j];
-      smoothed[j] = (prev + 2 * proj[j] + next) / 4.0;
-    }
+    // Chia làm 4 vùng tự nhiên: 0..29, 26..56, 52..82, 78..110
+    const quarters = [
+      [0, 29],
+      [26, 56],
+      [52, 82],
+      [78, 110]
+    ];
 
-    const islands = [];
-    let inIsland = false;
-    let start = 0;
-    for (let j = 0; j < w; j++) {
-      if (smoothed[j] > 1.5 && !inIsland) {
-        inIsland = true;
-        start = j;
-      } else if (smoothed[j] <= 1.5 && inIsland) {
-        inIsland = false;
-        if (j - start >= 5) {
-          islands.push({ start, end: j });
-        }
+    const centers = [];
+    for (let s = 0; s < 4; s++) {
+      const [qStart, qEnd] = quarters[s];
+      let totalW = 0;
+      let weightedSum = 0;
+      for (let x = qStart; x < qEnd; x++) {
+        const val = proj[x];
+        totalW += val;
+        weightedSum += x * val;
       }
-    }
-    if (inIsland && w - start >= 5) {
-      islands.push({ start, end: w });
-    }
-
-    let centers = [];
-    if (islands.length === 4) {
-      centers = islands.map((isl) => Math.round((isl.start + isl.end) / 2));
-    } else if (islands.length > 4) {
-      islands.sort((a, b) => (b.end - a.start) - (a.end - a.start));
-      const top4 = islands.slice(0, 4).sort((a, b) => a.start - b.start);
-      centers = top4.map((isl) => Math.round((isl.start + isl.end) / 2));
-    } else {
-      centers = [12, 38, 66, 94];
+      if (totalW > 0) {
+        centers.push(Math.round(weightedSum / totalW));
+      } else {
+        centers.push(Math.round((qStart + qEnd) / 2));
+      }
     }
 
     // 5. Cắt 4 ô Canvas đối xứng quanh tâm từng ký tự (nét chữ đen tuyền đậm nét)
-    const panelWidth = 52;
-    const panelHeight = 64;
+    const panelWidth = 36;
+    const panelHeight = 49;
     const sliceWidth = 24;
     let predictedCode = "";
 
@@ -256,7 +258,6 @@
       const sImgData = sCtx.createImageData(sliceWidth, h);
       const sData = sImgData.data;
 
-      // Glyph 24x28 cho bộ nhận diện AI
       const glyph24x28 = new Float32Array(24 * 28);
 
       for (let i = 0; i < h; i++) {
@@ -267,22 +268,20 @@
             sData[sIdx] = 15;
             sData[sIdx + 1] = 23;
             sData[sIdx + 2] = 42;
-            sData[sIdx + 3] = 255;
-            // Ánh xạ sang glyph 24x28
+            sData[sIdx + 3] = 255; // Nét chữ đậm đen
             const gy = Math.min(27, Math.floor((i * 28) / h));
             glyph24x28[gy * 24 + j] = 1.0;
           } else {
             sData[sIdx] = 255;
             sData[sIdx + 1] = 255;
             sData[sIdx + 2] = 255;
-            sData[sIdx + 3] = 255;
+            sData[sIdx + 3] = 255; // Nền trắng
           }
         }
       }
       sCtx.putImageData(sImgData, 0, 0);
       ctx.drawImage(sliceCanvas, 0, 0, panelWidth, panelHeight);
 
-      // Nhận diện ký tự nếu có solver
       if (globalThis.IUH_GLYPH_SOLVER && globalThis.IUH_GLYPH_SOLVER.classify) {
         try {
           const char = globalThis.IUH_GLYPH_SOLVER.classify(glyph24x28);
@@ -294,43 +293,70 @@
     return predictedCode;
   }
 
-  // Khối hiển thị 4 ô ký tự sạch sẽ, gọn gàng, không chữ thừa, không lệch
-  function attachCleanPreview(imgEl, capEl) {
-    let box = $("#iuh-captcha-preview");
-    if (!box) {
-      box = document.createElement("div");
-      box.id = "iuh-captcha-preview";
-      box.style.cssText =
-        "display: flex; align-items: center; justify-content: center; gap: 8px; margin: 6px 0 12px 0;";
+  // Khối hiển thị song song: Ảnh gốc sắc nét + 4 ô khử nhiễu tách rời
+  function attachCaptchaCard(imgEl, capEl) {
+    let card = $("#iuh-captcha-card");
+    if (!card) {
+      card = document.createElement("div");
+      card.id = "iuh-captcha-card";
+      card.style.cssText =
+        "margin: 8px 0 14px 0; padding: 12px 14px; background: #f8fafc; border: 1.5px solid #e2e8f0; " +
+        "border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);";
 
-      box.innerHTML = `
-        <canvas id="iuh-panel-0" style="display:block; width:52px; height:64px; border: 1.5px solid #cbd5e1; border-radius: 8px; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.04);"></canvas>
-        <canvas id="iuh-panel-1" style="display:block; width:52px; height:64px; border: 1.5px solid #cbd5e1; border-radius: 8px; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.04);"></canvas>
-        <canvas id="iuh-panel-2" style="display:block; width:52px; height:64px; border: 1.5px solid #cbd5e1; border-radius: 8px; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.04);"></canvas>
-        <canvas id="iuh-panel-3" style="display:block; width:52px; height:64px; border: 1.5px solid #cbd5e1; border-radius: 8px; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.04);"></canvas>
-        <button id="iuh-btn-refresh" type="button" title="Đổi mã khác" style="border: 1px solid #cbd5e1; background: #f8fafc; color: #0284c7; width: 38px; height: 38px; border-radius: 8px; cursor: pointer; font-size: 17px; display: flex; align-items: center; justify-content: center; margin-left: 4px; transition: all .2s;">🔄</button>
+      card.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <span style="font-size: 12px; font-weight: 700; color: #475569; display: flex; align-items: center; gap: 5px;">
+            <span>🛡️</span> Mã xác nhận
+          </span>
+          <button id="iuh-btn-refresh" type="button" style="border: 1px solid #cbd5e1; background: #ffffff; color: #0284c7; padding: 3px 9px; border-radius: 6px; cursor: pointer; font-size: 11.5px; font-weight: 600; display: flex; align-items: center; gap: 4px; transition: all .2s;">
+            🔄 Đổi mã khác
+          </button>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap;">
+          <div style="text-align: center;">
+            <div style="font-size: 10px; font-weight: 700; color: #64748b; margin-bottom: 4px;">ẢNH GỐC ĐẦY ĐỦ</div>
+            <div style="border: 1.5px solid #cbd5e1; border-radius: 8px; overflow: hidden; background: #fff; display: inline-block; box-shadow: 0 1px 4px rgba(0,0,0,0.05);">
+              <canvas id="iuh-orig-canvas" style="display: block; width: 154px; height: 49px;"></canvas>
+            </div>
+          </div>
+          <div style="text-align: center;">
+            <div style="font-size: 10px; font-weight: 700; color: #0284c7; margin-bottom: 4px;">KHỬ NHIỄU TO RÕ</div>
+            <div style="display: flex; gap: 5px;">
+              <canvas id="iuh-panel-0" style="width: 36px; height: 49px; border: 1.5px solid #cbd5e1; border-radius: 6px; background: #fff;"></canvas>
+              <canvas id="iuh-panel-1" style="width: 36px; height: 49px; border: 1.5px solid #cbd5e1; border-radius: 6px; background: #fff;"></canvas>
+              <canvas id="iuh-panel-2" style="width: 36px; height: 49px; border: 1.5px solid #cbd5e1; border-radius: 6px; background: #fff;"></canvas>
+              <canvas id="iuh-panel-3" style="width: 36px; height: 49px; border: 1.5px solid #cbd5e1; border-radius: 6px; background: #fff;"></canvas>
+            </div>
+          </div>
+        </div>
       `;
 
-      // Chèn ngay trước dòng nhập mã bảo vệ
-      const targetGroup = capEl.closest(".form-group") || capEl.parentElement;
+      // Chèn card ngay trên hàng nhập captcha
+      const targetGroup = capEl.closest(".form-group") || capEl.closest(".input-group") || capEl.parentElement;
       if (targetGroup && targetGroup.parentElement) {
-        targetGroup.parentElement.insertBefore(box, targetGroup);
+        targetGroup.parentElement.insertBefore(card, targetGroup);
       } else {
-        capEl.parentElement.insertBefore(box, capEl);
+        capEl.parentElement.insertBefore(card, capEl);
       }
 
-      // Xử lý nút đổi mã
+      // Ẩn ảnh captcha cũ bị bóp méo trong ô input để ô nhập mã rộng rãi
+      const origContainer = $("div[class*='captchaContainer']") || imgEl.parentElement;
+      if (origContainer && origContainer !== card) {
+        origContainer.style.display = "none";
+      }
+      const origRefreshBtn = $("a[class*='refresh']");
+      if (origRefreshBtn) {
+        origRefreshBtn.style.display = "none";
+      }
+
       $("#iuh-btn-refresh")?.addEventListener("click", () => {
-        const refreshBtn = $(".captcharefresh") || $("a[class*='refresh']");
-        if (refreshBtn) refreshBtn.click();
+        if (origRefreshBtn) origRefreshBtn.click();
         else if (imgEl) imgEl.click();
       });
     }
 
-    if (imgEl) {
-      return renderCleanPanels(imgEl);
-    }
-    return "";
+    renderOriginalCanvas(imgEl);
+    return renderCleanPanels(imgEl);
   }
 
   async function main() {
@@ -338,7 +364,6 @@
       return;
     }
 
-    // Tinh chỉnh form gọn gàng, hiện đại
     injectCleanTheme();
 
     const cfg = await getStorage({
@@ -367,19 +392,17 @@
     setValue(userEl, cfg.username);
     setValue(passEl, cfg.password);
 
-    // 2. Tự động chuyển chữ thường thành chữ IN HOA
+    // 2. Tự động chuyển chữ in hoa & Tự submit khi gõ đủ 4 ký tự
     capEl.addEventListener("input", (e) => {
       const upper = capEl.value.toUpperCase();
       if (capEl.value !== upper) {
         capEl.value = upper;
       }
-      // Gõ đủ 4 ký tự -> tự động đăng nhập ngay lập tức
       if (e.isTrusted && capEl.value.trim().length === 4) {
         submit();
       }
     });
 
-    // Nhấn Enter submit ngay lập tức
     capEl.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
         e.preventDefault();
@@ -387,17 +410,14 @@
       }
     });
 
-    // 3. Quy trình làm sạch ảnh & Tự động hóa
+    // 3. Quy trình hiển thị song song & Nhận diện tự động
     const runProcess = async () => {
       for (let i = 0; i < 25; i++) {
         if (imgEl.complete && imgEl.naturalWidth >= 40) break;
         await sleep(100);
       }
 
-      // Gắn 4 ô ảnh sạch sẽ và nhận diện mã
-      const code = attachCleanPreview(imgEl, capEl);
-
-      // Tự động điền mã nếu nhận diện được 4 ký tự
+      const code = attachCaptchaCard(imgEl, capEl);
       if (code && code.length === 4) {
         setValue(capEl, code);
         capEl.focus();
@@ -409,7 +429,6 @@
 
     await runProcess();
 
-    // Tự động cập nhật lại khi bấm đổi ảnh
     if (imgEl) {
       imgEl.addEventListener("load", () => {
         setTimeout(runProcess, 150);
