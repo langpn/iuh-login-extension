@@ -31,11 +31,6 @@
       "run_at": "document_idle"
     },
     {
-      "matches": ["*://sv.iuh.edu.vn/lich-theo-tuan.html*"],
-      "js": ["schedule.js"],
-      "run_at": "document_idle"
-    },
-    {
       "matches": ["*://dkhp.iuh.edu.vn/*"],
       "js": ["dkhp.js"],
       "run_at": "document_idle"
