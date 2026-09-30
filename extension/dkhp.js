@@ -224,10 +224,10 @@
           const sIdx = (i * sliceWidth + j) * 4;
           const origIdx = i * w + (xStart + j);
           if (vertClean[origIdx]) {
-            // Nét chữ: Xanh navy đậm tuyệt đối
-            sData[sIdx] = 10;
-            sData[sIdx + 1] = 37;
-            sData[sIdx + 2] = 155;
+            // Nét chữ: Đen tuyền sắc nét (#000000) chuẩn tương phản cao cho mắt kém
+            sData[sIdx] = 0;
+            sData[sIdx + 1] = 0;
+            sData[sIdx + 2] = 0;
             sData[sIdx + 3] = 255;
           } else {
             // Nền trắng
