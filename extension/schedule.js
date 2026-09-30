@@ -1,18 +1,18 @@
 // =====================================================================
 // IUH Fast Login — Content Script Thời khóa biểu (sv.iuh.edu.vn)
 // ---------------------------------------------------------------------
-// 1. Đổi "Tiết: X - Y" thành giờ cụ thể (ví dụ Tiết 7-9 -> 12:30 - 15:00).
-// 2. Dark Mode Aurora Cosmos với dải màu dài sâu (Indigo -> Cyan -> Purple -> Sapphire -> Rose).
-// 3. Header đồng bộ Dark Mode 100% (không còn nền trắng), XÓA LOGO TRƯỜNG.
-// 4. Nút Menu Sinh Viên nằm gọn ở vị trí logo, bấm để mở/đóng Sidebar mượt mà.
-// 5. Bảng lịch học chiếm FULL 100% DIỆN TÍCH màn hình, căn đối xứng hoàn hảo.
-// 6. XÓA VĨNH VIỄN MÃ QR NGỚ NGẨN.
-// 7. Typography thẻ môn học:
-//    - Tên môn: phông nhỏ gọn (11.5px), không bold to chiếm diện tích.
-//    - Thời gian: IN ĐẬM VÀ IN NGHIÊNG (Bold & Italic).
+// 1. Giữ nguyên 100% bố cục layout gốc (không ép full-width, không phá vỡ grid).
+// 2. Nền Aurora Cosmos Gradient đa tầng với dải màu dài sâu khắp trang.
+// 3. Header, Sidebar, Toolbar, Legend đồng bộ Dark Mode hoàn toàn (khử sạch mảng trắng).
+// 4. Xóa khối mã QR cài app ngớ ngẩn khỏi sidebar.
+// 5. Typography thẻ môn học chuẩn theo yêu cầu:
+//    - Tên môn học thu nhỏ phông (11.5px), chữ thường không bold to chiếm diện tích.
+//    - Toàn bộ text chữ thường tự nhiên, giảm khoảng cách dòng (line-height: 1.25).
+//    - Thời gian học: BẮT BUỘC IN ĐẬM VÀ IN NGHIÊNG (Bold & Italic).
 //    - Phòng học: CHỈ IN ĐẬM KHI LÀ LỊCH THỰC HÀNH.
-//    - Xóa toàn bộ text trắng chói mắt, độ tương phản cao dịu mắt.
-// 8. Tự sửa lỗi font "Tr?c tuy?n" thành "Trực tuyến".
+//    - Khử sạch toàn bộ chữ trắng trên thẻ môn học (tương phản cao, cực kỳ dịu mắt).
+// 6. Đổi "Tiết: X - Y" thành giờ cụ thể (vd: 12:30 - 15:00).
+// 7. Bảo vệ icon FontAwesome gốc & tự sửa lỗi "Tr?c tuy?n" -> "Trực tuyến".
 // =====================================================================
 
 const api = globalThis.browser ?? globalThis.chrome;
@@ -31,29 +31,21 @@ function gioCua(tiet) {
   return g ? `${g[0]} - ${g[1]}` : null;
 }
 
-// Tiêm CSS Thời khóa biểu tối ưu toàn diện
+// Tiêm CSS Thời khóa biểu
 function injectScheduleTheme() {
   if (document.getElementById("iuh-schedule-theme-style")) return;
   const style = document.createElement("style");
   style.id = "iuh-schedule-theme-style";
   style.textContent = `
-    /* 1. BẢO VỆ ICON FONTAWESOME */
+    /* 1. BẢO VỆ TUYỆT ĐỐI ICON FONTAWESOME (KHÔNG ĐÈ FONT) */
     *:not(i):not([class*="fa"]):not([class*="glyphicon"]):not([class*="icon"]):not(.k-icon):not([class*="fas"]):not([class*="far"]) {
       font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif !important;
     }
     i, .fa, [class*="fa-"], [class*="glyphicon"], [class*="icon"], .k-icon {
       font-family: FontAwesome, 'Glyphicons Halflings', 'font-awesome' !important;
-      color: #38bdf8 !important;
     }
 
-    /* 2. XÓA LOGO TRƯỜNG & XÓA MÃ QR NGỚ NGẨN (THEO YÊU CẦU) */
-    header a.logo,
-    header .logo,
-    header img,
-    a[class*="logo"],
-    img[src*="logo"],
-    img[src*="Logo"],
-    img[src*="favicon"],
+    /* 2. XÓA KHỐI MÃ QR CÀI APP NGỚ NGẨN (KHÔNG PHÁ HỎNG SIDEBAR) */
     .down_ungdung,
     .box-download-app,
     div:has(> img[src*="QR"]),
@@ -62,80 +54,10 @@ function injectScheduleTheme() {
       display: none !important;
     }
 
-    /* 3. BẢNG THỜI KHÓA BIỂU CHIẾM TRỌN 100% BỀ NGANG, CĂN ĐỐI XỨNG */
-    .content-wrapper,
-    .wrapper,
-    .col-right-tlu,
-    .col-lg-9,
-    .col-md-9,
-    div:has(> table.fl-table),
-    div:has(> table[id*="Lich"]),
-    .table-responsive {
-      width: 100% !important;
-      max-width: 100% !important;
-      flex: 0 0 100% !important;
-      margin: 0 auto !important;
-      padding: 0 12px !important;
-      box-sizing: border-box !important;
-      float: none !important;
-    }
-
-    /* 4. SIDEBAR BIẾN THÀNH FLYOUT DRAWER GÓC TRÊN TRÁI */
-    .col-left-tlu,
-    .col-lg-3:has(.sidebar-menu),
-    .col-md-3:has(.sidebar-menu),
-    div:has(> ul.sidebar-menu),
-    aside.main-sidebar,
-    #iuh-dynamic-sidebar {
-      position: fixed !important;
-      top: 56px !important;
-      left: 0 !important;
-      width: 250px !important;
-      height: calc(100vh - 56px) !important;
-      overflow-y: auto !important;
-      z-index: 999999 !important;
-      background: rgba(15, 23, 42, 0.95) !important;
-      backdrop-filter: blur(20px) !important;
-      border-right: 1.5px solid #1e293b !important;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7) !important;
-      transform: translateX(-100%) !important;
-      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
-    }
-    .col-left-tlu.iuh-open,
-    #iuh-dynamic-sidebar.iuh-open {
-      transform: translateX(0) !important;
-    }
-
-    /* Nút Menu Sinh Viên nằm gọn ở góc trên trái nơi logo cũ */
-    #iuh-menu-toggle-btn {
-      position: fixed !important;
-      top: 10px !important;
-      left: 14px !important;
-      z-index: 999999 !important;
-      display: flex !important;
-      align-items: center !important;
-      gap: 7px !important;
-      padding: 7px 14px !important;
-      border-radius: 9px !important;
-      font-size: 13px !important;
-      font-weight: 700 !important;
-      cursor: pointer !important;
-      background: #1e293b !important;
-      color: #38bdf8 !important;
-      border: 1.5px solid #334155 !important;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
-      transition: all 0.2s ease !important;
-    }
-    #iuh-menu-toggle-btn:hover {
-      background: #334155 !important;
-      color: #7dd3fc !important;
-      transform: translateY(-1px) !important;
-    }
-
-    /* Nút chuyển đổi Dark/Light mode nổi góc trên bên phải */
+    /* 3. NÚT CHUYỂN ĐỔI DARK/LIGHT MODE NỔI GÓC TRÊN */
     #iuh-schedule-theme-toggle {
       position: fixed;
-      top: 10px;
+      top: 14px;
       right: 18px;
       z-index: 999999;
       display: flex;
@@ -149,178 +71,28 @@ function injectScheduleTheme() {
       transition: all 0.2s ease;
     }
 
-    /* Bảng thời khóa biểu dạng card mềm mại */
+    /* 4. CẤU TRÚC BẢNG LỊCH HỌC DẠNG CARD GỌN GÀNG */
     table.fl-table, table[id*="Lich"], .table-responsive table {
       border-collapse: separate !important;
       border-spacing: 4px !important;
       border: none !important;
-      width: 100% !important;
     }
-
-    /* Thu gọn chiều cao để xem full tuần trên một màn hình không cần cuộn */
     table tbody tr td {
-      padding: 3px !important;
+      padding: 2px !important;
       vertical-align: top !important;
       height: auto !important;
     }
     table tbody tr td:empty {
-      min-height: 40px !important;
-      height: 40px !important;
+      min-height: 38px !important;
+      height: 38px !important;
       opacity: 0.25 !important;
     }
 
     /* ========================================================
-       2. DARK MODE: AURORA COSMOS VỚI DẢI MÀU DÀI SÂU
-       ======================================================== */
-    html.iuh-dark, html.iuh-dark body {
-      background-color: #020617 !important;
-      background-image: 
-        radial-gradient(at 10% 0%, rgba(99, 102, 241, 0.26) 0px, transparent 40%),
-        radial-gradient(at 90% 0%, rgba(6, 182, 212, 0.20) 0px, transparent 40%),
-        radial-gradient(at 0% 30%, rgba(168, 85, 247, 0.16) 0px, transparent 45%),
-        radial-gradient(at 100% 45%, rgba(59, 130, 246, 0.18) 0px, transparent 45%),
-        radial-gradient(at 30% 65%, rgba(236, 72, 153, 0.12) 0px, transparent 40%),
-        radial-gradient(at 90% 80%, rgba(14, 165, 233, 0.18) 0px, transparent 45%),
-        radial-gradient(at 10% 100%, rgba(139, 92, 246, 0.16) 0px, transparent 50%),
-        radial-gradient(at 70% 100%, rgba(16, 185, 129, 0.14) 0px, transparent 45%) !important;
-      background-attachment: fixed !important;
-      background-size: cover !important;
-      color: #f8fafc !important;
-      min-height: 100vh !important;
-    }
-
-    /* ĐỒNG BỘ 100% HEADER VÀ TOPBAR SANG MÀU TỐI (KHỬ SẠCH MÀNG TRẮNG) */
-    html.iuh-dark header,
-    html.iuh-dark .header,
-    html.iuh-dark .main-header,
-    html.iuh-dark .navbar,
-    html.iuh-dark .top-header,
-    html.iuh-dark div[class*="header"],
-    html.iuh-dark header div,
-    html.iuh-dark .main-header div {
-      background: #0f172a !important;
-      background-color: #0f172a !important;
-      border-bottom: 1px solid #1e293b !important;
-      color: #f8fafc !important;
-    }
-    html.iuh-dark header a,
-    html.iuh-dark .navbar a,
-    html.iuh-dark .main-header a,
-    html.iuh-dark span[class*="name"] {
-      color: #e2e8f0 !important;
-    }
-    html.iuh-dark .navbar .form-control,
-    html.iuh-dark header input {
-      background-color: #1e293b !important;
-      border-color: #334155 !important;
-      color: #f8fafc !important;
-    }
-
-    /* KHỬ SẠCH MẢNG TRẮNG Ở TOOLBAR TRÊN BẢNG */
-    html.iuh-dark .content-wrapper,
-    html.iuh-dark .wrapper,
-    html.iuh-dark .box,
-    html.iuh-dark .box-body,
-    html.iuh-dark .box-header,
-    html.iuh-dark div:has(> #btnHienTai),
-    html.iuh-dark div:has(> #btnInLich),
-    html.iuh-dark div:has(> h3) {
-      background: rgba(15, 23, 42, 0.88) !important;
-      background-color: rgba(15, 23, 42, 0.88) !important;
-      border: 1px solid #1e293b !important;
-      color: #f8fafc !important;
-      border-radius: 14px !important;
-    }
-    html.iuh-dark h1,
-    html.iuh-dark h2,
-    html.iuh-dark h3,
-    html.iuh-dark h4,
-    html.iuh-dark .box-title {
-      color: #38bdf8 !important;
-      font-weight: 800 !important;
-    }
-    html.iuh-dark label,
-    html.iuh-dark span {
-      color: #e2e8f0 !important;
-      font-weight: 600 !important;
-    }
-
-    /* KHỬ SẠCH MẢNG TRẮNG Ở CHÂN BẢNG (LEGEND) */
-    html.iuh-dark div[class*="ghichu"],
-    html.iuh-dark div:has(> span[class*="color-"]),
-    html.iuh-dark div:has(> .color-thuchanh),
-    html.iuh-dark .table-legend {
-      background: rgba(15, 23, 42, 0.88) !important;
-      background-color: rgba(15, 23, 42, 0.88) !important;
-      border: 1px solid #1e293b !important;
-      border-radius: 10px !important;
-      padding: 8px 12px !important;
-      color: #cbd5e1 !important;
-      margin-top: 8px !important;
-    }
-
-    /* TIÊU ĐỀ THỨ & CA HỌC */
-    html.iuh-dark thead th,
-    html.iuh-dark thead tr th {
-      background: #1e293b !important;
-      color: #38bdf8 !important;
-      border: 1px solid #334155 !important;
-      border-radius: 8px !important;
-      padding: 7px 4px !important;
-      font-weight: 700 !important;
-      font-size: 12.5px !important;
-      text-align: center !important;
-    }
-    html.iuh-dark tbody tr td:first-child,
-    html.iuh-dark tbody th {
-      background: #1e293b !important;
-      color: #f8fafc !important;
-      border-radius: 8px !important;
-      font-weight: 800 !important;
-      font-size: 13px !important;
-      text-transform: uppercase !important;
-      text-align: center !important;
-      border: none !important;
-      padding: 8px 4px !important;
-    }
-    html.iuh-dark tbody tr td {
-      background-color: rgba(11, 19, 36, 0.65) !important;
-      border: 1px dashed rgba(255, 255, 255, 0.1) !important;
-      border-radius: 8px !important;
-    }
-
-    /* INPUTS & NÚT TRÊN TOOLBAR */
-    html.iuh-dark input[type="text"],
-    html.iuh-dark select {
-      background-color: #1e293b !important;
-      color: #f8fafc !important;
-      border: 1px solid #334155 !important;
-      border-radius: 8px !important;
-      padding: 5px 10px !important;
-    }
-    html.iuh-dark .btn,
-    html.iuh-dark button {
-      background-color: #1e293b !important;
-      color: #f8fafc !important;
-      border: 1px solid #334155 !important;
-      border-radius: 8px !important;
-    }
-    html.iuh-dark .btn:hover {
-      background-color: #334155 !important;
-      color: #38bdf8 !important;
-    }
-    html.iuh-dark .btn-primary,
-    html.iuh-dark #btnHienTai {
-      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
-      border: none !important;
-      color: #ffffff !important;
-    }
-
-    /* ========================================================
-       3. TYPOGRAPHY THẺ MÔN HỌC (CHUẨN XÁC THEO YÊU CẦU BẠN):
+       5. TYPOGRAPHY THẺ MÔN HỌC (CHUẨN THEO YÊU CẦU BẠN):
        - Không bold tràn lan, chữ thường tự nhiên.
        - Chỉ bold phòng nếu là lịch thực hành.
-       - Thời gian học: IN ĐẬM VÀ IN NGHIÊNG.
+       - Thời gian học: IN ĐẬM VÀ IN NGHIÊNG (Bold & Italic).
        - Tên môn học thu nhỏ phông (11.5px), giảm khoảng cách dòng.
        - XÓA SẠCH TOÀN BỘ TEXT TRẮNG CHÓI MẮT.
        ======================================================== */
@@ -393,7 +165,7 @@ function injectScheduleTheme() {
     .content[style*="background-color: rgb(92, 184, 92)"] *,
     .content[style*="background: rgb(92, 184, 92)"] *,
     .content.color-thuchanh * {
-      color: #0d381e !important;
+      color: #0d381e !important; /* Xanh lá thẫm tương phản cao, không dùng chữ trắng */
     }
 
     /* 2. Lịch trực tuyến (Xanh dương) */
@@ -407,7 +179,7 @@ function injectScheduleTheme() {
     .content[style*="background-color: rgb(91, 192, 222)"] *,
     .content[style*="background: rgb(91, 192, 222)"] *,
     .content.color-tructuyen * {
-      color: #063462 !important;
+      color: #063462 !important; /* Xanh navy thẫm tương phản cao, không dùng chữ trắng */
     }
 
     /* 3. Lịch lý thuyết / Vàng */
@@ -424,7 +196,7 @@ function injectScheduleTheme() {
     .content[style*="background-color: rgb(240, 173, 78)"] *,
     .content[style*="#fcf8e3"] *,
     .content[style*="yellow"] * {
-      color: #5c3b00 !important;
+      color: #5c3b00 !important; /* Nâu thẫm tương phản cao, không dùng chữ trắng */
     }
 
     /* 4. Lịch thi / Đỏ */
@@ -436,10 +208,216 @@ function injectScheduleTheme() {
     }
     .content[style*="background-color: rgb(217, 83, 79)"] *,
     .content.color-thi * {
-      color: #490606 !important;
+      color: #490606 !important; /* Đỏ thẫm rõ nét */
     }
 
-    /* Nút Toggle Mode */
+    /* ========================================================
+       6. DARK MODE: AURORA COSMOS VỚI DẢI MÀU DÀI SÂU
+       ======================================================== */
+    html.iuh-dark, html.iuh-dark body {
+      background-color: #020617 !important;
+      background-image: 
+        radial-gradient(at 10% 0%, rgba(99, 102, 241, 0.26) 0px, transparent 40%),
+        radial-gradient(at 90% 0%, rgba(6, 182, 212, 0.20) 0px, transparent 40%),
+        radial-gradient(at 0% 30%, rgba(168, 85, 247, 0.16) 0px, transparent 45%),
+        radial-gradient(at 100% 45%, rgba(59, 130, 246, 0.18) 0px, transparent 45%),
+        radial-gradient(at 30% 65%, rgba(236, 72, 153, 0.12) 0px, transparent 40%),
+        radial-gradient(at 90% 80%, rgba(14, 165, 233, 0.18) 0px, transparent 45%),
+        radial-gradient(at 10% 100%, rgba(139, 92, 246, 0.16) 0px, transparent 50%),
+        radial-gradient(at 70% 100%, rgba(16, 185, 129, 0.14) 0px, transparent 45%) !important;
+      background-attachment: fixed !important;
+      background-size: cover !important;
+      color: #f8fafc !important;
+      min-height: 100vh !important;
+    }
+
+    /* ĐỒNG BỘ 100% HEADER TRÊN CÙNG SANG DARK MODE (KHỬ SẠCH NỀN TRẮNG INLINE) */
+    html.iuh-dark header,
+    html.iuh-dark header.header,
+    html.iuh-dark .header,
+    html.iuh-dark .main-header,
+    html.iuh-dark .navbar,
+    html.iuh-dark .top-header,
+    html.iuh-dark header[style*="background"],
+    html.iuh-dark .header[style*="background"] {
+      background: #0f172a !important;
+      background-color: #0f172a !important;
+      border-bottom: 1px solid #1e293b !important;
+      color: #f8fafc !important;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+    }
+    html.iuh-dark header a,
+    html.iuh-dark .navbar a,
+    html.iuh-dark .main-header a,
+    html.iuh-dark span[class*="name"] {
+      color: #e2e8f0 !important;
+    }
+    html.iuh-dark .navbar .form-control,
+    html.iuh-dark header input {
+      background-color: #1e293b !important;
+      border-color: #334155 !important;
+      color: #f8fafc !important;
+    }
+
+    /* SIDEBAR BÊN TRÁI TRONG DARK MODE */
+    html.iuh-dark .col-left-tlu,
+    html.iuh-dark .sidebar,
+    html.iuh-dark aside.main-sidebar,
+    html.iuh-dark ul.sidebar-menu,
+    html.iuh-dark div:has(> ul.sidebar-menu) {
+      background: rgba(15, 23, 42, 0.88) !important;
+      background-color: rgba(15, 23, 42, 0.88) !important;
+      border: 1px solid #1e293b !important;
+      border-radius: 14px !important;
+    }
+    html.iuh-dark ul.sidebar-menu li {
+      border-color: #1e293b !important;
+      background: transparent !important;
+    }
+    html.iuh-dark .sidebar a,
+    html.iuh-dark div[class*="col-left"] a,
+    html.iuh-dark ul.sidebar-menu li a {
+      color: #e2e8f0 !important;
+      background: transparent !important;
+      font-weight: 600 !important;
+    }
+    html.iuh-dark .sidebar a:hover,
+    html.iuh-dark div[class*="col-left"] a:hover,
+    html.iuh-dark ul.sidebar-menu li.active a,
+    html.iuh-dark ul.sidebar-menu li:hover a {
+      background: rgba(30, 41, 59, 0.8) !important;
+      color: #38bdf8 !important;
+    }
+
+    /* KHỬ SẠCH MẢNG TRẮNG Ở TOOLBAR TRÊN BẢNG LỊCH HỌC */
+    html.iuh-dark .content-wrapper,
+    html.iuh-dark .wrapper,
+    html.iuh-dark .box,
+    html.iuh-dark .box-body,
+    html.iuh-dark .box-header,
+    html.iuh-dark .col-right-tlu,
+    html.iuh-dark div:has(> #btnHienTai),
+    html.iuh-dark div:has(> #btnInLich),
+    html.iuh-dark div:has(> h3) {
+      background: rgba(15, 23, 42, 0.88) !important;
+      background-color: rgba(15, 23, 42, 0.88) !important;
+      border: 1px solid #1e293b !important;
+      color: #f8fafc !important;
+      border-radius: 14px !important;
+    }
+    html.iuh-dark h1,
+    html.iuh-dark h2,
+    html.iuh-dark h3,
+    html.iuh-dark h4,
+    html.iuh-dark .box-title {
+      color: #38bdf8 !important;
+      font-weight: 800 !important;
+    }
+    html.iuh-dark label,
+    html.iuh-dark span {
+      color: #e2e8f0 !important;
+      font-weight: 600 !important;
+    }
+
+    /* KHỬ SẠCH MẢNG TRẮNG Ở CHÂN BẢNG (LEGEND) */
+    html.iuh-dark div[class*="ghichu"],
+    html.iuh-dark div:has(> span[class*="color-"]),
+    html.iuh-dark div:has(> .color-thuchanh),
+    html.iuh-dark .table-legend {
+      background: rgba(15, 23, 42, 0.88) !important;
+      background-color: rgba(15, 23, 42, 0.88) !important;
+      border: 1px solid #1e293b !important;
+      border-radius: 10px !important;
+      padding: 8px 12px !important;
+      color: #cbd5e1 !important;
+      margin-top: 8px !important;
+    }
+
+    /* TIÊU ĐỀ THỨ & CA HỌC */
+    html.iuh-dark thead th,
+    html.iuh-dark thead tr th {
+      background: #1e293b !important;
+      color: #38bdf8 !important;
+      border: 1px solid #334155 !important;
+      border-radius: 8px !important;
+      padding: 7px 4px !important;
+      font-weight: 700 !important;
+      font-size: 12.5px !important;
+      text-align: center !important;
+    }
+    html.iuh-dark tbody tr td:first-child,
+    html.iuh-dark tbody th {
+      background: #1e293b !important;
+      color: #f8fafc !important;
+      border-radius: 8px !important;
+      font-weight: 800 !important;
+      font-size: 13px !important;
+      text-transform: uppercase !important;
+      text-align: center !important;
+      border: none !important;
+      padding: 8px 4px !important;
+    }
+    html.iuh-dark tbody tr td {
+      background-color: rgba(11, 19, 36, 0.65) !important;
+      border: 1px dashed rgba(255, 255, 255, 0.1) !important;
+      border-radius: 8px !important;
+    }
+
+    /* INPUTS & NÚT BẤM TRÊN TOOLBAR */
+    html.iuh-dark input[type="text"],
+    html.iuh-dark select,
+    html.iuh-dark .form-control {
+      background-color: #1e293b !important;
+      color: #f8fafc !important;
+      border: 1px solid #334155 !important;
+      border-radius: 8px !important;
+      padding: 5px 10px !important;
+    }
+    html.iuh-dark .btn,
+    html.iuh-dark button {
+      background-color: #1e293b !important;
+      color: #f8fafc !important;
+      border: 1px solid #334155 !important;
+      border-radius: 8px !important;
+    }
+    html.iuh-dark .btn:hover {
+      background-color: #334155 !important;
+      color: #38bdf8 !important;
+    }
+    html.iuh-dark .btn-primary,
+    html.iuh-dark #btnHienTai {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+      border: none !important;
+      color: #ffffff !important;
+    }
+
+    /* DROPDOWNS & POPUPS TRÊN LỊCH */
+    html.iuh-dark .select2-dropdown,
+    html.iuh-dark .dropdown-menu,
+    html.iuh-dark .k-popup,
+    html.iuh-dark .k-list-container {
+      background-color: #0f172a !important;
+      border: 1.5px solid #334155 !important;
+      border-radius: 10px !important;
+      box-shadow: 0 14px 35px rgba(0, 0, 0, 0.75) !important;
+      color: #f8fafc !important;
+    }
+    html.iuh-dark .select2-results__option,
+    html.iuh-dark .k-item,
+    html.iuh-dark .dropdown-menu > li > a {
+      background-color: #0f172a !important;
+      color: #cbd5e1 !important;
+      padding: 8px 12px !important;
+    }
+    html.iuh-dark .select2-results__option--highlighted,
+    html.iuh-dark .select2-results__option:hover,
+    html.iuh-dark .k-item:hover,
+    html.iuh-dark .dropdown-menu > li > a:hover {
+      background-color: #1e293b !important;
+      color: #38bdf8 !important;
+    }
+
+    /* NÚT TOGGLE KHI Ở DARK MODE */
     html.iuh-dark #iuh-schedule-theme-toggle {
       background: rgba(15, 23, 42, 0.85);
       backdrop-filter: blur(12px);
@@ -453,7 +431,7 @@ function injectScheduleTheme() {
     }
 
     /* ========================================================
-       4. LIGHT MODE: TRẮNG DỊU MẮT & NỔI 3D
+       7. LIGHT MODE: TRẮNG DỊU MẮT & NỔI 3D
        ======================================================== */
     html.iuh-light, html.iuh-light body {
       background-color: #f1f5f9 !important;
@@ -492,61 +470,8 @@ function injectScheduleTheme() {
   (document.head || document.documentElement).appendChild(style);
 }
 
-// Tìm và gán ID chuẩn cho Sidebar
-function getSidebarElement() {
-  const existing = document.getElementById("iuh-dynamic-sidebar");
-  if (existing) return existing;
-
-  const candidate = (
-    document.querySelector(".col-left-tlu") ||
-    document.querySelector("aside.main-sidebar") ||
-    document.querySelector("div:has(> ul.sidebar-menu)") ||
-    Array.from(document.querySelectorAll("div, aside, nav")).find(
-      (el) =>
-        el.children &&
-        el.children.length > 2 &&
-        el.textContent.includes("TRANG CHỦ") &&
-        el.textContent.includes("THÔNG TIN CHUNG")
-    )
-  );
-
-  if (candidate) {
-    candidate.id = "iuh-dynamic-sidebar";
-  }
-  return candidate;
-}
-
-// Thêm nút Menu Sinh Viên thay thế góc trên bên trái nơi logo cũ
-function attachMenuButton() {
-  if (document.getElementById("iuh-menu-toggle-btn")) return;
-  const btn = document.createElement("button");
-  btn.id = "iuh-menu-toggle-btn";
-  btn.type = "button";
-  btn.innerHTML = `<span>☰</span> <span>Menu Sinh Viên</span>`;
-  document.body.appendChild(btn);
-
-  btn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    const sidebar = getSidebarElement();
-    if (sidebar) {
-      sidebar.classList.toggle("iuh-open");
-    }
-  });
-
-  // Bấm ra ngoài sidebar tự động đóng
-  document.addEventListener("click", (e) => {
-    const sidebar = getSidebarElement();
-    if (sidebar && sidebar.classList.contains("iuh-open")) {
-      if (!sidebar.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
-        sidebar.classList.remove("iuh-open");
-      }
-    }
-  });
-}
-
 function setupScheduleTheme(defaultMode = "dark") {
   injectScheduleTheme();
-  attachMenuButton();
   if (api && api.storage) {
     api.storage.local.get({ theme_mode: defaultMode }, (res) => {
       const mode = res.theme_mode || defaultMode;
