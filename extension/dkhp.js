@@ -1,13 +1,13 @@
 // =====================================================================
 // IUH Fast Login — content script cho Đăng ký học phần (DKHP)
 // ---------------------------------------------------------------------
-// Chạy trên https://dkhp.iuh.edu.vn/Account/Login
+// Chạy trên https://dkhp.iuh.edu.vn/*
 //
 // Tính năng:
 //   1. Tự động điền MSSV + Mật khẩu đã lưu.
 //   2. Tự động giải Captcha bằng Micro-CNN offline (< 150 KB, không cần server).
-//   3. Tự động điền Mã bảo vệ và Đăng nhập.
-//   4. Tự động thử lại nếu mã bảo vệ chưa khớp (tối đa 3 lần).
+//   3. Tự động điền Mã bảo vệ vào ô #Captcha.
+//   4. Tự động đăng nhập (Auto-submit).
 // =====================================================================
 
 (() => {
@@ -42,8 +42,8 @@
       el.id = "iuh-banner";
       el.style.cssText =
         "position:fixed;top:0;left:0;right:0;z-index:2147483647;" +
-        "padding:10px 14px;font:13px/1.4 system-ui,-apple-system,sans-serif;color:#fff;" +
-        "font-weight:bold;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.3);transition:all .3s ease;";
+        "padding:10px 16px;font:13px/1.4 system-ui,-apple-system,sans-serif;color:#fff;" +
+        "font-weight:bold;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.35);transition:all .3s ease;";
       (document.body || document.documentElement).appendChild(el);
     }
     el.style.background = color;
@@ -52,54 +52,46 @@
 
   function submit() {
     const btn =
-      $("#btnDangNhap") ||
       $("#btnLogin") ||
-      $("form#form-login button[type=submit]") ||
-      $("form#form-login input[type=submit]") ||
+      $("#btnDangNhap") ||
+      $("form#form-login button") ||
+      $("button.btn-primary") ||
       $("button[type=submit]");
-    if (btn) btn.click();
-    else {
+    if (btn) {
+      btn.click();
+    } else {
       const form = $("#form-login") || $("form");
-      if (form) form.submit();
+      if (form) {
+        form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+      }
     }
   }
 
-  // Chờ ảnh load hoàn tất
-  function waitForImage(img, timeoutMs = 4000) {
-    if (img.complete && img.naturalWidth > 0) return Promise.resolve(true);
-    return new Promise((resolve) => {
-      const timer = setTimeout(() => resolve(false), timeoutMs);
-      img.addEventListener("load", () => {
-        clearTimeout(timer);
-        resolve(true);
-      }, { once: true });
-      img.addEventListener("error", () => {
-        clearTimeout(timer);
-        resolve(false);
-      }, { once: true });
-    });
-  }
-
-  // Vẽ ảnh vào Canvas 110x35 để giải mã
-  function imageToCanvas(img) {
-    const canvas = document.createElement("canvas");
-    canvas.width = 110;
-    canvas.height = 35;
-    const ctx = canvas.getContext("2d", { willReadFrequently: true });
-    ctx.drawImage(img, 0, 0, 110, 35);
-    return canvas;
-  }
-
   async function solveCaptcha(imgEl) {
-    const ok = await waitForImage(imgEl);
-    if (!ok) return "";
+    if (!imgEl) return "";
+    // Chờ ảnh load hoàn tất
+    for (let i = 0; i < 30; i++) {
+      if (imgEl.complete && imgEl.naturalWidth >= 40) break;
+      await sleep(100);
+    }
+    if (!imgEl.complete || imgEl.naturalWidth < 10) {
+      console.warn("[IUH Fast Login] Ảnh captcha chưa sẵn sàng");
+      return "";
+    }
+
     if (!globalThis.IUH_DKHP_SOLVER || !globalThis.IUH_DKHP_SOLVER.predict) {
       console.warn("[IUH Fast Login] Chưa tìm thấy IUH_DKHP_SOLVER");
       return "";
     }
+
     try {
-      const canvas = imageToCanvas(imgEl);
+      const canvas = document.createElement("canvas");
+      canvas.width = 110;
+      canvas.height = 35;
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      ctx.drawImage(imgEl, 0, 0, 110, 35);
       const code = globalThis.IUH_DKHP_SOLVER.predict(canvas);
+      console.log("[IUH Fast Login] Captcha giải được:", code);
       return (code || "").toUpperCase();
     } catch (e) {
       console.error("[IUH Fast Login] Lỗi khi giải captcha:", e);
@@ -108,22 +100,26 @@
   }
 
   async function main() {
-    // Nếu trang hiện tại đã ở trong portal hoặc không có form đăng nhập -> thoát
-    if (location.pathname.includes("ThongTinPortal")) {
-      sessionStorage.removeItem("iuh_dkhp_attempts");
+    // Nếu đang ở trang trong portal (đã đăng nhập) -> thoát
+    if (location.pathname.includes("ThongTinPortal") || location.pathname.includes("DangKyHocPhan")) {
+      sessionStorage.removeItem("iuh_dkhp_tries");
       return;
     }
 
+    // Kiểm tra cấu hình tài khoản
     const cfg = await getStorage({ username: "", password: "", autoLogin: true });
     if (!cfg.username || !cfg.password) {
-      banner("IUH ĐKHP: Chưa lưu tài khoản — mở icon tiện ích để nhập MSSV & Mật khẩu.", "#b00020");
+      // Chỉ hiện banner nếu đang ở trang login
+      if ($("#UserName") || $("input[name=UserName]")) {
+        banner("IUH ĐKHP: Chưa lưu tài khoản — mở icon tiện ích để nhập MSSV & Mật khẩu.", "#b00020");
+      }
       return;
     }
     if (!cfg.autoLogin) return;
 
-    // Tìm các trường form
+    // Chờ form xuất hiện (tối đa 5 giây)
     let userEl = null, passEl = null, capEl = null, imgEl = null;
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < 35; i++) {
       userEl = $("#UserName") || $("input[name=UserName]");
       passEl = $("#Password") || $("input[name=Password]");
       capEl = $("#Captcha") || $("input[name=Captcha]");
@@ -131,44 +127,37 @@
       if (userEl && passEl) break;
       await sleep(150);
     }
+
+    // Nếu không có form đăng nhập trên trang này -> dừng
     if (!userEl || !passEl) {
       return;
     }
 
-    // Điền tài khoản và mật khẩu
+    // 1. Tự động điền tài khoản và mật khẩu
     setValue(userEl, cfg.username);
     setValue(passEl, cfg.password);
 
-    // Kiểm tra số lần thử trước đó để tránh lặp vô hạn nếu có lỗi
-    const attemptStr = sessionStorage.getItem("iuh_dkhp_attempts") || "0";
-    let attempts = parseInt(attemptStr, 10);
-
-    // Nếu trang vừa tải lại có thông báo lỗi mã bảo vệ
-    const pageHtml = document.body.innerHTML || "";
-    const hasCaptchaError = pageHtml.includes("không khớp") || pageHtml.includes("kh&#244;ng khớp");
-
-    if (hasCaptchaError) {
-      attempts += 1;
-      sessionStorage.setItem("iuh_dkhp_attempts", attempts.toString());
-    }
-
-    if (attempts >= 3) {
-      sessionStorage.removeItem("iuh_dkhp_attempts");
-      banner("IUH ĐKHP: Đã thử 3 lần. Vui lòng nhập mã bảo vệ và bấm Đăng nhập.", "#b00020");
-      if (capEl) capEl.focus();
+    // 2. Kiểm tra số lần thử trước đó trong phiên duyệt
+    const tries = parseInt(sessionStorage.getItem("iuh_dkhp_tries") || "0", 10);
+    if (tries >= 3) {
+      banner("IUH ĐKHP: Đã thử tự động 3 lần. Vui lòng nhập mã bảo vệ rồi bấm Đăng nhập.", "#b00020");
+      if (capEl) {
+        capEl.focus();
+        capEl.select?.();
+      }
       return;
     }
 
-    // Tự động giải captcha
+    // 3. Tự động giải Captcha
     if (imgEl && capEl) {
       banner("IUH ĐKHP: Đang tự động giải mã bảo vệ...", "#0284c7");
-      await sleep(250);
+      await sleep(200);
 
       const code = await solveCaptcha(imgEl);
       if (code && code.length === 4) {
         setValue(capEl, code);
         banner(`✓ IUH ĐKHP: Đã điền tài khoản & giải mã [${code}]. Đang đăng nhập...`, "#16a34a");
-        sessionStorage.setItem("iuh_dkhp_attempts", (attempts + 1).toString());
+        sessionStorage.setItem("iuh_dkhp_tries", (tries + 1).toString());
 
         // Lắng nghe phím Enter dự phòng
         capEl.addEventListener("keydown", (e) => {
@@ -178,13 +167,14 @@
           }
         });
 
+        // Chờ 350ms để form nhận giá trị rồi bấm submit
         await sleep(350);
         submit();
         return;
       }
     }
 
-    // Phương án dự phòng nếu không nhận diện được
+    // 4. Dự phòng: nếu không giải được thì focus ô captcha để người dùng gõ
     if (capEl) {
       banner("IUH ĐKHP: Đã điền sẵn tài khoản — nhập mã bảo vệ rồi Enter.", "#0b6e99");
       capEl.focus();

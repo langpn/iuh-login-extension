@@ -2,7 +2,7 @@
 // IUH Fast Login — Micro-CNN Offline Captcha Solver for DKHP
 // Pure JavaScript forward pass with zero dependencies (< 150 KB).
 // =====================================================================
-(() => {{
+(() => {
   "use strict";
 
   const CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -10,24 +10,24 @@
 
   let _weights = null;
 
-  function initWeights() {{
+  function initWeights() {
     if (_weights) return _weights;
     const binStr = atob(WEIGHTS_B64);
     const len = binStr.length;
     const bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) {{
+    for (let i = 0; i < len; i++) {
       bytes[i] = binStr.charCodeAt(i);
-    }}
+    }
     const floats = new Float32Array(bytes.buffer);
     let offset = 0;
 
-    function slice(size) {{
+    function slice(size) {
       const s = floats.subarray(offset, offset + size);
       offset += size;
       return s;
-    }}
+    }
 
-    _weights = {{
+    _weights = {
       w1: slice(16 * 1 * 3 * 3),
       b1: slice(16),
       w2: slice(32 * 16 * 3 * 3),
@@ -36,26 +36,26 @@
       b3: slice(64),
       w_fc: slice(36 * 64),
       b_fc: slice(36)
-    }};
+    };
     return _weights;
-  }}
+  }
 
-  function convReluPool(x, cIn, h, wIn, cOut, w, b) {{
+  function convReluPool(x, cIn, h, wIn, cOut, w, b) {
     const outH = h >> 1;
     const outW = wIn >> 1;
     const out = new Float32Array(cOut * outH * outW);
     const convOut = new Float32Array(h * wIn);
 
-    for (let oc = 0; oc < cOut; oc++) {{
+    for (let oc = 0; oc < cOut; oc++) {
       convOut.fill(b[oc]);
       const wBaseOc = oc * cIn * 9;
 
-      for (let ic = 0; ic < cIn; ic++) {{
+      for (let ic = 0; ic < cIn; ic++) {
         const xBase = ic * h * wIn;
         const wBase = wBaseOc + ic * 9;
 
-        for (let di = 0; di < 3; di++) {{
-          for (let dj = 0; dj < 3; dj++) {{
+        for (let di = 0; di < 3; di++) {
+          for (let dj = 0; dj < 3; dj++) {
             const weight = w[wBase + di * 3 + dj];
             if (weight === 0) continue;
 
@@ -64,28 +64,28 @@
             const jStart = Math.max(0, 1 - dj);
             const jEnd = Math.min(wIn, wIn + 1 - dj);
 
-            for (let i = iStart; i < iEnd; i++) {{
+            for (let i = iStart; i < iEnd; i++) {
               const srcI = i + di - 1;
               const dstRow = i * wIn;
               const srcRow = xBase + srcI * wIn;
 
-              for (let j = jStart; j < jEnd; j++) {{
+              for (let j = jStart; j < jEnd; j++) {
                 const srcJ = j + dj - 1;
                 convOut[dstRow + j] += x[srcRow + srcJ] * weight;
-              }}
-            }}
-          }}
-        }}
-      }}
+              }
+            }
+          }
+        }
+      }
 
       // ReLU + 2x2 MaxPool
       const outBase = oc * outH * outW;
-      for (let oi = 0; oi < outH; oi++) {{
+      for (let oi = 0; oi < outH; oi++) {
         const i0 = oi * 2 * wIn;
         const i1 = (oi * 2 + 1) * wIn;
         const outRow = outBase + oi * outW;
 
-        for (let oj = 0; oj < outW; oj++) {{
+        for (let oj = 0; oj < outW; oj++) {
           const j0 = oj * 2;
           const j1 = oj * 2 + 1;
 
@@ -99,46 +99,39 @@
           if (v11 > maxVal) maxVal = v11;
 
           out[outRow + oj] = maxVal > 0 ? maxVal : 0;
-        }}
-      }}
-    }}
+        }
+      }
+    }
     return out;
-  }}
+  }
 
-  // Tiền xử lý ảnh: Lọc màu xanh và resize về 32x96
-  function preprocessImage(canvas) {{
-    const w = 110;
-    const h = 35;
-    const ctx = canvas.getContext("2d", {{ willReadFrequently: true }});
-    const imgData = ctx.getImageData(0, 0, w, h).data;
-
-    // 1. Tạo mask lọc màu ký tự (diff = Blue - Red)
+  // Tiền xử lý ảnh từ raw RGBA data
+  function preprocessPixels(imgData, w, h) {
     const rawMask = new Float32Array(w * h);
-    for (let i = 0; i < h; i++) {{
-      for (let j = 0; j < w; j++) {{
+    for (let i = 0; i < h; i++) {
+      for (let j = 0; j < w; j++) {
         const idx = (i * w + j) * 4;
         const r = imgData[idx];
         const g = imgData[idx + 1];
         const b = imgData[idx + 2];
         const diff = b - r;
         rawMask[i * w + j] = (diff > 35 && b > 90) ? 1.0 : 0.0;
-      }}
-    }}
+      }
+    }
 
-    // 2. Bilinear resize về 32 x 96
     const targetH = 32;
     const targetW = 96;
     const resized = new Float32Array(targetH * targetW);
     const scaleY = (h - 1) / (targetH - 1);
     const scaleX = (w - 1) / (targetW - 1);
 
-    for (let y = 0; y < targetH; y++) {{
+    for (let y = 0; y < targetH; y++) {
       const srcY = y * scaleY;
       const y0 = Math.floor(srcY);
       const y1 = Math.min(y0 + 1, h - 1);
       const dy = srcY - y0;
 
-      for (let x = 0; x < targetW; x++) {{
+      for (let x = 0; x < targetW; x++) {
         const srcX = x * scaleX;
         const x0 = Math.floor(srcX);
         const x1 = Math.min(x0 + 1, w - 1);
@@ -155,66 +148,67 @@
                     dx * dy * p11;
 
         resized[y * targetW + x] = val;
-      }}
-    }}
+      }
+    }
     return resized;
-  }}
+  }
 
-  // Hàm suy luận nhận diện 4 ký tự
-  function predictCaptcha(canvas) {{
+  function predictFromPixels(rgbaData, w, h) {
     const weights = initWeights();
-    const x = preprocessImage(canvas);
+    const x = preprocessPixels(rgbaData, w || 110, h || 35);
 
-    // Layer 1: 1 -> 16 (input 32x96 -> output 16x48)
     const l1 = convReluPool(x, 1, 32, 96, 16, weights.w1, weights.b1);
-    // Layer 2: 16 -> 32 (input 16x48 -> output 8x24)
     const l2 = convReluPool(l1, 16, 16, 48, 32, weights.w2, weights.b2);
-    // Layer 3: 32 -> 64 (input 8x24 -> output 4x12)
     const l3 = convReluPool(l2, 32, 8, 24, 64, weights.w3, weights.b3);
 
-    // Adaptive Average Pooling (1, 4) -> 4 slots
-    // Mỗi slot có 4 hàng x 3 cột = 12 giá trị
     const slots = new Float32Array(4 * 64);
-    for (let s = 0; s < 4; s++) {{
-      for (let c = 0; c < 64; c++) {{
+    for (let s = 0; s < 4; s++) {
+      for (let c = 0; c < 64; c++) {
         let sum = 0;
         const chanBase = c * 4 * 12;
-        for (let row = 0; row < 4; row++) {{
+        for (let row = 0; row < 4; row++) {
           const rowBase = chanBase + row * 12;
-          for (let col = s * 3; col < (s + 1) * 3; col++) {{
+          for (let col = s * 3; col < (s + 1) * 3; col++) {
             sum += l3[rowBase + col];
-          }}
-        }}
+          }
+        }
         slots[s * 64 + c] = sum / 12.0;
-      }}
-    }}
+      }
+    }
 
-    // Fully Connected: 64 -> 36 classes cho mỗi slot
     let result = "";
-    for (let s = 0; s < 4; s++) {{
+    for (let s = 0; s < 4; s++) {
       let maxScore = -1e9;
       let bestChar = "0";
       const slotBase = s * 64;
 
-      for (let k = 0; k < 36; k++) {{
+      for (let k = 0; k < 36; k++) {
         let score = weights.b_fc[k];
         const wRow = k * 64;
-        for (let c = 0; c < 64; c++) {{
+        for (let c = 0; c < 64; c++) {
           score += slots[slotBase + c] * weights.w_fc[wRow + c];
-        }}
-        if (score > maxScore) {{
+        }
+        if (score > maxScore) {
           maxScore = score;
           bestChar = CHARS[k];
-        }}
-      }}
+        }
+      }
       result += bestChar;
-    }}
+    }
 
     return result;
-  }}
+  }
 
-  // Xuất hàm ra global scope để dkhp.js sử dụng
-  globalThis.IUH_DKHP_SOLVER = {{
-    predict: predictCaptcha
-  }};
+  function predictCaptcha(canvas) {
+    const w = canvas.width || 110;
+    const h = canvas.height || 35;
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    const imgData = ctx.getImageData(0, 0, w, h).data;
+    return predictFromPixels(imgData, w, h);
+  }
+
+  globalThis.IUH_DKHP_SOLVER = {
+    predict: predictCaptcha,
+    predictFromPixels: predictFromPixels
+  };
 })();

@@ -36,7 +36,7 @@
       "run_at": "document_idle"
     },
     {
-      "matches": ["*://dkhp.iuh.edu.vn/Account/Login*"],
+      "matches": ["*://dkhp.iuh.edu.vn/*"],
       "js": ["dkhp_model.js", "dkhp.js"],
       "run_at": "document_idle"
     }
