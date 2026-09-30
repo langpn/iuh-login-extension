@@ -5,12 +5,12 @@
 //
 // Tính năng:
 //   1. Dark Mode mặc định: Nền Aurora Cosmos Gradient đồng bộ 100% toàn trang.
-//   2. Khử sạch nền trắng lót phía dưới (transparent wrapper) & tạo khoảng cách
-//      thông thoáng giữa các bảng (margin 28px), không còn dính vào nhau.
-//   3. Xóa sạch 2 banner trên và dưới (không còn logo trắng hay footer xanh).
-//   4. Canh giữa trang portal hoàn hảo, giao diện đơn khối không viền lồng hộp.
-//   5. Hiển thị song song: Ảnh gốc đầy đủ nét + 4 ô ký tự khử nhiễu tách biệt.
-//   6. Tự động điền MSSV & Mật khẩu + Tự in hoa + Tự submit khi gõ đủ 4 ký tự hoặc bấm Enter.
+//   2. TRIỆT TIÊU HOÀN TOÀN MẢNG TRẮNG .bg-fff & CÂN ĐỐI BỐ CỤC.
+//   3. FIX LỖI AVATAR BỊ ẨN + FIX HIỂN THỊ CHỮ "PHẠM NGỌC LANG" & "ĐĂNG XUẤT".
+//   4. BO TRÒN GÓC KHỐI XANH THÔNG TIN (overflow: hidden, không lòi xuyên thủng góc).
+//   5. Xóa sạch 2 banner trên và dưới (không còn logo trắng hay footer xanh).
+//   6. Tách các bảng thông thoáng (margin 28px), không dính vào nhau.
+//   7. Tự động điền MSSV & Mật khẩu + Tự in hoa + Tự submit khi gõ đủ 4 ký tự.
 // =====================================================================
 
 (() => {
@@ -69,7 +69,7 @@
         font-family: FontAwesome, 'Glyphicons Halflings', 'font-awesome' !important;
       }
 
-      /* 1. XÓA HOÀN TOÀN 2 BANNER TRÊN VÀ DƯỚI */
+      /* 1. XÓA HOÀN TOÀN 2 BANNER TRÊN VÀ DƯỚI (THEO YÊU CẦU CỦA BẠN) */
       #page-header, header, img[src*="banner"], .logo-top,
       footer, .footer, .txt-ft, .info-site-bot, .info-site-top,
       div[style*="background-color:#0069d9"], div[style*="background-color: #0069d9"] {
@@ -156,7 +156,12 @@
         min-height: 100vh;
       }
 
-      /* TRIỆT TIÊU TOÀN BỘ MÀN LÓT TRẮNG PHÍA SAU CÁC THẺ */
+      /* KHỬ SẠCH MẢNG NỀN TRẮNG LÓT (.bg-fff) VÀ CÁC WRAPPER TRẮNG */
+      html.iuh-dark .bg-fff,
+      html.iuh-dark div.bg-fff,
+      html.iuh-dark section.content,
+      html.iuh-dark .bg-white,
+      html.iuh-dark .bg-custom,
       html.iuh-dark .container,
       html.iuh-dark .container-fluid,
       html.iuh-dark .body-content,
@@ -207,14 +212,12 @@
       html.iuh-dark .center-login .input-group-text {
         background: rgba(15, 23, 42, 0.6) !important;
         color: #94a3b8 !important;
-        border: none !important;
       }
       html.iuh-dark .center-login input.form-control,
       html.iuh-dark .center-login input[type="text"],
       html.iuh-dark .center-login input[type="password"] {
         background: transparent !important;
         color: #f8fafc !important;
-        border: none !important;
       }
       html.iuh-dark #iuh-captcha-card {
         background: rgba(3, 7, 18, 0.6) !important;
@@ -244,8 +247,93 @@
         box-shadow: 0 8px 30px rgba(139, 92, 246, 0.55) !important;
       }
 
-      /* TỪNG CARD RIÊNG BIỆT TRONG PORTAL: NỀN DARK SLATE SANG TRỌNG */
-      html.iuh-dark .info-account,
+      /* ===== KHỐI HỒ SƠ SINH VIÊN (.info-account): BO TRÒN CHUẨN, KHÔNG LÒI GÓC ===== */
+      html.iuh-dark .info-account {
+        background: #0f172a !important;
+        border: 1px solid #1e293b !important;
+        border-radius: 18px !important;
+        overflow: hidden !important; /* KHẮC PHỤC LỖI Ô VUÔNG LÒI RA XUYÊN THỦNG GÓC */
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5) !important;
+        margin-bottom: 24px !important;
+        position: relative !important;
+      }
+      html.iuh-dark .info-account .info {
+        background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+        border-radius: 16px 0 0 16px !important;
+        padding: 16px 18px !important;
+        color: #ffffff !important;
+      }
+      html.iuh-dark .info-account .info:before {
+        border-bottom-color: #0284c7 !important;
+      }
+      html.iuh-dark .info-account .info:after {
+        border-top-color: #0284c7 !important;
+      }
+
+      /* FIX HIỂN THỊ CHỮ "PHẠM NGỌC LANG" TRẮNG SÁNG IN ĐẬM SẮC NÉT */
+      html.iuh-dark .info-account .info h3,
+      html.iuh-dark .info-account .info h4,
+      html.iuh-dark .info-account .info p a,
+      html.iuh-dark .info-account .info a,
+      html.iuh-dark .info-account .info span,
+      html.iuh-dark .info-account .info [class*="name"] {
+        color: #ffffff !important;
+        font-weight: 800 !important;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+      }
+      html.iuh-dark .info-account .info h3 {
+        font-size: 17px !important;
+        margin: 6px 0 10px 0 !important;
+      }
+
+      /* NÚT ĐĂNG XUẤT MÀU CAM HIỆN ĐẠI, BO GÓC ĐẸP */
+      html.iuh-dark .info-account .info button,
+      html.iuh-dark .info-account .info input[type="button"],
+      html.iuh-dark .info-account .info a.btn {
+        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        font-size: 13px !important;
+        border-radius: 8px !important;
+        border: none !important;
+        padding: 8px 16px !important;
+        margin-top: 12px !important;
+        box-shadow: 0 2px 8px rgba(234, 88, 12, 0.45) !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+      }
+      html.iuh-dark .info-account .info button:hover {
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 14px rgba(234, 88, 12, 0.6) !important;
+      }
+
+      /* FIX HIỂN THỊ AVATAR ĐẦY ĐỦ RÕ RÀNG */
+      .avatar, .avatar img, img[src*="GetAnhSinhVien"], img.avatar, [class*="avatar"] img {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        max-width: 140px !important;
+        max-height: 180px !important;
+        border-radius: 10px !important;
+        border: 2px solid #38bdf8 !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+      }
+
+      /* 3 LIÊN KẾT BÊN PHẢI HỒ SƠ */
+      html.iuh-dark .info-account .rowhssv a,
+      html.iuh-dark .info-account p a {
+        color: #38bdf8 !important;
+        font-weight: 700 !important;
+        font-size: 14px !important;
+        transition: color 0.15s ease !important;
+      }
+      html.iuh-dark .info-account .rowhssv a:hover,
+      html.iuh-dark .info-account p a:hover {
+        color: #7dd3fc !important;
+        text-decoration: underline !important;
+      }
+
+      /* CÁC THẺ CARD KHÁC TRONG PORTAL: NỀN DARK SLATE SANG TRỌNG */
       html.iuh-dark .border-box,
       html.iuh-dark .info-sv,
       html.iuh-dark .select-card,
@@ -327,15 +415,7 @@
         color: #f8fafc;
       }
 
-      /* Các liên kết menu */
-      html.iuh-dark a {
-        color: #38bdf8 !important;
-      }
-      html.iuh-dark a:hover {
-        color: #7dd3fc !important;
-      }
-
-      /* Dropdown select (Đợt đăng ký...) */
+      /* Dropdown select */
       html.iuh-dark select,
       html.iuh-dark .custom-select,
       html.iuh-dark select.form-control {
@@ -357,34 +437,6 @@
       html.iuh-dark label:has(input[type="checkbox"]) {
         color: #f8fafc !important;
         font-weight: 600 !important;
-      }
-
-      /* Khối thông tin sinh viên góc trái */
-      html.iuh-dark div[style*="background-color: #4a90e2"],
-      html.iuh-dark div[style*="background-color:#4a90e2"],
-      html.iuh-dark div[style*="background: #4a90e2"],
-      html.iuh-dark div[style*="background-color: #007bff"],
-      html.iuh-dark div[style*="background-color: #0099ff"] {
-        background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%) !important;
-        color: #ffffff !important;
-        border-radius: 12px !important;
-      }
-      html.iuh-dark div[style*="background-color: #4a90e2"] *,
-      html.iuh-dark div[style*="background-color: #007bff"] * {
-        color: #ffffff !important;
-      }
-
-      /* Nút Toggle Mode */
-      html.iuh-dark #iuh-theme-toggle-btn {
-        background: rgba(15, 23, 42, 0.85);
-        backdrop-filter: blur(12px);
-        color: #f8fafc;
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-      }
-      html.iuh-dark #iuh-theme-toggle-btn:hover {
-        background: rgba(30, 41, 59, 0.95);
-        color: #38bdf8;
       }
 
       /* ========================================================
@@ -653,12 +705,12 @@
             sData[sIdx] = 15;
             sData[sIdx + 1] = 23;
             sData[sIdx + 2] = 42;
-            sData[sIdx + 3] = 255;
+            sData[sIdx + 3] = 255; // Nét chữ đậm đen
           } else {
             sData[sIdx] = 255;
             sData[sIdx + 1] = 255;
             sData[sIdx + 2] = 255;
-            sData[sIdx + 3] = 255;
+            sData[sIdx + 3] = 255; // Nền trắng
           }
         }
       }
