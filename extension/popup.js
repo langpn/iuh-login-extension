@@ -41,6 +41,9 @@ $("open").addEventListener("click", () => {
 $("openLms").addEventListener("click", () => {
   api.tabs.create({ url: "https://lms.iuh.edu.vn/login/index.php" });
 });
+$("openDkhp").addEventListener("click", () => {
+  api.tabs.create({ url: "https://dkhp.iuh.edu.vn/Account/Login" });
+});
 $("password").addEventListener("keydown", (e) => {
   if (e.key === "Enter") save();
 });

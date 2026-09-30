@@ -2,9 +2,13 @@
   "manifest_version": 3,
   "name": "IUH Fast Login",
   "version": "1.0.0",
-  "description": "Tự động đăng nhập IUH: cổng sinh viên (sv.iuh.edu.vn, bỏ qua captcha) và LMS Moodle (lms.iuh.edu.vn).",
+  "description": "Tự động đăng nhập IUH: cổng sinh viên (sv.iuh.edu.vn, bỏ qua captcha), LMS Moodle (lms.iuh.edu.vn) và điền sẵn form Đăng ký học phần (dkhp.iuh.edu.vn).",
   "permissions": ["storage", "declarativeNetRequest"],
-  "host_permissions": ["*://sv.iuh.edu.vn/*", "*://lms.iuh.edu.vn/*"],
+  "host_permissions": [
+    "*://sv.iuh.edu.vn/*",
+    "*://lms.iuh.edu.vn/*",
+    "*://dkhp.iuh.edu.vn/*"
+  ],
   "declarative_net_request": {
     "rule_resources": [
       { "id": "block_captcha", "enabled": true, "path": "rules.json" }
@@ -24,6 +28,11 @@
     {
       "matches": ["*://sv.iuh.edu.vn/lich-theo-tuan.html*"],
       "js": ["schedule.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["*://dkhp.iuh.edu.vn/Account/Login*"],
+      "js": ["dkhp.js"],
       "run_at": "document_idle"
     }
   ],
