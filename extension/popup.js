@@ -1,4 +1,4 @@
-// Popup: nhập/lưu tài khoản và mở nhanh trang đăng nhập.
+// Popup: nhập/lưu tài khoản, mở nhanh và quản lý phiên.
 const api = globalThis.browser ?? globalThis.chrome;
 
 const $ = (id) => document.getElementById(id);
@@ -24,33 +24,50 @@ function save() {
   const username = $("username").value.trim();
   const password = $("password").value;
   const autoLogin = $("autoLogin").checked;
-
-  if (!username || !password) {
-    setMsg("Nhập đủ MSSV và mật khẩu đã.", "err");
+  if (!username) {
+    setMsg("Vui lòng nhập MSSV.", "err");
     return;
   }
   api.storage.local.set({ username, password, autoLogin }, () => {
-    setMsg("Đã lưu. Mở trang login để tự đăng nhập.", "ok");
+    setMsg("Đã lưu thông tin.", "ok");
+    setTimeout(() => setMsg(""), 2000);
   });
 }
 
 $("save").addEventListener("click", save);
-$("open").addEventListener("click", () => {
-  api.tabs.create({ url: "https://sv.iuh.edu.vn/sinh-vien-dang-nhap.html" });
+
+$("open").addEventListener("click", async () => {
+  let target = "https://sv.iuh.edu.vn/sinh-vien-dang-nhap.html";
+  if (api.cookies) {
+    try {
+      const c = await api.cookies.get({ url: "https://sv.iuh.edu.vn", name: "ASC.AUTH" });
+      if (c && c.value) target = "https://sv.iuh.edu.vn/dashboard.html";
+    } catch (_) {}
+  }
+  api.tabs.create({ url: target });
 });
+
 $("openLms").addEventListener("click", () => {
   api.tabs.create({ url: "https://lms.iuh.edu.vn/login/index.php" });
 });
-$("openDkhp").addEventListener("click", () => {
-  api.tabs.create({ url: "https://dkhp.iuh.edu.vn/Account/Login" });
+
+$("openDkhp").addEventListener("click", async () => {
+  let target = "https://dkhp.iuh.edu.vn/Account/Login";
+  if (api.cookies) {
+    try {
+      const c = await api.cookies.get({ url: "https://dkhp.iuh.edu.vn", name: ".ASPXFORMSAUTH" });
+      if (c && c.value) target = "https://dkhp.iuh.edu.vn/DangKyHocPhan/ThongTinPortal";
+    } catch (_) {}
+  }
+  api.tabs.create({ url: target });
 });
+
 $("openSchedule").addEventListener("click", () => {
-  // Đặt cờ để nếu chưa đăng nhập, sau khi tự đăng nhập xong sẽ quay lại
-  // đúng trang lịch (trang lịch không tự giữ ReturnUrl).
   api.storage.local.set({ pendingSchedule: Date.now() }, () => {
     api.tabs.create({ url: "https://sv.iuh.edu.vn/lich-theo-tuan.html" });
   });
 });
+
 $("password").addEventListener("keydown", (e) => {
   if (e.key === "Enter") save();
 });
