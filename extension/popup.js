@@ -44,6 +44,13 @@ $("openLms").addEventListener("click", () => {
 $("openDkhp").addEventListener("click", () => {
   api.tabs.create({ url: "https://dkhp.iuh.edu.vn/Account/Login" });
 });
+$("openSchedule").addEventListener("click", () => {
+  // Đặt cờ để nếu chưa đăng nhập, sau khi tự đăng nhập xong sẽ quay lại
+  // đúng trang lịch (trang lịch không tự giữ ReturnUrl).
+  api.storage.local.set({ pendingSchedule: Date.now() }, () => {
+    api.tabs.create({ url: "https://sv.iuh.edu.vn/lich-theo-tuan.html" });
+  });
+});
 $("password").addEventListener("keydown", (e) => {
   if (e.key === "Enter") save();
 });

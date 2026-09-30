@@ -16,6 +16,11 @@
   },
   "content_scripts": [
     {
+      "matches": ["*://sv.iuh.edu.vn/*"],
+      "js": ["redirect.js"],
+      "run_at": "document_idle"
+    },
+    {
       "matches": ["*://sv.iuh.edu.vn/sinh-vien-dang-nhap.html*"],
       "js": ["content.js"],
       "run_at": "document_idle"
