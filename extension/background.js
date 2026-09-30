@@ -76,6 +76,23 @@ if (api.alarms) {
         }
       }
     } catch (_) {}
+
+    // 3. Kiểm tra và ping LMS Moodle
+    try {
+      if (api.cookies) {
+        const lmsCookie = await api.cookies.get({
+          url: "https://lms.iuh.edu.vn",
+          name: "MoodleSession"
+        });
+        if (lmsCookie && lmsCookie.value) {
+          await fetch("https://lms.iuh.edu.vn/my/", {
+            method: "GET",
+            credentials: "include"
+          });
+          api.storage.local.set({ lms_active: true, lms_last_ping: Date.now() });
+        }
+      }
+    } catch (_) {}
   });
 }
 

@@ -1,10 +1,15 @@
 // =====================================================================
 // IUH Fast Login — Content Script cho Đăng ký học phần (DKHP)
 // ---------------------------------------------------------------------
-// Thiết kế: Tinh tế, Hiện đại, Gọn gàng, Hiển thị song song:
-//   1. Ảnh gốc phóng to sắc nét (không bị bóp méo, đầy đủ 100% nét).
-//   2. 4 ô ký tự đã khử sạch nhiễu & căn chuẩn tâm (Center-of-Mass).
-//   3. Tự động điền MSSV & Mật khẩu + Tự in hoa + Tự submit khi gõ đủ 4 ký tự.
+// Chạy trên https://dkhp.iuh.edu.vn/*
+//
+// Tính năng:
+//   1. Dark Mode mặc định: Nền Aurora Cosmos Gradient đồng bộ 100% toàn trang.
+//   2. Light Mode: Nền trắng xám dịu mắt (Soft Off-White) & nổi 3D.
+//   3. Nút chuyển đổi Dark/Light mode nổi 1-click ở góc trên bên phải.
+//   4. Giữ nguyên 100% nội dung trang (banner, footer, thông tin, bảng biểu).
+//   5. Hiển thị song song: Ảnh gốc đầy đủ nét + 4 ô ký tự khử nhiễu tách biệt.
+//   6. Tự động điền MSSV & Mật khẩu + Tự in hoa + Tự submit khi gõ đủ 4 ký tự hoặc bấm Enter.
 // =====================================================================
 
 (() => {
@@ -49,73 +54,365 @@
     }
   }
 
-  // Tinh chỉnh form gọn gàng, hiện đại
-  function injectCleanTheme() {
-    if ($("#iuh-clean-theme")) return;
+  // Tiêm CSS giao diện Đẳng cấp: Dark Aurora Cosmos & Soft Elevated Light Mode
+  function injectDKHPTheme() {
+    if ($("#iuh-dkhp-theme")) return;
     const style = document.createElement("style");
-    style.id = "iuh-clean-theme";
+    style.id = "iuh-dkhp-theme";
     style.textContent = `
-      * {
+      /* Bảo vệ icon FontAwesome */
+      *:not(i):not([class*="fa"]):not([class*="glyphicon"]):not([class*="icon"]):not(.k-icon):not([class*="fas"]):not([class*="far"]) {
         font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif !important;
       }
+      i, .fa, [class*="fa-"], [class*="glyphicon"], [class*="icon"], .k-icon {
+        font-family: FontAwesome, 'Glyphicons Halflings', 'font-awesome' !important;
+      }
+
+      /* FORM ĐĂNG NHẬP: ĐƠN KHỐI, BỎ HOÀN TOÀN VIỀN LỒNG BÊN TRONG */
       .center-login {
-        border-radius: 16px !important;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
-        border: 1px solid #e2e8f0 !important;
-        padding: 28px 32px !important;
+        border-radius: 20px !important;
+        padding: 32px !important;
+        max-width: 460px !important;
+        margin: 25px auto 40px auto !important;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        box-sizing: border-box !important;
+      }
+      #form-login, .form-login, .center-login > div, .center-login form {
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
       }
       .center-login .input-group {
-        border: 1.5px solid #cbd5e1 !important;
-        border-radius: 10px !important;
+        border-radius: 12px !important;
         overflow: hidden !important;
-        transition: all 0.2s ease !important;
-        background: #ffffff !important;
         margin-bottom: 12px !important;
-      }
-      .center-login .input-group:focus-within {
-        border-color: #0284c7 !important;
-        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15) !important;
+        transition: all 0.2s ease !important;
       }
       .center-login .input-group-text {
-        background: #f8fafc !important;
-        border: none !important;
         font-size: 13px !important;
         font-weight: 600 !important;
-        color: #475569 !important;
-        padding: 10px 14px !important;
+        padding: 11px 14px !important;
+        border: none !important;
       }
       .center-login input.form-control,
       .center-login input[type="text"],
       .center-login input[type="password"] {
         border: none !important;
         box-shadow: none !important;
-        font-size: 14.5px !important;
-        padding: 10px 14px !important;
-      }
-      #btnLogin, .center-login .btn-primary {
-        background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
-        border: none !important;
-        border-radius: 10px !important;
-        padding: 12px 20px !important;
         font-size: 15px !important;
-        font-weight: 700 !important;
+        padding: 11px 14px !important;
+      }
+
+      /* Nút chuyển đổi Dark/Light mode nổi góc trên bên phải */
+      #iuh-theme-toggle-btn {
+        position: fixed;
+        top: 14px;
+        right: 18px;
+        z-index: 999999;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 14px;
+        border-radius: 9999px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      /* ========================================================
+         1. DARK MODE: AURORA COSMOS GRADIENT (MẶC ĐỊNH)
+         ======================================================== */
+      html.iuh-dark, html.iuh-dark body {
+        background-color: #030712 !important;
+        background-image: 
+          radial-gradient(at 15% 10%, rgba(99, 102, 241, 0.25) 0px, transparent 45%),
+          radial-gradient(at 85% 15%, rgba(6, 182, 212, 0.20) 0px, transparent 45%),
+          radial-gradient(at 50% 50%, rgba(147, 51, 234, 0.14) 0px, transparent 55%),
+          radial-gradient(at 80% 85%, rgba(59, 130, 246, 0.18) 0px, transparent 50%),
+          radial-gradient(at 20% 90%, rgba(236, 72, 153, 0.10) 0px, transparent 50%) !important;
+        background-attachment: fixed !important;
+        background-size: cover !important;
+        color: #f8fafc !important;
+        min-height: 100vh;
+      }
+
+      /* Banner trường trong Dark Mode: dịu mắt, không lóa */
+      html.iuh-dark #page-header, 
+      html.iuh-dark header {
+        background: rgba(15, 23, 42, 0.8) !important;
+        border-bottom: 1px solid #1e293b !important;
+      }
+      html.iuh-dark #page-header img,
+      html.iuh-dark header img {
+        filter: brightness(0.9) contrast(1.05) !important;
+      }
+
+      /* Card đăng nhập trong Dark Mode */
+      html.iuh-dark .center-login {
+        background: rgba(15, 23, 42, 0.82) !important;
+        backdrop-filter: blur(28px) saturate(190%) !important;
+        -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        box-shadow: 0 30px 70px -10px rgba(0, 0, 0, 0.75), 0 0 30px rgba(99, 102, 241, 0.15) !important;
+        color: #f8fafc !important;
+      }
+      html.iuh-dark .center-login .input-group {
+        background: rgba(3, 7, 18, 0.6) !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+      }
+      html.iuh-dark .center-login .input-group:focus-within {
+        border-color: #38bdf8 !important;
+        box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25) !important;
+      }
+      html.iuh-dark .center-login .input-group-text {
+        background: rgba(15, 23, 42, 0.6) !important;
+        color: #94a3b8 !important;
+      }
+      html.iuh-dark .center-login input.form-control,
+      html.iuh-dark .center-login input[type="text"],
+      html.iuh-dark .center-login input[type="password"] {
+        background: transparent !important;
+        color: #f8fafc !important;
+      }
+      html.iuh-dark #iuh-captcha-card {
+        background: rgba(3, 7, 18, 0.6) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      }
+      html.iuh-dark #iuh-btn-refresh {
+        background: rgba(15, 23, 42, 0.8) !important;
+        border: 1px solid #334155 !important;
+        color: #38bdf8 !important;
+      }
+      html.iuh-dark #btnLogin, html.iuh-dark .center-login .btn-primary {
+        background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #8b5cf6 100%) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 13px 20px !important;
+        font-size: 15.5px !important;
+        font-weight: 800 !important;
         letter-spacing: 0.5px !important;
         color: #ffffff !important;
+        box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4) !important;
+        cursor: pointer !important;
+        width: 100% !important;
+      }
+      html.iuh-dark #btnLogin:hover, html.iuh-dark .center-login .btn-primary:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 30px rgba(139, 92, 246, 0.55) !important;
+      }
+
+      /* ĐỒNG BỘ DARK MODE CHO CÁC TRANG PORTAL SAU KHI ĐĂNG NHẬP (/ThongTinPortal, /DangKyHocPhan...) */
+      html.iuh-dark .container, 
+      html.iuh-dark .body-content {
+        background: transparent !important;
+      }
+      /* Ghi đè toàn bộ các thẻ card của trường thành màu Dark Slate sang trọng */
+      html.iuh-dark .col-sm-12[style*="border"],
+      html.iuh-dark div[style*="border: 1px solid"],
+      html.iuh-dark div[style*="border:1px solid"],
+      html.iuh-dark .panel,
+      html.iuh-dark .box,
+      html.iuh-dark .card,
+      html.iuh-dark .table-responsive {
+        background: #0f172a !important;
+        border-color: #1e293b !important;
+        border-radius: 16px !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+        color: #f8fafc !important;
+      }
+      /* Tiêu đề xanh của trường: chuyển thành màu cyan sáng nổi bật */
+      html.iuh-dark h3, 
+      html.iuh-dark h4, 
+      html.iuh-dark .panel-heading,
+      html.iuh-dark span[style*="color: #007bff"],
+      html.iuh-dark span[style*="color:#007bff"],
+      html.iuh-dark div[style*="color: #007bff"] {
+        color: #38bdf8 !important;
+      }
+      /* Nhãn thông tin chi tiết: xám sáng dễ đọc */
+      html.iuh-dark div[style*="border"] b,
+      html.iuh-dark .col-sm-12 b,
+      html.iuh-dark .card b {
+        color: #94a3b8 !important;
+      }
+      /* Giá trị thông tin: trắng sáng */
+      html.iuh-dark div[style*="border"] span,
+      html.iuh-dark .col-sm-12 span,
+      html.iuh-dark .card span {
+        color: #f8fafc !important;
+      }
+      /* Các liên kết menu */
+      html.iuh-dark a {
+        color: #38bdf8 !important;
+      }
+      html.iuh-dark a:hover {
+        color: #7dd3fc !important;
+      }
+      /* Bảng học phần trong portal */
+      html.iuh-dark table.table,
+      html.iuh-dark table.table-bordered {
+        border-color: #1e293b !important;
+      }
+      html.iuh-dark table.table thead th,
+      html.iuh-dark table.table-bordered thead th {
+        background: #1e293b !important;
+        color: #38bdf8 !important;
+        border: 1px solid #334155 !important;
+      }
+      html.iuh-dark table.table tbody td,
+      html.iuh-dark table.table-bordered tbody td {
+        background: #0f172a !important;
+        color: #e2e8f0 !important;
+        border: 1px solid #1e293b !important;
+      }
+      html.iuh-dark table.table tbody tr:hover td {
+        background: #1e293b !important;
+      }
+      /* Footer trường trong Dark Mode: đồng bộ tối màu */
+      html.iuh-dark footer,
+      html.iuh-dark .footer,
+      html.iuh-dark div[style*="background-color:#0069d9"],
+      html.iuh-dark div[style*="background-color: #0069d9"] {
+        background-color: #080f1d !important;
+        border-top: 1px solid #1e293b !important;
+        color: #94a3b8 !important;
+      }
+      html.iuh-dark footer a,
+      html.iuh-dark .footer a {
+        color: #cbd5e1 !important;
+      }
+
+      /* Nút Toggle Mode */
+      html.iuh-dark #iuh-theme-toggle-btn {
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(12px);
+        color: #f8fafc;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      }
+      html.iuh-dark #iuh-theme-toggle-btn:hover {
+        background: rgba(30, 41, 59, 0.95);
+        color: #38bdf8;
+      }
+
+      /* ========================================================
+         2. LIGHT MODE: TRẮNG DỊU MẮT (SOFT OFF-WHITE) & NỔI 3D
+         ======================================================== */
+      html.iuh-light, html.iuh-light body {
+        background-color: #f1f5f9 !important;
+        background-image: 
+          radial-gradient(at 50% 0%, #ffffff 0%, #edf2f7 100%) !important;
+        background-attachment: fixed !important;
+        color: #0f172a !important;
+        min-height: 100vh;
+      }
+      html.iuh-light .center-login {
+        background: #ffffff !important;
+        border: 1px solid rgba(226, 232, 240, 0.8) !important;
+        border-radius: 20px !important;
+        box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.07), 0 0 1px 1px rgba(0, 0, 0, 0.04) !important;
+      }
+      html.iuh-light .center-login .input-group {
+        background: #f8fafc !important;
+        border: 1.5px solid #cbd5e1 !important;
+      }
+      html.iuh-light .center-login .input-group:focus-within {
+        border-color: #0284c7 !important;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15) !important;
+      }
+      html.iuh-light .center-login .input-group-text {
+        background: #f1f5f9 !important;
+        color: #475569 !important;
+      }
+      html.iuh-light .center-login input.form-control,
+      html.iuh-light .center-login input[type="text"],
+      html.iuh-light .center-login input[type="password"] {
+        background: #f8fafc !important;
+        color: #0f172a !important;
+      }
+      html.iuh-light #iuh-captcha-card {
+        background: #f8fafc !important;
+        border: 1.5px solid #e2e8f0 !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;
+      }
+      html.iuh-light #iuh-btn-refresh {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #0284c7 !important;
+      }
+      html.iuh-light #btnLogin, html.iuh-light .center-login .btn-primary {
+        background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 13px 20px !important;
+        font-size: 15px !important;
+        font-weight: 700 !important;
+        color: #ffffff !important;
         box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3) !important;
-        transition: all 0.2s ease !important;
         cursor: pointer !important;
         width: 100% !important;
         margin-top: 10px !important;
       }
-      #btnLogin:hover, .center-login .btn-primary:hover {
-        transform: translateY(-1px) !important;
-        box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4) !important;
+      /* Portal trong Light Mode: Nền trắng sạch sẽ, nổi 3D */
+      html.iuh-light div[style*="border"],
+      html.iuh-light .panel,
+      html.iuh-light .box,
+      html.iuh-light .card,
+      html.iuh-light .table-responsive {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 16px !important;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 0 1px 1px rgba(0, 0, 0, 0.03) !important;
+        color: #0f172a !important;
+      }
+      html.iuh-light #iuh-theme-toggle-btn {
+        background: #ffffff;
+        color: #0f172a;
+        border: 1px solid #cbd5e1;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      }
+      html.iuh-light #iuh-theme-toggle-btn:hover {
+        background: #f1f5f9;
+        color: #0284c7;
       }
     `;
     (document.head || document.documentElement).appendChild(style);
   }
 
-  // Vẽ ảnh gốc phóng to sắc nét (không bị bóp méo hình ảnh)
+  function setupTheme(defaultMode = "dark") {
+    injectDKHPTheme();
+    api.storage.local.get({ theme_mode: defaultMode }, (res) => {
+      const mode = res.theme_mode || defaultMode;
+      applyThemeMode(mode);
+    });
+  }
+
+  function applyThemeMode(mode) {
+    const isDark = mode === "dark";
+    document.documentElement.classList.remove("iuh-dark", "iuh-light");
+    document.documentElement.classList.add(isDark ? "iuh-dark" : "iuh-light");
+
+    let toggleBtn = $("#iuh-theme-toggle-btn");
+    if (!toggleBtn) {
+      toggleBtn = document.createElement("button");
+      toggleBtn.id = "iuh-theme-toggle-btn";
+      toggleBtn.type = "button";
+      document.body.appendChild(toggleBtn);
+      toggleBtn.addEventListener("click", () => {
+        const currentIsDark = document.documentElement.classList.contains("iuh-dark");
+        const newMode = currentIsDark ? "light" : "dark";
+        api.storage.local.set({ theme_mode: newMode }, () => {
+          applyThemeMode(newMode);
+        });
+      });
+    }
+    toggleBtn.innerHTML = isDark ? "☀️ Chế độ sáng" : "🌙 Chế độ tối";
+  }
+
+  // Vẽ ảnh gốc phóng to sắc nét
   function renderOriginalCanvas(imgEl) {
     const canvas = $("#iuh-orig-canvas");
     if (!canvas || !imgEl || !imgEl.complete || imgEl.naturalWidth < 10) return;
@@ -126,7 +423,7 @@
     ctx.drawImage(imgEl, 0, 0, 154, 49);
   }
 
-  // Khử sạch nhiễu hạt, gạch ngang và chia thành 4 ô ký tự tách biệt rõ nét theo tâm điểm khối lượng (Center of Mass)
+  // Khử sạch nhiễu hạt, gạch ngang và chia thành 4 ô ký tự theo Center of Mass
   function renderCleanPanels(imgEl) {
     if (!imgEl || !imgEl.complete || imgEl.naturalWidth < 10) return false;
 
@@ -140,7 +437,7 @@
     const imgData = rawCtx.getImageData(0, 0, w, h);
     const data = imgData.data;
 
-    // 1. Lọc màu ký tự (diff = Blue - Red)
+    // 1. Lọc màu ký tự
     const mask = new Uint8Array(w * h);
     for (let i = 0; i < h; i++) {
       for (let j = 0; j < w; j++) {
@@ -183,7 +480,7 @@
       }
     }
 
-    // 3. Lọc bỏ các đường gạch ngang mỏng (chiều cao nét đứng < 3px)
+    // 3. Khử các đường gạch ngang mỏng
     const vertClean = new Uint8Array(w * h);
     for (let j = 0; j < w; j++) {
       for (let i = 1; i < h - 1; i++) {
@@ -196,7 +493,7 @@
       }
     }
 
-    // 4. Thuật toán tìm tâm từng ký tự bằng Center of Mass (không bao giờ bị mất ký tự thứ 4)
+    // 4. Center of Mass
     const proj = new Float32Array(w);
     for (let j = 0; j < w; j++) {
       let count = 0;
@@ -206,7 +503,6 @@
       proj[j] = count;
     }
 
-    // Chia làm 4 vùng tự nhiên: 0..29, 26..56, 52..82, 78..110
     const quarters = [
       [0, 29],
       [26, 56],
@@ -231,11 +527,10 @@
       }
     }
 
-    // 5. Cắt 4 ô Canvas đối xứng quanh tâm từng ký tự (nét chữ đen tuyền đậm nét)
+    // 5. Cắt 4 ô Canvas đối xứng quanh tâm
     const panelWidth = 36;
     const panelHeight = 49;
-    const sliceWidth = 24;
-    let predictedCode = "";
+    const sliceWidth = 28;
 
     for (let s = 0; s < 4; s++) {
       const canvas = $(`#iuh-panel-${s}`);
@@ -258,8 +553,6 @@
       const sImgData = sCtx.createImageData(sliceWidth, h);
       const sData = sImgData.data;
 
-      const glyph24x28 = new Float32Array(24 * 28);
-
       for (let i = 0; i < h; i++) {
         for (let j = 0; j < sliceWidth; j++) {
           const sIdx = (i * sliceWidth + j) * 4;
@@ -268,70 +561,58 @@
             sData[sIdx] = 15;
             sData[sIdx + 1] = 23;
             sData[sIdx + 2] = 42;
-            sData[sIdx + 3] = 255; // Nét chữ đậm đen
-            const gy = Math.min(27, Math.floor((i * 28) / h));
-            glyph24x28[gy * 24 + j] = 1.0;
+            sData[sIdx + 3] = 255;
           } else {
             sData[sIdx] = 255;
             sData[sIdx + 1] = 255;
             sData[sIdx + 2] = 255;
-            sData[sIdx + 3] = 255; // Nền trắng
+            sData[sIdx + 3] = 255;
           }
         }
       }
       sCtx.putImageData(sImgData, 0, 0);
       ctx.drawImage(sliceCanvas, 0, 0, panelWidth, panelHeight);
-
-      if (globalThis.IUH_GLYPH_SOLVER && globalThis.IUH_GLYPH_SOLVER.classify) {
-        try {
-          const char = globalThis.IUH_GLYPH_SOLVER.classify(glyph24x28);
-          predictedCode += char;
-        } catch (_) {}
-      }
     }
-
-    return predictedCode;
+    return true;
   }
 
-  // Khối hiển thị song song: Ảnh gốc sắc nét + 4 ô khử nhiễu tách rời
+  // Khối hiển thị song song: Ảnh gốc + 4 ô tách rời
   function attachCaptchaCard(imgEl, capEl) {
     let card = $("#iuh-captcha-card");
     if (!card) {
       card = document.createElement("div");
       card.id = "iuh-captcha-card";
       card.style.cssText =
-        "margin: 8px 0 14px 0; padding: 12px 14px; background: #f8fafc; border: 1.5px solid #e2e8f0; " +
-        "border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);";
+        "margin: 8px 0 14px 0; padding: 12px 14px; border-radius: 14px; box-shadow: 0 4px 16px rgba(0,0,0,0.15);";
 
       card.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <span style="font-size: 12px; font-weight: 700; color: #475569; display: flex; align-items: center; gap: 5px;">
+          <span style="font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 5px;">
             <span>🛡️</span> Mã xác nhận
           </span>
-          <button id="iuh-btn-refresh" type="button" style="border: 1px solid #cbd5e1; background: #ffffff; color: #0284c7; padding: 3px 9px; border-radius: 6px; cursor: pointer; font-size: 11.5px; font-weight: 600; display: flex; align-items: center; gap: 4px; transition: all .2s;">
+          <button id="iuh-btn-refresh" type="button" style="padding: 3px 9px; border-radius: 6px; cursor: pointer; font-size: 11.5px; font-weight: 600; display: flex; align-items: center; gap: 4px; transition: all .2s;">
             🔄 Đổi mã khác
           </button>
         </div>
         <div style="display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap;">
           <div style="text-align: center;">
-            <div style="font-size: 10px; font-weight: 700; color: #64748b; margin-bottom: 4px;">ẢNH GỐC ĐẦY ĐỦ</div>
-            <div style="border: 1.5px solid #cbd5e1; border-radius: 8px; overflow: hidden; background: #fff; display: inline-block; box-shadow: 0 1px 4px rgba(0,0,0,0.05);">
+            <div style="font-size: 10px; font-weight: 700; margin-bottom: 4px; opacity: 0.8;">ẢNH GỐC ĐẦY ĐỦ</div>
+            <div style="border: 1.5px solid rgba(255,255,255,0.15); border-radius: 8px; overflow: hidden; background: #fff; display: inline-block; box-shadow: 0 2px 6px rgba(0,0,0,0.2);">
               <canvas id="iuh-orig-canvas" style="display: block; width: 154px; height: 49px;"></canvas>
             </div>
           </div>
           <div style="text-align: center;">
-            <div style="font-size: 10px; font-weight: 700; color: #0284c7; margin-bottom: 4px;">KHỬ NHIỄU TO RÕ</div>
+            <div style="font-size: 10px; font-weight: 700; color: #38bdf8; margin-bottom: 4px;">KHỬ NHIỄU TO RÕ</div>
             <div style="display: flex; gap: 5px;">
-              <canvas id="iuh-panel-0" style="width: 36px; height: 49px; border: 1.5px solid #cbd5e1; border-radius: 6px; background: #fff;"></canvas>
-              <canvas id="iuh-panel-1" style="width: 36px; height: 49px; border: 1.5px solid #cbd5e1; border-radius: 6px; background: #fff;"></canvas>
-              <canvas id="iuh-panel-2" style="width: 36px; height: 49px; border: 1.5px solid #cbd5e1; border-radius: 6px; background: #fff;"></canvas>
-              <canvas id="iuh-panel-3" style="width: 36px; height: 49px; border: 1.5px solid #cbd5e1; border-radius: 6px; background: #fff;"></canvas>
+              <canvas id="iuh-panel-0" style="width: 36px; height: 49px; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 6px; background: #fff;"></canvas>
+              <canvas id="iuh-panel-1" style="width: 36px; height: 49px; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 6px; background: #fff;"></canvas>
+              <canvas id="iuh-panel-2" style="width: 36px; height: 49px; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 6px; background: #fff;"></canvas>
+              <canvas id="iuh-panel-3" style="width: 36px; height: 49px; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 6px; background: #fff;"></canvas>
             </div>
           </div>
         </div>
       `;
 
-      // Chèn card ngay trên hàng nhập captcha
       const targetGroup = capEl.closest(".form-group") || capEl.closest(".input-group") || capEl.parentElement;
       if (targetGroup && targetGroup.parentElement) {
         targetGroup.parentElement.insertBefore(card, targetGroup);
@@ -356,15 +637,17 @@
     }
 
     renderOriginalCanvas(imgEl);
-    return renderCleanPanels(imgEl);
+    renderCleanPanels(imgEl);
   }
 
   async function main() {
-    if (location.pathname.includes("ThongTinPortal") || location.pathname.includes("DangKyHocPhan")) {
+    // Kích hoạt theme Dark/Light đồng bộ
+    setupTheme("dark");
+
+    // Nếu đã ở trang portal thì chỉ kích hoạt theme, không can thiệp form login
+    if (location.pathname.includes("ThongTinPortal") || location.pathname.includes("DangKyHocPhan") || location.pathname.includes("ChuongTrinhKhung")) {
       return;
     }
-
-    injectCleanTheme();
 
     const cfg = await getStorage({
       username: "",
@@ -410,21 +693,16 @@
       }
     });
 
-    // 3. Quy trình hiển thị song song & Nhận diện tự động
+    // 3. Hiển thị thẻ captcha to rõ & để trống để người dùng gõ
     const runProcess = async () => {
       for (let i = 0; i < 25; i++) {
         if (imgEl.complete && imgEl.naturalWidth >= 40) break;
         await sleep(100);
       }
 
-      const code = attachCaptchaCard(imgEl, capEl);
-      if (code && code.length === 4) {
-        setValue(capEl, code);
-        capEl.focus();
-        capEl.select?.();
-      } else {
-        capEl.focus();
-      }
+      attachCaptchaCard(imgEl, capEl);
+      capEl.value = "";
+      capEl.focus();
     };
 
     await runProcess();
