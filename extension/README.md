@@ -1,58 +1,45 @@
 # IUH Fast Login — Chrome / Edge / Brave / Firefox Extension
 
-Extension tự động đăng nhập các cổng IUH, chạy được trên nhiều trình duyệt nhân
-Chromium và Firefox:
+Tiện ích mở rộng tự động đăng nhập các cổng thông tin Đại học Công nghiệp TP.HCM (IUH), chạy trực tiếp trên các trình duyệt Chromium và Firefox:
 
-- **Cổng sinh viên** `sv.iuh.edu.vn` — không cần nhập captcha.
-- **LMS Moodle** `lms.iuh.edu.vn` — điền form và đăng nhập (Moodle không có captcha).
-- **Đăng ký học phần** `dkhp.iuh.edu.vn` — điền sẵn MSSV + mật khẩu, bạn chỉ cần
-  gõ **mã bảo vệ** rồi Enter (xem mục *Lưu ý* — trang này bắt buộc captcha).
-- **Lịch theo tuần** `sv.iuh.edu.vn/.../lich-theo-tuan.html` — đổi *“Tiết: X - Y”*
-  thành **giờ cụ thể** (ví dụ *Tiết 7 - 9 → 12:30 - 15:00*) ngay trên trang.
+- **Cổng sinh viên** (`sv.iuh.edu.vn`) — Tự động vượt captcha (bằng chặn request mạng, server tự bỏ qua kiểm tra).
+- **LMS Moodle** (`lms.iuh.edu.vn`) — Tự động điền form và đăng nhập.
+- **Đăng ký học phần** (`dkhp.iuh.edu.vn`) — **Tự động giải captcha 4 ký tự bằng mô hình Micro-CNN tích hợp sẵn** (< 150 KB, chạy 100% offline, không cần server ngoài) và tự động đăng nhập.
+- **Giữ sống phiên (Session Keepalive)** — Chạy ngầm định kỳ ping giữ cookie (`ASC.AUTH` & `.ASPXFORMSAUTH`) để bạn không bị văng ra trang đăng nhập sau 20 phút.
+- **Lịch theo tuần** (`sv.iuh.edu.vn/.../lich-theo-tuan.html`) — Đổi *“Tiết: X - Y”* thành **giờ cụ thể** (*Tiết 7 - 9 → 12:30 - 15:00*) ngay trên giao diện thời khóa biểu.
 
-## Cách hoạt động (tóm tắt)
+---
 
-1. `rules.json` dùng `declarativeNetRequest` để **chặn request ảnh captcha**
-   (`/WebCommon/GetCaptcha`) ngay ở tầng mạng.
-2. Server chỉ bật kiểm tra captcha khi ảnh đó **đã được tải trong phiên** →
-   không tải được ⇒ server bỏ qua captcha.
-3. `content.js` điền MSSV + mật khẩu rồi bấm nút đăng nhập cổng SV. Mật khẩu do
-   **JS của chính trang** mã hoá (extension không tự mã hoá, tránh sai thuật toán).
-4. `lms.js` điền form Moodle (`#username`/`#password` + `logintoken`) và submit.
-5. `dkhp.js` điền sẵn form ĐKHP (`#UserName`/`#Password`) rồi focus ô `#Captcha`;
-   việc mã hoá mật khẩu do JS của chính trang làm lúc submit, nên **không** thể bỏ
-   qua captcha như cổng SV (server kiểm tra captcha ở phía server).
-6. `schedule.js` chạy trên trang lịch tuần, thay số tiết bằng khung giờ tương ứng
-   (bảng quy đổi tiết → giờ của IUH) và theo dõi DOM để cập nhật cả nội dung nạp bằng AJAX.
-
-## Cài đặt
+## Cách cài đặt (chỉ làm 1 lần)
 
 ### Chrome / Edge / Brave / Cốc Cốc
-1. Mở `chrome://extensions` (Edge: `edge://extensions`).
-2. Bật **Developer mode**.
-3. Bấm **Load unpacked** → chọn thư mục `extension/`.
+1. Mở trình duyệt, truy cập `chrome://extensions` (hoặc `edge://extensions`).
+2. Bật công tắc **Developer mode** (Chế độ cho nhà phát triển).
+3. Bấm nút **Load unpacked** (Tải tiện ích đã giải nén) → chọn thư mục `extension/`.
 
 ### Firefox
 1. Mở `about:debugging#/runtime/this-firefox`.
-2. Bấm **Load Temporary Add-on…** → chọn `extension/manifest.json`.
-3. (Bản cài vĩnh viễn cần ký qua addons.mozilla.org.)
+2. Bấm **Load Temporary Add-on…** → chọn file `extension/manifest.json`.
 
-## Sử dụng
-1. Bấm icon extension → nhập **MSSV** và **mật khẩu** → **Lưu**.
-2. Bấm **Mở trang login** (hoặc tự mở trang đăng nhập). Extension tự điền và đăng nhập.
-3. Muốn vào LMS: bấm **Mở LMS** (hoặc mở thẳng `https://lms.iuh.edu.vn/login/index.php`).
-4. Muốn vào ĐKHP: bấm **Mở ĐKHP** — form đã điền sẵn, chỉ cần gõ **mã bảo vệ** và Enter.
-5. Muốn xem lịch học nhanh: bấm **Lịch học** — mở thẳng `sv.iuh.edu.vn/lich-theo-tuan.html`.
-   Nếu chưa có phiên đăng nhập, extension tự đăng nhập rồi **quay lại đúng trang lịch**
-   (trang lịch không tự giữ `ReturnUrl`; cơ chế này dùng cờ `pendingSchedule`, chỉ áp
-   dụng khi bạn bấm nút, không ảnh hưởng đăng nhập thông thường).
-6. Tài khoản chỉ lưu cục bộ trên máy (`storage.local`), không gửi đi đâu khác.
+---
 
-## Lưu ý
-- Cổng SV giới hạn tần suất đăng nhập (~10 giây/lần). Extension tự chờ rồi thử lại (tối đa 2 lần/tab).
-- LMS (Moodle) không giới hạn kiểu này, đăng nhập gần như tức thì.
-- Nếu IUH đổi đường dẫn ảnh captcha, sửa `rules.json` cho khớp.
-- **ĐKHP luôn bắt captcha ở phía server** (khác cổng SV): đã thử bỏ trống, chặn ảnh,
-  OCR và cả SSO `DkhpSsoRedirect` từ cổng SV đều không qua được. Extension chỉ có thể
-  điền sẵn tài khoản để bạn gõ mã bảo vệ nhanh hơn.
-- Không commit `storage` hay thông tin đăng nhập lên Git.
+## Hướng dẫn sử dụng
+1. Bấm vào biểu tượng extension trên thanh công cụ → nhập **MSSV** và **Mật khẩu** → bấm **Lưu**.
+2. **Khi vào cổng trường**:
+   - Mở Cổng SV hoặc bấm **Mở cổng SV**: Tự động đăng nhập, không cần captcha.
+   - Mở LMS hoặc bấm **Mở LMS**: Tự động đăng nhập Moodle.
+   - Mở ĐKHP hoặc bấm **Mở ĐKHP**: Extension tự động điền tài khoản, tự giải mã bảo vệ 4 ký tự và tự đăng nhập! Nếu phiên còn sống, nút mở sẽ đưa bạn vào thẳng trang Portal mà không cần qua trang Login.
+   - Bấm **Lịch học**: Nhảy thẳng vào trang thời khóa biểu tuần đã được quy đổi sẵn sang giờ học chi tiết.
+
+---
+
+## Cơ chế kỹ thuật
+1. **Cổng SV**: Dùng `declarativeNetRequest` (`rules.json`) chặn URL `/WebCommon/GetCaptcha`. Khi client không tải ảnh captcha, server backend của cổng SV tự động bỏ qua bước kiểm tra captcha.
+2. **Cổng ĐKHP**:
+   - `dkhp_model.js` chứa mạng nơ-ron tích chập (Micro-CNN) siêu nhẹ (~136 KB) viết bằng pure JavaScript.
+   - Tự động bóc tách các nét màu ký tự, khử nhiễu và suy luận ra 4 ký tự in hoa (A-Z, 0-9) trong ~15 mili-giây.
+   - Tự điền và submit; nếu lần đầu trượt (rất hiếm), extension tự đổi mã mới và thử lại.
+3. **Session Keepalive**:
+   - `background.js` sử dụng `chrome.alarms` để ping định kỳ mỗi 10 phút.
+   - Giúp phiên đăng nhập tồn tại liên tục trong ngày làm việc mà không bị timeout.
+4. **Bảo mật tuyệt đối**: Mật khẩu và cookie chỉ lưu trữ cục bộ trong trình duyệt của bạn (`chrome.storage.local`), không gửi đi bất kỳ bên thứ ba nào.

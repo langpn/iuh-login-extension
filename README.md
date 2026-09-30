@@ -3,7 +3,8 @@
 Bộ công cụ tự động đăng nhập các cổng thông tin Đại học Công nghiệp TP.HCM (IUH):
 - **Cổng sinh viên** (`sv.iuh.edu.vn`) — Tự động vượt captcha bằng cơ chế chặn request ảnh ở tầng mạng (server tự bỏ qua kiểm tra captcha).
 - **LMS Moodle** (`lms.iuh.edu.vn`) — Tự động điền tài khoản và đăng nhập nhanh.
-- **Cổng ĐKHP** (`dkhp.iuh.edu.vn`) — Tự điền sẵn thông tin đăng nhập.
+- **Cổng ĐKHP** (`dkhp.iuh.edu.vn`) — **Tự động giải captcha** bằng mô hình Micro-CNN offline (< 150 KB, chạy 100% trong browser) và tự động đăng nhập.
+- **Giữ phiên sống cả ngày (Keepalive)** — Tự động ping ngầm giữ cookie (`ASC.AUTH`, `.ASPXFORMSAUTH`) để không bị văng ra sau 20 phút.
 - **Lịch học theo tuần** — Tự động quy đổi số tiết (*Tiết 7-9*) thành **khung giờ cụ thể** (*12:30 - 15:00*).
 
 ---
@@ -27,6 +28,8 @@ Dự án gồm **4 vùng công cụ độc lập**. Bạn chỉ cần tải đú
 
 ### Điểm nổi bật
 - **Bỏ qua captcha** cổng sinh viên 100% tự động.
+- **Tự động giải captcha ĐKHP**: Mô hình AI Micro-CNN siêu nhẹ tích hợp sẵn bên trong extension, đọc và điền mã 4 ký tự in hoa trong chớp mắt.
+- **Giữ phiên sống cả ngày**: Tự động duy trì phiên đăng nhập (keepalive), không lo bị timeout. Tái sử dụng session cookie mở thẳng portal.
 - **Popup tiện ích**: Mở nhanh Cổng SV, LMS, ĐKHP hoặc nhảy thẳng vào trang Lịch học chỉ với 1 click.
 - **Hiện giờ học thực tế**: Tự đổi các số tiết trên trang thời khóa biểu sang giờ học cụ thể.
 
@@ -141,4 +144,4 @@ python3 iuh_browser.py --keep-open <MSSV> <MATKHAU>
 ## 🔒 Lưu ý & Bảo mật
 - **Bảo mật tuyệt đối**: Tài khoản và mật khẩu chỉ lưu cục bộ trên máy bạn (`storage.local` của extension hoặc file `.json` nội bộ), không bao giờ gửi ra bên ngoài.
 - **Giới hạn phiên**: Cổng SV IUH chỉ cho phép duy nhất 1 phiên đăng nhập tại một thời điểm cho mỗi tài khoản.
-- **Cổng ĐKHP**: Cổng ĐKHP kiểm tra captcha chặt chẽ từ phía server. Tool hỗ trợ điền sẵn tài khoản để bạn nhập mã và nhấn Enter nhanh chóng.
+- **Cổng ĐKHP**: Cổng ĐKHP bắt buộc kiểm tra mã bảo vệ (4 ký tự in hoa/số). Extension đã tích hợp sẵn mô hình Micro-CNN offline tự động nhận diện và điền mã cho bạn. Nếu lần đầu đoán sai, extension tự làm mới ảnh và thử lại.
