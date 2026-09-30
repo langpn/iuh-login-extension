@@ -393,51 +393,248 @@ function injectThemeStyles() {
       letter-spacing: 0.2px !important;
     }
 
-    /* Nhãn radio chọn loại lịch */
-    html.iuh-dark .portlet-title .actions label,
-    html.iuh-dark .portlet-title label,
-    html.iuh-dark .box-df label {
-      color: #e2e8f0 !important;
-      font-weight: 500 !important;
-      font-size: 13px !important;
+    /* ========================================================
+       3 RADIO BUTTONS: DÀN TRẢI ĐỀU 1 HÀNG NGANG
+       ======================================================== */
+    .portlet-title .actions,
+    .portlet-title div:has(> input[type="radio"]),
+    .portlet-title div:has(> label > input[type="radio"]),
+    .box-df div:has(> input[type="radio"]),
+    .box-df div:has(> label > input[type="radio"]),
+    div:has(> label:has(input[value="1"])):has(> label:has(input[value="2"])) {
       display: inline-flex !important;
+      flex-direction: row !important;
+      flex-wrap: nowrap !important;
       align-items: center !important;
-      gap: 5px !important;
-      cursor: pointer !important;
-      margin: 0 6px !important;
-    }
-    html.iuh-dark .box-df input[type="radio"] {
-      accent-color: #0284c7 !important;
+      gap: 16px !important;
+      white-space: nowrap !important;
+      margin: 0 10px !important;
     }
 
-    /* Ô chọn ngày Datepicker */
-    html.iuh-dark .box-df input[type="text"],
-    html.iuh-dark .portlet-title input[type="text"] {
-      background-color: #1e293b !important;
-      border: 1px solid #334155 !important;
-      border-right: none !important;
-      border-radius: 8px 0 0 8px !important;
-      color: #f8fafc !important;
-      height: 36px !important;
-      padding: 0 10px !important;
-      font-size: 13px !important;
+    /* Các nhãn radio: dàn ngang, không bao giờ bị rớt dòng */
+    .portlet-title label:has(input[type="radio"]),
+    .box-df label:has(input[type="radio"]),
+    label:has(input[type="radio"]) {
+      display: inline-flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      gap: 6px !important;
+      margin: 0 !important;
+      white-space: nowrap !important;
+      cursor: pointer !important;
+      font-size: 13.5px !important;
       font-weight: 600 !important;
+      user-select: none !important;
+    }
+
+    /* Nút radio tròn hiện đại */
+    input[type="radio"] {
+      appearance: none !important;
+      -webkit-appearance: none !important;
+      width: 17px !important;
+      height: 17px !important;
+      border-radius: 50% !important;
+      margin: 0 !important;
+      cursor: pointer !important;
+      display: inline-grid !important;
+      place-content: center !important;
+      transition: all 0.2s ease !important;
+    }
+
+    /* Radio trong Dark Mode */
+    html.iuh-dark input[type="radio"] {
+      border: 2px solid #64748b !important;
+      background-color: #1e293b !important;
+    }
+    html.iuh-dark input[type="radio"]:checked {
+      border-color: #38bdf8 !important;
+      background-color: #1e293b !important;
+    }
+    html.iuh-dark input[type="radio"]:checked::before {
+      content: "" !important;
+      width: 9px !important;
+      height: 9px !important;
+      border-radius: 50% !important;
+      background-color: #38bdf8 !important;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.6) !important;
+    }
+    html.iuh-dark label:has(input[type="radio"]:checked) {
+      color: #38bdf8 !important;
+      font-weight: 700 !important;
+    }
+
+    /* Radio trong Light Mode */
+    html.iuh-light input[type="radio"] {
+      border: 2px solid #94a3b8 !important;
+      background-color: #ffffff !important;
+    }
+    html.iuh-light input[type="radio"]:checked {
+      border-color: #0284c7 !important;
+      background-color: #ffffff !important;
+    }
+    html.iuh-light input[type="radio"]:checked::before {
+      content: "" !important;
+      width: 9px !important;
+      height: 9px !important;
+      border-radius: 50% !important;
+      background-color: #0284c7 !important;
+    }
+    html.iuh-light label:has(input[type="radio"]:checked) {
+      color: #0284c7 !important;
+      font-weight: 700 !important;
+    }
+
+    /* ========================================================
+       TỐI ƯU KENDO DATEPICKER & LỊCH POPUP
+       ======================================================== */
+    /* Khung Datepicker Wrapper */
+    html.iuh-dark .k-datepicker,
+    html.iuh-dark .k-picker-wrap,
+    html.iuh-dark span.k-datepicker,
+    html.iuh-dark span.k-picker-wrap,
+    html.iuh-dark .input-group:has(input[id*="Ngay"]) {
+      background-color: #1e293b !important;
+      border: 1.5px solid #334155 !important;
+      border-radius: 8px !important;
+      height: 36px !important;
+      box-sizing: border-box !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      overflow: hidden !important;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25) !important;
+      padding: 0 !important;
+    }
+    html.iuh-dark .k-picker-wrap:hover,
+    html.iuh-dark .k-picker-wrap.k-state-hover,
+    html.iuh-dark .k-picker-wrap.k-state-focused {
+      border-color: #38bdf8 !important;
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2) !important;
+    }
+
+    /* Ô input ngày tháng */
+    html.iuh-dark .k-datepicker .k-input,
+    html.iuh-dark input.k-input,
+    html.iuh-dark .box-df input[type="text"],
+    html.iuh-dark .portlet-title input[type="text"],
+    html.iuh-dark input[id*="Ngay"] {
+      background-color: transparent !important;
+      color: #f8fafc !important;
+      font-size: 13.5px !important;
+      font-weight: 700 !important;
+      height: 34px !important;
+      line-height: 34px !important;
+      padding: 0 12px !important;
+      border: none !important;
       outline: none !important;
     }
+
+    /* Nút icon lịch bên phải */
+    html.iuh-dark .k-datepicker .k-select,
+    html.iuh-dark span.k-select,
     html.iuh-dark .box-df .input-group-addon,
     html.iuh-dark .box-df .input-group-text,
-    html.iuh-dark .box-df .input-group .btn,
     html.iuh-dark .portlet-title .input-group-addon {
       background-color: #1e293b !important;
-      border: 1px solid #334155 !important;
-      border-left: none !important;
-      border-radius: 0 8px 8px 0 !important;
+      border: none !important;
+      border-left: 1px solid #334155 !important;
       color: #38bdf8 !important;
-      height: 36px !important;
+      width: 36px !important;
+      height: 34px !important;
       display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
-      padding: 0 10px !important;
+      cursor: pointer !important;
+      padding: 0 !important;
+      transition: background 0.2s ease, color 0.2s ease !important;
+    }
+    html.iuh-dark .k-datepicker .k-select:hover,
+    html.iuh-dark span.k-select:hover {
+      background-color: #334155 !important;
+      color: #7dd3fc !important;
+    }
+    html.iuh-dark .k-icon.k-i-calendar,
+    html.iuh-dark .k-select i,
+    html.iuh-dark .k-select .fa {
+      color: #38bdf8 !important;
+    }
+
+    /* Lịch Popup (Kendo Calendar Popup) Dark Mode */
+    html.iuh-dark .k-calendar-container,
+    html.iuh-dark .k-popup,
+    html.iuh-dark .k-calendar {
+      background-color: #0f172a !important;
+      border: 1px solid #334155 !important;
+      border-radius: 12px !important;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75) !important;
+      color: #f8fafc !important;
+      overflow: hidden !important;
+    }
+    html.iuh-dark .k-calendar .k-header {
+      background: #1e293b !important;
+      border-bottom: 1px solid #334155 !important;
+      color: #f8fafc !important;
+      padding: 8px 12px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+    }
+    html.iuh-dark .k-calendar .k-header .k-link {
+      color: #f8fafc !important;
+      font-weight: 700 !important;
+      font-size: 13.5px !important;
+    }
+    html.iuh-dark .k-calendar .k-nav-prev,
+    html.iuh-dark .k-calendar .k-nav-next,
+    html.iuh-dark .k-calendar .k-header .k-icon {
+      color: #38bdf8 !important;
+      cursor: pointer !important;
+    }
+    html.iuh-dark .k-calendar th {
+      background: #0f172a !important;
+      color: #38bdf8 !important;
+      font-weight: 700 !important;
+      font-size: 12px !important;
+      padding: 6px 4px !important;
+      border-bottom: 1px solid #1e293b !important;
+      text-align: center !important;
+    }
+    html.iuh-dark .k-calendar td .k-link {
+      color: #cbd5e1 !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      padding: 6px !important;
+      border-radius: 8px !important;
+      display: block !important;
+      transition: all 0.15s ease !important;
+    }
+    html.iuh-dark .k-calendar td .k-link:hover {
+      background-color: #1e293b !important;
+      color: #38bdf8 !important;
+    }
+    html.iuh-dark .k-calendar td.k-other-month .k-link {
+      color: #475569 !important;
+      opacity: 0.6 !important;
+    }
+    html.iuh-dark .k-calendar td.k-state-selected .k-link,
+    html.iuh-dark .k-calendar td.k-selected .k-link {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+      color: #ffffff !important;
+      font-weight: 800 !important;
+      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.5) !important;
+    }
+    html.iuh-dark .k-calendar td.k-today .k-link {
+      border: 1.5px solid #38bdf8 !important;
+      color: #38bdf8 !important;
+    }
+    html.iuh-dark .k-calendar .k-footer,
+    html.iuh-dark .k-calendar .k-footer .k-link {
+      background: #1e293b !important;
+      border-top: 1px solid #334155 !important;
+      color: #38bdf8 !important;
+      font-weight: 700 !important;
+      font-size: 12.5px !important;
+      text-align: center !important;
+      padding: 8px !important;
     }
 
     /* CÁC NÚT ĐIỀU HƯỚNG: ĐỒNG BỘ, ĐẸP MẮT */
@@ -832,7 +1029,23 @@ function centerLegend(root) {
   }
 }
 
-// 9. Quản lý Dark/Light mode và nút Toggle
+// 9. Đảm bảo 3 nút radio dàn trải thành 1 hàng ngang duy nhất
+function ensureRadioRow() {
+  const radios = document.querySelectorAll("input[type='radio']");
+  if (radios.length >= 2) {
+    const parent = radios[0].closest(".actions") || radios[0].closest("div:has(> label)") || radios[0].parentElement?.parentElement;
+    if (parent) {
+      parent.style.setProperty("display", "inline-flex", "important");
+      parent.style.setProperty("flex-direction", "row", "important");
+      parent.style.setProperty("flex-wrap", "nowrap", "important");
+      parent.style.setProperty("align-items", "center", "important");
+      parent.style.setProperty("gap", "16px", "important");
+      parent.style.setProperty("white-space", "nowrap", "important");
+    }
+  }
+}
+
+// 10. Quản lý Dark/Light mode và nút Toggle
 function setupThemeMode(defaultMode = "dark") {
   injectThemeStyles();
   if (api && api.storage) {
@@ -876,6 +1089,7 @@ function main() {
   removeLogo();
   setupSidebarCollapse();
   equalizeColumns();
+  ensureRadioRow();
   thayThe(document);
   boldTeacherName(document);
   fixBrokenText(document);
@@ -885,6 +1099,7 @@ function main() {
     removeLogo();
     setupSidebarCollapse();
     equalizeColumns();
+    ensureRadioRow();
     thayThe(document);
     boldTeacherName(document);
     fixBrokenText(document);
