@@ -5,6 +5,8 @@ Chromium và Firefox:
 
 - **Cổng sinh viên** `sv.iuh.edu.vn` — không cần nhập captcha.
 - **LMS Moodle** `lms.iuh.edu.vn` — điền form và đăng nhập (Moodle không có captcha).
+- **Đăng ký học phần** `dkhp.iuh.edu.vn` — điền sẵn MSSV + mật khẩu, bạn chỉ cần
+  gõ **mã bảo vệ** rồi Enter (xem mục *Lưu ý* — trang này bắt buộc captcha).
 - **Lịch theo tuần** `sv.iuh.edu.vn/.../lich-theo-tuan.html` — đổi *“Tiết: X - Y”*
   thành **giờ cụ thể** (ví dụ *Tiết 7 - 9 → 12:30 - 15:00*) ngay trên trang.
 
@@ -17,7 +19,10 @@ Chromium và Firefox:
 3. `content.js` điền MSSV + mật khẩu rồi bấm nút đăng nhập cổng SV. Mật khẩu do
    **JS của chính trang** mã hoá (extension không tự mã hoá, tránh sai thuật toán).
 4. `lms.js` điền form Moodle (`#username`/`#password` + `logintoken`) và submit.
-5. `schedule.js` chạy trên trang lịch tuần, thay số tiết bằng khung giờ tương ứng
+5. `dkhp.js` điền sẵn form ĐKHP (`#UserName`/`#Password`) rồi focus ô `#Captcha`;
+   việc mã hoá mật khẩu do JS của chính trang làm lúc submit, nên **không** thể bỏ
+   qua captcha như cổng SV (server kiểm tra captcha ở phía server).
+6. `schedule.js` chạy trên trang lịch tuần, thay số tiết bằng khung giờ tương ứng
    (bảng quy đổi tiết → giờ của IUH) và theo dõi DOM để cập nhật cả nội dung nạp bằng AJAX.
 
 ## Cài đặt
@@ -36,10 +41,14 @@ Chromium và Firefox:
 1. Bấm icon extension → nhập **MSSV** và **mật khẩu** → **Lưu**.
 2. Bấm **Mở trang login** (hoặc tự mở trang đăng nhập). Extension tự điền và đăng nhập.
 3. Muốn vào LMS: bấm **Mở LMS** (hoặc mở thẳng `https://lms.iuh.edu.vn/login/index.php`).
-4. Tài khoản chỉ lưu cục bộ trên máy (`storage.local`), không gửi đi đâu khác.
+4. Muốn vào ĐKHP: bấm **Mở ĐKHP** — form đã điền sẵn, chỉ cần gõ **mã bảo vệ** và Enter.
+5. Tài khoản chỉ lưu cục bộ trên máy (`storage.local`), không gửi đi đâu khác.
 
 ## Lưu ý
 - Cổng SV giới hạn tần suất đăng nhập (~10 giây/lần). Extension tự chờ rồi thử lại (tối đa 2 lần/tab).
 - LMS (Moodle) không giới hạn kiểu này, đăng nhập gần như tức thì.
 - Nếu IUH đổi đường dẫn ảnh captcha, sửa `rules.json` cho khớp.
+- **ĐKHP luôn bắt captcha ở phía server** (khác cổng SV): đã thử bỏ trống, chặn ảnh,
+  OCR và cả SSO `DkhpSsoRedirect` từ cổng SV đều không qua được. Extension chỉ có thể
+  điền sẵn tài khoản để bạn gõ mã bảo vệ nhanh hơn.
 - Không commit `storage` hay thông tin đăng nhập lên Git.

@@ -48,6 +48,7 @@ Tự động đăng nhập các cổng của IUH:
 2. Bấm icon extension → nhập **MSSV + mật khẩu** → **Lưu**
 3. Mở https://sv.iuh.edu.vn/sinh-vien-dang-nhap.html → tự đăng nhập
 4. Muốn vào LMS: bấm icon → **Mở LMS** (hoặc mở thẳng https://lms.iuh.edu.vn/login/index.php) → tự đăng nhập
+5. Muốn vào ĐKHP: bấm icon → **Mở ĐKHP** → form điền sẵn, chỉ cần gõ **mã bảo vệ** rồi Enter
 
 **Nếu chỉ muốn chạy bằng dòng lệnh** (không cài gì, cần Python sẵn có):
 
