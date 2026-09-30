@@ -10,3 +10,7 @@ playwright>=1.40
 # - macOS:  brew install tesseract
 # - Ubuntu: sudo apt install tesseract-ocr
 # - Windows: https://github.com/UB-Mannheim/tesseract/wiki
+#
+# Tuỳ chọn: tự đọc captcha ĐKHP (dkhp / dkhp-harvest)
+#     pip install ddddocr
+# ddddocr là tuỳ chọn: thiếu nó thì iuh_login.py vẫn chạy và tự nhờ nhập tay.

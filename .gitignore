@@ -1,9 +1,13 @@
 # Thông tin đăng nhập / phiên — KHÔNG commit
 session.json
 lms_session.json
+dkhp_session.json
 cookies.txt
 browser_cookies.txt
 config.json
+
+# Dữ liệu huấn luyện captcha (sinh ra khi chạy dkhp-harvest)
+captcha_dataset/
 
 # Python
 __pycache__/

@@ -42,6 +42,7 @@ import http.cookiejar
 import json
 import os
 import re
+import shutil
 import ssl
 import subprocess
 import sys
@@ -60,6 +61,19 @@ DEFAULT_SESSION_FILE = "session.json"
 DEFAULT_LMS_SESSION_FILE = "lms_session.json"
 DEFAULT_COOKIES_FILE = "cookies.txt"
 DEFAULT_CONFIG_FILE = "config.json"
+DKHP_BASE = "https://dkhp.iuh.edu.vn"
+DKHP_LOGIN = "/Account/Login"
+DKHP_CAPTCHA_URL = "/WebCommon/GetCaptcha"
+DKHP_KEY_URL = "/Common/GetPrivateKey"
+DKHP_PORTAL = "/DangKyHocPhan/ThongTinPortal"
+CAPTCHA_LEN = 4
+DEFAULT_DKHP_SESSION_FILE = "dkhp_session.json"
+DEFAULT_DATASET_DIR = "captcha_dataset"
+# Bộ mẫu chuẩn kèm repo (đã được server xác nhận) để có dữ liệu ngay từ đầu.
+DEFAULT_SEED_DIR = "captcha_seed"
+# Đủ mẫu thì ngừng thu thập: chỉ ghi thêm khi dataset còn dưới
+# `DATASET_GOOD_ENOUGH` mẫu đã được server xác nhận.
+DATASET_GOOD_ENOUGH = 300
 
 # ===========================================================================
 # 1. AES-128-CBC thuần Python (không cần pycryptodome)
@@ -545,6 +559,358 @@ def is_lms_logged_in(s):
 
 
 # ===========================================================================
+# 4c. ĐKHP (dkhp.iuh.edu.vn) — đăng ký học phần
+#   Cùng họ ASCVN với cổng SV (cùng AES-128-CBC + PBKDF2) NHƯNG server LUÔN
+#   kiểm tra captcha, không có cơ chế bỏ qua như cổng SV. Vì vậy:
+#     - tự đọc captcha bằng ddddocr (nếu đã cài) trong một ngân sách thời gian
+#       ngắn, thử lại nhiều lần với phiên mới (mỗi lần thử rất nhẹ);
+#     - hết ngân sách thì nhờ người dùng nhập tay;
+#     - MỌI lần đăng nhập thành công (tự động hoặc nhập tay) đều được lưu lại
+#       thành một mẫu (ảnh, nhãn) đã được server xác nhận — dùng làm dữ liệu
+#       huấn luyện về sau.
+# ===========================================================================
+_OCR = None
+
+
+def _norm_captcha(text):
+    """Chuẩn hoá theo đúng luật của server: đúng 4 ký tự, chữ in hoa."""
+    text = re.sub(r"[^A-Za-z0-9]", "", text or "").upper()
+    return text if len(text) == CAPTCHA_LEN else ""
+
+
+def _ocr_captcha(raw, debug=False):
+    """Đọc captcha DKHP bằng ddddocr. Trả về mã 4 ký tự hoặc '' nếu không chắc.
+
+    ddddocr là tuỳ chọn: nếu chưa cài, hàm trả về '' để caller chuyển sang
+    nhập tay. Cài bằng: pip install ddddocr
+    """
+    global _OCR
+    try:
+        if _OCR is None:
+            import ddddocr
+            _OCR = ddddocr.DdddOcr(show_ad=False)
+        text = _OCR.classification(raw)
+    except Exception as e:
+        if debug:
+            print("[dkhp] OCR không khả dụng:", e)
+        return ""
+    code = _norm_captcha(text)
+    if debug:
+        print("[dkhp] OCR = %r → %r" % (text, code))
+    return code
+
+
+def _dkhp_failure(body):
+    """Suy ra loại lỗi từ nội dung trang trả về sau POST."""
+    if "Mã bảo vệ" in body or "mã bảo vệ" in body:
+        return CaptchaRequiredError("DKHP: captcha sai")
+    m = re.search(r'class="[^"]*(?:validation|error|alert)[^"]*"[^>]*>(.*?)<',
+                  body, re.I | re.S)
+    msg = clean(m.group(1)) if m else ""
+    if "không đúng" in msg or "không chính xác" in msg:
+        return LoginError("DKHP: sai tài khoản hoặc mật khẩu")
+    return LoginError("DKHP: %s" % (msg or "đăng nhập thất bại"))
+
+
+def _dkhp_attempt(username, password, guess_fn, debug=False):
+    """Một lần thử đăng nhập DKHP trên phiên mới.
+
+    guess_fn(nh_bytes) -> mã captcha (str). Trả về None nghĩa là "chưa đoán
+    được, bỏ lượt này" (không POST để đỡ tải server).
+    Trả về (ok, session, url_cuối, body, ảnh_bytes, mã_đã_dùng).
+    """
+    s = Session(base=DKHP_BASE)
+    _, page = s.fetch(DKHP_LOGIN)
+    token = _find_token(page)
+    if not token:
+        raise LoginError("DKHP: không tìm thấy __RequestVerificationToken")
+
+    pk = s.get(DKHP_KEY_URL + "?salt=" + urllib.parse.quote(username)) \
+          .read().decode("utf-8", "replace").strip()
+    if not pk:
+        raise LoginError("DKHP: không lấy được private key")
+
+    raw = s.get(DKHP_CAPTCHA_URL + "?r=" + str(time.time())).read()
+    cap = guess_fn(raw)
+    if cap is None:
+        return False, s, DKHP_BASE + DKHP_LOGIN, "", raw, ""
+
+    data = {
+        "ReturnUrl": "",
+        "__RequestVerificationToken": token,
+        "UserName": username,
+        "Password": encrypt_password(password, pk),
+        "Captcha": cap,
+    }
+    resp = s.post(DKHP_LOGIN, data, referer=DKHP_BASE + DKHP_LOGIN)
+    final = resp.geturl()
+    body = s.text(resp)
+    ok = ("ThongTinPortal" in final
+          or any(c.name == ".ASPXFORMSAUTH" for c in s.cj))
+    return ok, s, final, body, raw, cap
+
+
+def dataset_size(dataset_dir):
+    """Số mẫu đã thu thập trong dataset (0 nếu chưa có)."""
+    path = os.path.join(dataset_dir, "labels.csv")
+    try:
+        with open(path, encoding="utf-8") as f:
+            return sum(1 for line in f
+                       if line.strip() and not line.startswith("file,"))
+    except OSError:
+        return 0
+
+
+def dataset_is_full(dataset_dir, target=DATASET_GOOD_ENOUGH):
+    """True khi dataset đã đủ tốt/lớn → ngừng thu thêm cho đỡ phiền server."""
+    return bool(dataset_dir) and target > 0 and dataset_size(dataset_dir) >= target
+
+
+def _read_labels(dataset_dir):
+    """Đọc labels.csv → [(file, nhãn), ...] (bỏ dòng tiêu đề nếu có)."""
+    path = os.path.join(dataset_dir, "labels.csv")
+    rows = []
+    try:
+        with open(path, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("file,"):
+                    continue
+                parts = line.split(",")
+                if len(parts) >= 2:
+                    rows.append((parts[0], parts[1]))
+    except OSError:
+        pass
+    return rows
+
+
+def seed_dataset(dataset_dir, seed_dir=DEFAULT_SEED_DIR):
+    """Nhân bản bộ mẫu chuẩn kèm repo khi dataset đang trống.
+
+    Repo có sẵn một ít mẫu đã được server xác nhận trong `captcha_seed/` để
+    model có dữ liệu chuẩn ngay từ lần chạy đầu. Chỉ chép khi dataset chưa có
+    gì, không ghi đè dữ liệu người dùng đã thu thập.
+    Trả về số mẫu đã chép (0 nếu không cần / không có seed).
+    """
+    if not dataset_dir or not seed_dir or not os.path.isdir(seed_dir):
+        return 0
+    if dataset_size(dataset_dir) > 0:
+        return 0
+    src_labels = os.path.join(seed_dir, "labels.csv")
+    if not os.path.isfile(src_labels):
+        return 0
+    os.makedirs(dataset_dir, exist_ok=True)
+    copied = 0
+    try:
+        with open(src_labels, encoding="utf-8") as f:
+            rows = [ln.strip() for ln in f if ln.strip()]
+    except OSError:
+        return 0
+    out = open(os.path.join(dataset_dir, "labels.csv"), "a", encoding="utf-8")
+    try:
+        for row in rows:
+            parts = row.split(",")
+            if len(parts) < 2:
+                continue
+            name, label = parts[0], parts[1]
+            src = os.path.join(seed_dir, name)
+            dst = os.path.join(dataset_dir, name)
+            if not os.path.isfile(src) or os.path.exists(dst):
+                continue
+            shutil.copyfile(src, dst)
+            out.write("%s,%s\n" % (name, label))
+            copied += 1
+    finally:
+        out.close()
+    return copied
+
+
+def _save_captcha_sample(dataset_dir, raw, label):
+    """Lưu một cặp (ảnh, nhãn) đã được server xác nhận để huấn luyện sau này.
+
+    Tên file là hash nội dung nên ảnh trùng không bị lưu lặp.
+    Trả về tên file, hoặc None nếu bỏ qua (trùng / đủ mẫu / lỗi ghi).
+    """
+    try:
+        digest = hashlib.sha1(raw).hexdigest()[:16]
+        os.makedirs(dataset_dir, exist_ok=True)
+        name = "cap_%s.jpg" % digest
+        path = os.path.join(dataset_dir, name)
+        if os.path.exists(path):
+            return None  # đã có mẫu này rồi
+        with open(path, "wb") as f:
+            f.write(raw)
+        with open(os.path.join(dataset_dir, "labels.csv"), "a",
+                  encoding="utf-8") as f:
+            f.write("%s,%s,%d\n" % (name, label, int(time.time())))
+        return name
+    except OSError:
+        return None
+
+
+def _dkhp_manual_guess(raw):
+    """Hiện ảnh captcha và nhờ người dùng nhập."""
+    path = os.path.join(tempfile.gettempdir(), "iuh_dkhp_captcha.jpg")
+    with open(path, "wb") as f:
+        f.write(raw)
+    print("  → ảnh captcha:", path)
+    if sys.platform == "darwin":
+        subprocess.call(["open", path])
+    while True:
+        code = _norm_captcha(input("  Nhập captcha (4 ký tự, in hoa): "))
+        if code:
+            return code
+        print("  ! Cần đúng 4 ký tự, thử lại.")
+
+
+def dkhp_login(username, password, session=None, captcha="auto", debug=False,
+               dataset_dir=DEFAULT_DATASET_DIR, auto_seconds=6.0,
+               max_attempts=40, dataset_target=DATASET_GOOD_ENOUGH):
+    """Đăng nhập dkhp.iuh.edu.vn, trả về Session có cookie .ASPXFORMSAUTH.
+
+    captcha:
+      "auto"      - tự đọc captcha trong `auto_seconds` giây; hết thì nhập tay
+      "manual"    - nhập tay ngay
+      "text:XXXX" - dùng mã có sẵn
+
+    Mỗi lần đăng nhập thành công, cặp (ảnh, mã) đã được server xác nhận sẽ
+    được lưu vào `dataset_dir` để huấn luyện — nhưng tự dừng thu thập khi
+    dataset đã đủ `dataset_target` mẫu.
+    """
+    mode = (captcha or "auto").strip()
+    fixed = mode[5:].strip() if mode.startswith("text:") else None
+
+    # Lần chạy đầu: nạp sẵn bộ mẫu chuẩn kèm repo để có dữ liệu ngay.
+    if dataset_dir:
+        seeded = seed_dataset(dataset_dir)
+        if seeded and debug:
+            print("[dkhp] đã nạp %d mẫu chuẩn từ %s" % (seeded, DEFAULT_SEED_DIR))
+
+    def ocr_guess(raw):
+        code = _ocr_captcha(raw, debug)
+        return code or None  # None: bỏ lượt, không POST
+
+    if mode == "manual":
+        guess = _dkhp_manual_guess
+    elif fixed is not None:
+        guess = lambda raw: fixed
+    else:
+        guess = ocr_guess
+
+    deadline = time.time() + max(1.0, float(auto_seconds))
+    attempts = 0
+    last = None
+
+    while True:
+        attempts += 1
+        # Hết ngân sách tự đọc → chuyển sang nhập tay (nếu có bàn phím).
+        if guess is ocr_guess and time.time() >= deadline:
+            if sys.stdin.isatty():
+                print("  ! Hết %.0fs tự đọc captcha → nhờ bạn nhập tay."
+                      % auto_seconds)
+                guess = _dkhp_manual_guess
+            else:
+                raise last or LoginError(
+                    "DKHP: không tự đọc được captcha (hết %.0fs)"
+                    % auto_seconds)
+
+        try:
+            ok, s, final, body, raw, cap = _dkhp_attempt(
+                username, password, guess, debug)
+        except LoginError:
+            raise
+        except urllib.error.HTTPError as e:
+            last = LoginError("DKHP: HTTP %s" % e.code)
+            if attempts >= max_attempts:
+                raise last
+            continue
+
+        if ok:
+            s.username = username
+            # Chỉ ghi thêm khi dataset chưa đủ tốt/lớn.
+            if (dataset_dir and raw and cap
+                    and not dataset_is_full(dataset_dir, dataset_target)):
+                name = _save_captcha_sample(dataset_dir, raw, cap)
+                if debug and name:
+                    print("[dkhp] đã lưu mẫu %s = %s" % (name, cap))
+            if debug:
+                print("[dkhp] ✓ %s (lần %d)" % (final, attempts))
+            return s
+
+        if not cap:
+            # chưa đoán được (OCR bỏ lượt) → thử phiên khác
+            if attempts >= max_attempts:
+                raise LoginError("DKHP: không tự đọc được captcha")
+            continue
+
+        last = _dkhp_failure(body)
+        # captcha cố định / nhập tay sai thì dừng, không đoán lại.
+        if fixed is not None or guess is _dkhp_manual_guess:
+            raise last
+        if attempts >= max_attempts:
+            if sys.stdin.isatty():
+                print("  ! Đã thử %d lần tự động → nhờ bạn nhập tay." % attempts)
+                guess = _dkhp_manual_guess
+                attempts = 0
+                continue
+            raise last
+
+
+def is_dkhp_logged_in(s):
+    """Kiểm tra session DKHP còn sống."""
+    try:
+        url, body = s.fetch(DKHP_PORTAL)
+    except Exception:
+        return False
+    if DKHP_LOGIN in url or "form-login" in body:
+        return False
+    return True
+
+
+def harvest_captcha(username, password, count=20, dataset_dir=DEFAULT_DATASET_DIR,
+                    debug=False, target=DATASET_GOOD_ENOUGH):
+    """Thu thập mẫu captcha đã được server xác nhận (dương tính thật).
+
+    Mỗi lần đăng nhập THÀNH CÔNG chứng minh mã ta đoán là đúng → lưu cặp
+    (ảnh, nhãn). Dùng để huấn luyện model nhỏ chạy offline trong extension.
+    Tự dừng khi dataset đã đủ `target` mẫu.
+    Trả về {"tries": n, "wins": m, "skipped": bool}.
+    """
+    have = dataset_size(dataset_dir)
+    if dataset_dir:
+        seeded = seed_dataset(dataset_dir)
+        if seeded:
+            have = dataset_size(dataset_dir)
+            if debug:
+                print("[harvest] đã nạp %d mẫu chuẩn từ %s"
+                      % (seeded, DEFAULT_SEED_DIR))
+    if dataset_is_full(dataset_dir, target):
+        print("✓ Dataset đã đủ tốt (%d/%d mẫu) — không thu thêm." % (have, target))
+        return {"tries": 0, "wins": 0, "skipped": True}
+
+    if debug and have:
+        print("[harvest] dataset hiện có %d mẫu (mục tiêu %d)" % (have, target))
+
+    wins = tries = 0
+    started = time.time()
+    while tries < count and not dataset_is_full(dataset_dir, target):
+        tries += 1
+        ok, s, final, body, raw, cap = _dkhp_attempt(
+            username, password, lambda b: _ocr_captcha(b, debug) or None, debug)
+        if ok:
+            wins += 1
+            if dataset_dir and raw and cap:
+                _save_captcha_sample(dataset_dir, raw, cap)
+            if debug:
+                print("[harvest] %d/%d ✓ %s" % (wins, tries, cap))
+        elif debug:
+            print("[harvest] %d/%d ✗ %s" % (wins, tries, cap or "(bỏ)"))
+    if debug:
+        print("[harvest] xong sau %.0fs" % (time.time() - started))
+    return {"tries": tries, "wins": wins, "skipped": False}
+
+
+# ===========================================================================
 # 5. Tiện ích HTML
 # ===========================================================================
 def clean(text):
@@ -775,7 +1141,7 @@ def load_config(path):
 
 
 def resolve_credentials(args, cfg):
-    use_pos = getattr(args, "command", "login") == "login"
+    use_pos = getattr(args, "command", "login") in ("login", "dkhp", "dkhp-harvest")
     user = (args.username or (args.arg if use_pos else None)
             or cfg.get("username") or os.environ.get("IUH_USER"))
     pw = (args.password or (args.arg2 if use_pos else None)
@@ -847,7 +1213,8 @@ def main(argv=None):
                "  iuh_login.py keepalive --interval 600\n")
     ap.add_argument("command", nargs="?", default="login",
                     choices=["login", "check", "keepalive", "get", "grades",
-                             "schedule", "info", "cookie", "logout", "lms"])
+                             "schedule", "info", "cookie", "logout", "lms",
+                             "dkhp", "dkhp-harvest", "dkhp-dataset"])
     ap.add_argument("arg", nargs="?", help="với `login`: MSSV; với `get`: đường dẫn trang")
     ap.add_argument("arg2", nargs="?", help="với `login`: mật khẩu")
     ap.add_argument("--config", default=DEFAULT_CONFIG_FILE, help="file cấu hình JSON")
@@ -868,6 +1235,16 @@ def main(argv=None):
                     help="số lần thử lại khi bị chặn đăng nhập liên tiếp")
     ap.add_argument("--retry-wait", type=int, default=8,
                     help="giây chờ giữa các lần thử lại")
+    ap.add_argument("--captcha-budget", type=float, default=5.0,
+                    help="giây tối đa để tự đọc captcha trước khi hỏi người dùng")
+    ap.add_argument("--no-dataset", action="store_true",
+                    help="không lưu captcha/đáp án đúng vào dataset huấn luyện")
+    ap.add_argument("--dataset", default=DEFAULT_DATASET_DIR,
+                    help="thư mục dataset captcha (mặc định captcha_dataset)")
+    ap.add_argument("--dataset-target", type=int, default=DATASET_GOOD_ENOUGH,
+                    help="dừng thu thập khi dataset đã đủ %d mẫu" % DATASET_GOOD_ENOUGH)
+    ap.add_argument("--count", type=int, default=20,
+                    help="số lần thử cho `dkhp-harvest`")
     ap.add_argument("--debug", action="store_true")
     args = ap.parse_args(argv)
     cfg = load_config(args.config)
@@ -936,6 +1313,69 @@ def main(argv=None):
         if out:
             s.save_cookies_netscape(out)
             print("  file    :", out)
+        return 0
+
+    # ---------- DKHP (đăng ký học phần) ----------
+    if args.command in ("dkhp", "dkhp-harvest"):
+        user, pw = resolve_credentials(args, cfg)
+        if not user or not pw:
+            ap.error("Thiếu username/password (truyền trực tiếp, config.json hoặc IUH_USER/IUH_PASS)")
+        ds = None if args.no_dataset else args.dataset
+        if args.command == "dkhp-harvest":
+            if ds and dataset_is_full(ds, args.dataset_target):
+                print("✓ Dataset đã đủ tốt (%d/%d mẫu) — không thu thập thêm." % (
+                    dataset_size(ds), args.dataset_target))
+                print("  dataset :", ds)
+                return 0
+            stats = harvest_captcha(user, pw, count=args.count, dataset_dir=ds,
+                                    debug=args.debug, target=args.dataset_target)
+            if stats.get("skipped"):
+                print("✓ Dataset đã đủ tốt (%d mẫu) — không thu thập thêm."
+                      % dataset_size(ds))
+            else:
+                print("✓ Thu thập xong: %d/%d lượt đúng (%.1f%%)" % (
+                    stats["wins"], stats["tries"],
+                    100.0 * stats["wins"] / max(1, stats["tries"])))
+            print("  dataset : %s (%d mẫu)" % (ds or "(tắt)",
+                                                dataset_size(ds) if ds else 0))
+            return 0
+        path = args.session or cfg.get("dkhp_session_file") or DEFAULT_DKHP_SESSION_FILE
+        if os.path.exists(path) and not args.force:
+            try:
+                s = Session.load(path)
+                if is_dkhp_logged_in(s):
+                    print("✓ Session ĐKHP còn sống (%s)" % path)
+                    print("  cookies :", [c.name for c in s.cj])
+                    return 0
+            except Exception:
+                pass
+        try:
+            cap_mode = args.captcha
+            if cap_mode in ("skip", "ocr"):
+                cap_mode = "auto"
+            s = dkhp_login(user, pw, captcha=cap_mode,
+                           auto_seconds=args.captcha_budget, dataset_dir=ds,
+                           debug=args.debug, dataset_target=args.dataset_target)
+        except LoginError as e:
+            print("✗ Đăng nhập ĐKHP thất bại:", e)
+            return 1
+        s.save(path, username=user)
+        print("✓ Đăng nhập ĐKHP thành công (%.2fs)" % (time.time() - t0))
+        print("  session :", path)
+        print("  cookies :", [c.name for c in s.cj])
+        return 0
+
+    # ---------- thống kê dataset captcha ----------
+    if args.command == "dkhp-dataset":
+        ds = args.dataset
+        rows = _read_labels(ds)
+        total = len(rows)
+        labels = {lab for _, lab in rows}
+        print("Dataset :", ds)
+        print("  mẫu   : %d" % total)
+        print("  nhãn  : %d khác nhau" % len(labels))
+        print("  trạng thái: %s" % ("đủ tốt" if total >= args.dataset_target
+                                    else "chưa đủ (%d/%d)" % (total, args.dataset_target)))
         return 0
 
     # ---------- các lệnh cần session ----------
