@@ -868,7 +868,7 @@ def is_dkhp_logged_in(s):
 
 
 def harvest_captcha(username, password, count=20, dataset_dir=DEFAULT_DATASET_DIR,
-                    debug=False, target=DATASET_GOOD_ENOUGH):
+                    debug=False, target=DATASET_GOOD_ENOUGH, delay=0.1):
     """Thu thập mẫu captcha đã được server xác nhận (dương tính thật).
 
     Mỗi lần đăng nhập THÀNH CÔNG chứng minh mã ta đoán là đúng → lưu cặp
@@ -905,6 +905,13 @@ def harvest_captcha(username, password, count=20, dataset_dir=DEFAULT_DATASET_DI
                 print("[harvest] %d/%d ✓ %s" % (wins, tries, cap))
         elif debug:
             print("[harvest] %d/%d ✗ %s" % (wins, tries, cap or "(bỏ)"))
+        if tries % 200 == 0:
+            have = dataset_size(dataset_dir)
+            print("[harvest] %d lượt, %d nhãn (%.1f%%), dataset=%d/%d, %.0fs"
+                  % (tries, wins, 100.0 * wins / tries, have, target,
+                     time.time() - started), flush=True)
+        if delay:
+            time.sleep(delay)
     if debug:
         print("[harvest] xong sau %.0fs" % (time.time() - started))
     return {"tries": tries, "wins": wins, "skipped": False}
