@@ -193,8 +193,8 @@ function injectThemeStyles() {
       table-layout: fixed !important;
       width: 100% !important;
       max-width: 100% !important;
-      border-collapse: separate !important;
-      border-spacing: 4px !important;
+      border-collapse: collapse !important;
+      border-spacing: 0 !important;
     }
 
     /* Cột đầu tiên: Ca học (Sáng / Chiều / Tối) - 75px */
@@ -227,7 +227,7 @@ function injectThemeStyles() {
     .table-responsive table tbody tr td:not(:first-child),
     table.fl-table tbody tr td:not(:first-child),
     table[id*="Lich"] tbody tr td:not(:first-child) {
-      padding: 3px !important;
+      padding: 4px !important;
       vertical-align: top !important;
     }
 
@@ -368,17 +368,47 @@ function injectThemeStyles() {
       background: rgba(30, 41, 59, 0.8) !important;
     }
 
-    /* KHUNG TOOLBAR VÀ TIÊU ĐỀ DARK MODE (ĐÈ SẠCH NỀN TRẮNG CỦA .box-df) */
-    html.iuh-dark .box-df,
+    /* ========================================================
+       DUY NHẤT 1 BOX BỌC NGOÀI (.box-df), TRIỆT TIÊU CÁC KHỐI LỒNG
+       ======================================================== */
+    html.iuh-dark .box-df {
+      background: rgba(15, 23, 42, 0.82) !important;
+      backdrop-filter: blur(20px) !important;
+      -webkit-backdrop-filter: blur(20px) !important;
+      border: 1px solid rgba(255, 255, 255, 0.08) !important;
+      border-radius: 16px !important;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45) !important;
+      padding: 16px !important;
+      margin-bottom: 20px !important;
+    }
+
+    /* Triệt tiêu toàn bộ nền và viền lồng nhau bên trong (chỉ giữ 1 box bọc duy nhất) */
     html.iuh-dark .portlet,
-    html.iuh-dark div[class*="box-df"] {
-      background: rgba(15, 23, 42, 0.9) !important;
-      background-color: rgba(15, 23, 42, 0.9) !important;
-      border: 1px solid #1e293b !important;
-      border-radius: 12px !important;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
-      padding: 12px 16px !important;
-      margin-bottom: 16px !important;
+    html.iuh-dark #viewLichTheoTuan,
+    html.iuh-dark .table-responsive,
+    html.iuh-dark div:has(> #tableLich),
+    html.iuh-dark div:has(> .table-responsive),
+    html.iuh-dark div:has(> #btnHienTai),
+    html.iuh-dark .box,
+    html.iuh-dark .box-body {
+      background: transparent !important;
+      background-color: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+    }
+
+    /* Header Toolbar */
+    .portlet-title,
+    .box-df .portlet-title {
+      display: flex !important;
+      flex-direction: row !important;
+      flex-wrap: wrap !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 12px !important;
+      margin-bottom: 14px !important;
+      border: none !important;
     }
 
     /* Tiêu đề "Lịch học, lịch thi theo tuần" */
@@ -391,6 +421,7 @@ function injectThemeStyles() {
       font-weight: 700 !important;
       font-size: 16px !important;
       letter-spacing: 0.2px !important;
+      flex-shrink: 0 !important;
     }
 
     /* ========================================================
@@ -408,7 +439,10 @@ function injectThemeStyles() {
       align-items: center !important;
       gap: 16px !important;
       white-space: nowrap !important;
-      margin: 0 10px !important;
+      flex-shrink: 0 !important;
+      width: max-content !important;
+      min-width: max-content !important;
+      margin: 0 !important;
     }
 
     /* Các nhãn radio: dàn ngang, không bao giờ bị rớt dòng */
@@ -681,40 +715,76 @@ function injectThemeStyles() {
       transform: translateY(-1px) !important;
     }
 
-    /* Bảng Lịch học Dark Mode */
+    /* ========================================================
+       BIẾN MẤT TOÀN BỘ ĐƯỜNG KẺ MÀU TRẮNG TRÊN TABLE (ĐỒNG NHẤT 100%)
+       ======================================================== */
+    html.iuh-dark table,
+    html.iuh-dark table.fl-table,
+    html.iuh-dark table[id*="Lich"],
+    html.iuh-dark .table-bordered,
+    html.iuh-dark .table-responsive table {
+      border: none !important;
+      border-color: transparent !important;
+      border-collapse: collapse !important;
+      border-spacing: 0 !important;
+      box-shadow: none !important;
+      background: transparent !important;
+    }
+
+    /* Triệt tiêu đường viền trắng của Bootstrap trên mọi th và td */
+    html.iuh-dark .table-bordered > :not(caption) > * > *,
+    html.iuh-dark .table-bordered th,
+    html.iuh-dark .table-bordered td,
+    html.iuh-dark table th,
+    html.iuh-dark table td {
+      border: 1px solid #1e293b !important; /* Đường kẻ tối tiệp màu với nền, KHÔNG CÒN ĐƯỜNG KẺ TRẮNG */
+    }
+
+    /* Tiêu đề Thứ và Ngày (thead th): Phẳng, liền mạch, tiệp màu */
     html.iuh-dark .table-responsive table thead th,
     html.iuh-dark table.fl-table thead th,
     html.iuh-dark table[id*="Lich"] thead th {
-      background: #1e293b !important;
+      background: #111c35 !important;
       color: #38bdf8 !important;
-      border: 1px solid #334155 !important;
-      border-radius: 8px !important;
-      padding: 8px 4px !important;
+      border: 1px solid #1e293b !important;
+      border-top: none !important;
+      border-radius: 0 !important;
+      padding: 10px 4px !important;
       font-weight: 700 !important;
       font-size: 13px !important;
       text-align: center !important;
     }
+
+    /* Cột Ca học (Sáng / Chiều / Tối) - Phẳng, liền mạch, tiệp màu */
     html.iuh-dark .table-responsive table thead th:first-child,
     html.iuh-dark table.fl-table thead th:first-child,
     html.iuh-dark table[id*="Lich"] thead th:first-child,
     html.iuh-dark .table-responsive table tbody tr td:first-child,
     html.iuh-dark table.fl-table tbody tr td:first-child,
     html.iuh-dark table[id*="Lich"] tbody tr td:first-child {
-      background: #1e293b !important;
+      width: 75px !important;
+      min-width: 70px !important;
+      max-width: 80px !important;
+      background: #111c35 !important;
       color: #f8fafc !important;
-      border: 1px solid #334155 !important;
-      border-radius: 8px !important;
+      border: 1px solid #1e293b !important;
+      border-left: none !important;
+      border-radius: 0 !important;
       font-weight: 800 !important;
       font-size: 13px !important;
       text-transform: uppercase !important;
       text-align: center !important;
     }
+
+    /* Các ô học tập: Đường kẻ tối siêu mảnh mờ, KHÔNG KẺ TRẮNG */
     html.iuh-dark .table-responsive table tbody tr td:not(:first-child),
     html.iuh-dark table.fl-table tbody tr td:not(:first-child),
     html.iuh-dark table[id*="Lich"] tbody tr td:not(:first-child) {
-      background-color: rgba(11, 19, 36, 0.65) !important;
-      border: 1px dashed rgba(255, 255, 255, 0.1) !important;
-      border-radius: 8px !important;
+      background-color: rgba(11, 19, 36, 0.45) !important;
+      border: 1px solid #1e293b !important;
+      border-radius: 0 !important;
+      padding: 4px !important;
+      vertical-align: top !important;
     }
 
     /* ========================================================
