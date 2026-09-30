@@ -6,9 +6,6 @@ cookies.txt
 browser_cookies.txt
 config.json
 
-# Dữ liệu huấn luyện captcha (sinh ra khi chạy dkhp-harvest)
-captcha_dataset/
-
 # Python
 __pycache__/
 *.py[cod]

@@ -1,16 +1,8 @@
-# iuh_login.py KHÔNG cần thư viện ngoài (chỉ Python chuẩn).
-#
-# iuh_browser.py cần Playwright:
+# Tuỳ chọn cho iuh_browser.py (nếu muốn script tự mở trình duyệt Playwright):
 playwright>=1.40
-#
-# Sau khi cài, tải trình duyệt cho Playwright:
-#     playwright install chromium
-#
-# Tuỳ chọn: OCR captcha (chỉ dùng cho iuh_login.py --captcha ocr)
-# - macOS:  brew install tesseract
-# - Ubuntu: sudo apt install tesseract-ocr
-# - Windows: https://github.com/UB-Mannheim/tesseract/wiki
-#
-# Tuỳ chọn: tự đọc captcha ĐKHP (dkhp / dkhp-harvest)
-#     pip install ddddocr
-# ddddocr là tuỳ chọn: thiếu nó thì iuh_login.py vẫn chạy và tự nhờ nhập tay.
+
+# Lưu ý:
+# - extension/: KHÔNG cần cài bất kỳ thư viện hay Python gì cả (chạy trực tiếp trên trình duyệt).
+# - iuh-autologin.user.js: KHÔNG cần cài thư viện (chạy trên Tampermonkey).
+# - iuh_login.py: Chạy thuần Python chuẩn (không cần cài thêm gì).
+#   (Tuỳ chọn: pip install ddddocr nếu muốn script tự đọc captcha cổng ĐKHP thay vì nhập tay).
