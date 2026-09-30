@@ -49,7 +49,26 @@ function injectThemeStyles() {
     div.col-md-2 div:has(> img[src*="Qr"]),
     div.col-md-2 img[src*="qr"],
     div.col-md-2 img[src*="QR"],
-    div.col-md-2 div:has(p:contains("OneUni")) {
+    div.col-md-2 div:has(img[src*="OneUni"]),
+    div.col-md-2 div:has(img[src*="oneuni"]),
+    div.col-md-2 div:has(p:contains("OneUni")),
+    div.col-md-2 div:has(p:contains("cài đặt OneUni")),
+    .box-download-app,
+    .down_ungdung {
+      display: none !important;
+    }
+
+    /* XÓA BUTTON ZOOM / TOÀN MÀN HÌNH */
+    .portlet-title a.fullscreen,
+    .portlet-title button.fullscreen,
+    .portlet-title .btn:has(i[class*="expand"]),
+    .portlet-title .btn:has(i[class*="compress"]),
+    .portlet-title a:has(i[class*="expand"]),
+    .portlet-title a:has(i[class*="compress"]),
+    .box-df .btn:has(i[class*="expand"]),
+    .box-df a[class*="fullscreen"],
+    .box-df button[class*="fullscreen"],
+    .fullscreen {
       display: none !important;
     }
 
@@ -184,8 +203,17 @@ function injectThemeStyles() {
     }
 
     /* ========================================================
-       5. BẢNG THỜI KHÓA BIỂU: CHIA ĐỀU TẤT CẢ CÁC CỘT CHUẨN XÁC 100%
+       5. BẢNG THỜI KHÓA BIỂU: BO GÓC VÀ CHIA ĐỀU CÁC CỘT CHUẨN XÁC
        ======================================================== */
+    .table-responsive,
+    div:has(> table.fl-table),
+    div:has(> table[id*="Lich"]) {
+      border-radius: 14px !important;
+      overflow: hidden !important;
+      border: 1px solid #1e293b !important;
+      box-sizing: border-box !important;
+    }
+
     .table-responsive,
     .table-responsive table,
     table.fl-table,
@@ -353,19 +381,59 @@ function injectThemeStyles() {
     /* Sidebar Drawer Dark Mode */
     html.iuh-dark div.col-md-2.d-none.d-sm-block,
     html.iuh-dark div.col-md-2:has(.sidebar-menu),
-    html.iuh-dark div.col-md-2:has(ul) {
-      background: rgba(15, 23, 42, 0.96) !important;
-      backdrop-filter: blur(20px) !important;
+    html.iuh-dark div.col-md-2:has(ul),
+    html.iuh-dark div.col-md-2 {
+      background: #0f172a !important;
+      background-color: #0f172a !important;
       border: 1px solid #1e293b !important;
       border-left: none !important;
-      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.6) !important;
+      border-radius: 0 16px 16px 0 !important;
+      box-shadow: 0 16px 45px rgba(0, 0, 0, 0.75) !important;
+      padding: 14px 0 !important;
     }
-    html.iuh-dark div.col-md-2 a {
-      color: #e2e8f0 !important;
+
+    /* Các khối chứa bên trong menu phải trong suốt */
+    html.iuh-dark div.col-md-2 ul,
+    html.iuh-dark div.col-md-2 li,
+    html.iuh-dark div.col-md-2 .sidebar-menu,
+    html.iuh-dark div.col-md-2 .accordion-menu,
+    html.iuh-dark div.col-md-2 div:not(#iuh-sidebar-tab) {
+      background: transparent !important;
+      background-color: transparent !important;
+      border-color: #1e293b !important;
     }
-    html.iuh-dark div.col-md-2 a:hover {
+
+    /* Chữ và icon trong menu: Trắng sáng rõ nét, không bị mờ */
+    html.iuh-dark div.col-md-2 a,
+    html.iuh-dark div.col-md-2 li a,
+    html.iuh-dark div.col-md-2 ul li a,
+    html.iuh-dark div.col-md-2 span:not(.badge) {
+      color: #f1f5f9 !important;
+      font-size: 13.5px !important;
+      font-weight: 600 !important;
+      padding: 12px 18px !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 12px !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+      transition: all 0.2s ease !important;
+      text-decoration: none !important;
+    }
+
+    html.iuh-dark div.col-md-2 a i,
+    html.iuh-dark div.col-md-2 a .fa,
+    html.iuh-dark div.col-md-2 a [class*="fa-"] {
       color: #38bdf8 !important;
-      background: rgba(30, 41, 59, 0.8) !important;
+      font-size: 16px !important;
+      width: 20px !important;
+      text-align: center !important;
+    }
+
+    html.iuh-dark div.col-md-2 a:hover,
+    html.iuh-dark div.col-md-2 li:hover > a {
+      background: rgba(30, 41, 59, 0.9) !important;
+      color: #38bdf8 !important;
+      padding-left: 24px !important;
     }
 
     /* ========================================================
@@ -425,7 +493,7 @@ function injectThemeStyles() {
     }
 
     /* ========================================================
-       3 RADIO BUTTONS: DÀN TRẢI ĐỀU 1 HÀNG NGANG
+       3 RADIO BUTTONS: DÀN TRẢI ĐỀU 1 HÀNG NGANG, GIÃN CÁCH ĐẸP
        ======================================================== */
     .portlet-title .actions,
     .portlet-title div:has(> input[type="radio"]),
@@ -437,7 +505,7 @@ function injectThemeStyles() {
       flex-direction: row !important;
       flex-wrap: nowrap !important;
       align-items: center !important;
-      gap: 16px !important;
+      gap: 28px !important;
       white-space: nowrap !important;
       flex-shrink: 0 !important;
       width: max-content !important;
@@ -452,7 +520,7 @@ function injectThemeStyles() {
       display: inline-flex !important;
       flex-direction: row !important;
       align-items: center !important;
-      gap: 6px !important;
+      gap: 8px !important;
       margin: 0 !important;
       white-space: nowrap !important;
       cursor: pointer !important;
@@ -565,10 +633,14 @@ function injectThemeStyles() {
     /* Nút icon lịch bên phải */
     html.iuh-dark .k-datepicker .k-select,
     html.iuh-dark span.k-select,
+    html.iuh-dark .k-picker-wrap .k-select,
+    html.iuh-dark .k-state-default > .k-select,
     html.iuh-dark .box-df .input-group-addon,
     html.iuh-dark .box-df .input-group-text,
-    html.iuh-dark .portlet-title .input-group-addon {
+    html.iuh-dark .portlet-title .input-group-addon,
+    html.iuh-dark .portlet-title .input-group-btn .btn {
       background-color: #1e293b !important;
+      background: #1e293b !important;
       border: none !important;
       border-left: 1px solid #334155 !important;
       color: #38bdf8 !important;
@@ -787,12 +859,22 @@ function injectThemeStyles() {
       vertical-align: top !important;
     }
 
+    /* KHỬ TUYỆT ĐỐI NỀN VÀ VIỀN CỦA .wrapper ĐỂ KHÔNG CHE NỀN GRADIENT */
+    .wrapper,
+    div.wrapper,
+    html.iuh-dark .wrapper,
+    html.iuh-dark div.wrapper,
+    .wapper-login,
+    main.wapper-login {
+      background: transparent !important;
+      background-color: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+
     /* ========================================================
-       CHAN BẢNG (LEGEND): HIỂN THỊ CĂN GIỮA 100%
+       CHAN BẢNG (LEGEND): HIỂN THỊ CĂN GIỮA, NỀN TRONG SUỐT
        ======================================================== */
-    div[class*="ghichu"],
-    div:has(> span[class*="color-"]),
-    div:has(> .color-thuchanh),
     div.table-legend,
     .table-legend,
     .iuh-legend-centered {
@@ -800,25 +882,23 @@ function injectThemeStyles() {
       justify-content: center !important;
       align-items: center !important;
       flex-wrap: wrap !important;
-      gap: 18px !important;
+      gap: 20px !important;
       text-align: center !important;
-      margin-top: 12px !important;
-      margin-left: auto !important;
-      margin-right: auto !important;
+      margin: 14px auto 0 !important;
+      padding: 6px 0 !important;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
       box-sizing: border-box !important;
+      width: 100% !important;
     }
 
     /* Chân bảng trong Dark Mode */
-    html.iuh-dark div[class*="ghichu"],
-    html.iuh-dark div:has(> span[class*="color-"]),
-    html.iuh-dark div:has(> .color-thuchanh),
     html.iuh-dark div.table-legend,
     html.iuh-dark .table-legend,
     html.iuh-dark .iuh-legend-centered {
-      background: rgba(15, 23, 42, 0.88) !important;
-      border: 1px solid #1e293b !important;
-      border-radius: 10px !important;
-      padding: 10px 18px !important;
+      background: transparent !important;
+      border: none !important;
       color: #cbd5e1 !important;
     }
 
@@ -1075,31 +1155,43 @@ function equalizeColumns() {
   });
 }
 
-// 8. Căn giữa thanh chú thích (Legend) ở chân bảng
+// 8. Căn giữa thanh chú thích (Legend) ở chân bảng (nền trong suốt, không đè lên .wrapper)
 function centerLegend(root) {
-  const elements = root.querySelectorAll("div, p, span");
-  for (const el of elements) {
+  // Gỡ bỏ class iuh-legend-centered nếu từng bị gán nhầm lên .wrapper hoặc container lớn
+  root.querySelectorAll(".wrapper, .main-content, .container, .box-df, div[class*='wrapper']").forEach((el) => {
+    el.classList.remove("iuh-legend-centered");
+  });
+
+  const textNodes = Array.from(root.querySelectorAll("span, p, b, strong")).filter(
+    (el) => el.textContent.trim() === "Lịch học lý thuyết" || el.textContent.includes("Lịch học lý thuyết")
+  );
+  for (const t of textNodes) {
+    const parent = t.parentElement;
     if (
-      el.children &&
-      el.children.length >= 3 &&
-      el.textContent.includes("Lịch học lý thuyết") &&
-      el.textContent.includes("Lịch tạm ngưng")
+      parent &&
+      !parent.classList.contains("wrapper") &&
+      !parent.classList.contains("main-content") &&
+      !parent.classList.contains("container") &&
+      !parent.classList.contains("box-df") &&
+      !parent.classList.contains("portlet")
     ) {
-      el.classList.add("iuh-legend-centered");
-      el.style.setProperty("display", "flex", "important");
-      el.style.setProperty("justify-content", "center", "important");
-      el.style.setProperty("align-items", "center", "important");
-      el.style.setProperty("flex-wrap", "wrap", "important");
-      el.style.setProperty("gap", "18px", "important");
-      el.style.setProperty("text-align", "center", "important");
-      el.style.setProperty("margin-left", "auto", "important");
-      el.style.setProperty("margin-right", "auto", "important");
+      parent.classList.add("iuh-legend-centered");
+      parent.style.setProperty("display", "flex", "important");
+      parent.style.setProperty("justify-content", "center", "important");
+      parent.style.setProperty("align-items", "center", "important");
+      parent.style.setProperty("flex-wrap", "wrap", "important");
+      parent.style.setProperty("gap", "20px", "important");
+      parent.style.setProperty("text-align", "center", "important");
+      parent.style.setProperty("margin", "14px auto 0", "important");
+      parent.style.setProperty("background", "transparent", "important");
+      parent.style.setProperty("border", "none", "important");
+      parent.style.setProperty("box-shadow", "none", "important");
       break;
     }
   }
 }
 
-// 9. Đảm bảo 3 nút radio dàn trải thành 1 hàng ngang duy nhất
+// 9. Đảm bảo 3 nút radio dàn trải thành 1 hàng ngang duy nhất & giãn cách đẹp
 function ensureRadioRow() {
   const radios = document.querySelectorAll("input[type='radio']");
   if (radios.length >= 2) {
@@ -1109,13 +1201,49 @@ function ensureRadioRow() {
       parent.style.setProperty("flex-direction", "row", "important");
       parent.style.setProperty("flex-wrap", "nowrap", "important");
       parent.style.setProperty("align-items", "center", "important");
-      parent.style.setProperty("gap", "16px", "important");
+      parent.style.setProperty("gap", "28px", "important");
       parent.style.setProperty("white-space", "nowrap", "important");
+      parent.style.setProperty("flex-shrink", "0", "important");
+      parent.style.setProperty("width", "max-content", "important");
     }
   }
 }
 
-// 10. Quản lý Dark/Light mode và nút Toggle
+// 10. Xóa nút Zoom / Toàn màn hình
+function removeZoomButton() {
+  document.querySelectorAll(".portlet-title .btn, .portlet-title a, .box-df .btn, .box-df a, button, a").forEach((btn) => {
+    if (
+      btn.classList.contains("fullscreen") ||
+      btn.querySelector("i.fa-expand, i[class*='expand'], i[class*='compress']") ||
+      (btn.getAttribute("title") && (btn.getAttribute("title").toLowerCase().includes("màn hình") || btn.getAttribute("title").toLowerCase().includes("fullscreen")))
+    ) {
+      btn.remove();
+    }
+  });
+}
+
+// 11. Xóa sạch khối mã QR OneUni trong menu sidebar
+function removeOneUniQR() {
+  const sidebar = (
+    document.querySelector("div.col-md-2.d-none.d-sm-block") ||
+    document.querySelector("div.col-md-2") ||
+    document.querySelector("#iuh-dynamic-sidebar") ||
+    document.querySelector("aside.main-sidebar")
+  );
+  if (!sidebar) return;
+  sidebar.querySelectorAll("div, p, img, a, span").forEach((el) => {
+    const isQRImg = el.tagName === "IMG" && (el.src.toLowerCase().includes("qr") || el.src.toLowerCase().includes("oneuni"));
+    const isOneUniText = el.textContent && (el.textContent.includes("OneUni") || el.textContent.includes("Quét QR") || el.textContent.includes("cài đặt OneUni"));
+    if (isQRImg || isOneUniText) {
+      const card = el.closest(".box-download-app") || el.closest(".down_ungdung") || el.closest("div[style*='background']") || el.closest("div");
+      if (card && card !== sidebar && sidebar.contains(card)) {
+        card.remove();
+      }
+    }
+  });
+}
+
+// 12. Quản lý Dark/Light mode và nút Toggle
 function setupThemeMode(defaultMode = "dark") {
   injectThemeStyles();
   if (api && api.storage) {
@@ -1157,7 +1285,9 @@ function applyThemeMode(mode) {
 function main() {
   setupThemeMode("dark");
   removeLogo();
+  removeZoomButton();
   setupSidebarCollapse();
+  removeOneUniQR();
   equalizeColumns();
   ensureRadioRow();
   thayThe(document);
@@ -1167,7 +1297,9 @@ function main() {
 
   const obs = new MutationObserver(() => {
     removeLogo();
+    removeZoomButton();
     setupSidebarCollapse();
+    removeOneUniQR();
     equalizeColumns();
     ensureRadioRow();
     thayThe(document);
