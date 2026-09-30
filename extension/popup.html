@@ -5,64 +5,158 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>IUH Fast Login</title>
   <style>
-    :root { color-scheme: light dark; }
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
     body {
-      width: 300px; margin: 0; padding: 14px;
-      font: 13px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+      width: 320px;
+      margin: 0;
+      padding: 16px;
+      background: #0c1322;
+      color: #f8fafc;
+      font: 13px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     }
-    h1 { font-size: 15px; margin: 0 0 10px; }
-    label { display: block; margin: 8px 0 3px; font-weight: 600; }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .brand {
+      font-size: 15px;
+      font-weight: 800;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .brand span { color: #38bdf8; }
+    .badge-status {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 9999px;
+      background: #0f2937;
+      color: #38bdf8;
+      border: 1px solid #0369a1;
+    }
+    label {
+      display: block;
+      margin: 9px 0 4px;
+      font-weight: 600;
+      font-size: 11px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
     input[type="text"], input[type="password"] {
-      width: 100%; box-sizing: border-box; padding: 7px 9px;
-      border: 1px solid #b9b9b9; border-radius: 6px; font-size: 13px;
+      width: 100%;
+      padding: 8px 12px;
+      background: #070d18;
+      border: 1.5px solid #1e3a5f;
+      border-radius: 9px;
+      color: #f8fafc;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    input[type="text"]:focus, input[type="password"]:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+      outline: none;
     }
     .row { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
     button {
-      flex: 1; padding: 8px 10px; border: 0; border-radius: 6px;
-      background: #0b6e99; color: #fff; font-weight: 600; cursor: pointer;
+      flex: 1;
+      padding: 9px 12px;
+      border: 0;
+      border-radius: 9px;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
     }
-    button.ghost { background: #6b7280; }
-    button:hover { filter: brightness(1.08); }
-    #msg { margin-top: 9px; font-size: 12px; min-height: 16px; }
-    .ok { color: #0a7d2c; } .err { color: #b00020; }
-    .hint { margin-top: 10px; font-size: 11px; opacity: .75; }
+    button.primary {
+      background: linear-gradient(135deg, #06b6d4 0%, #10b981 100%);
+      color: #06192a;
+      box-shadow: 0 3px 12px rgba(6, 182, 212, 0.3);
+    }
+    button.primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(16, 185, 129, 0.4);
+    }
+    button.ghost {
+      background: #131d31;
+      color: #e2e8f0;
+      border: 1px solid #1e293b;
+    }
+    button.ghost:hover {
+      background: #1c2b46;
+      border-color: #38bdf8;
+      color: #38bdf8;
+    }
+    .check-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: 8px;
+      font-size: 12px;
+      color: #94a3b8;
+      cursor: pointer;
+    }
+    .check-row input { accent-color: #06b6d4; }
+    #msg {
+      margin-top: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      text-align: center;
+      min-height: 16px;
+    }
+    .ok { color: #34d399; }
+    .err { color: #f87171; }
+    .hint {
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px solid #1e293b;
+      font-size: 10px;
+      color: #64748b;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
-  <h1>IUH Fast Login</h1>
+  <div class="header">
+    <div class="brand">⚡ IUH <span>Portal Sync</span></div>
+    <div class="badge-status">Cloud 2.0</div>
+  </div>
 
-  <label for="username">Mã sinh viên (MSSV)</label>
-  <input id="username" type="text" autocomplete="username" placeholder="vd: 12345678" />
+  <label for="username">Mã sinh viên cố định</label>
+  <input id="username" type="text" autocomplete="username" placeholder="vd: 21000000" />
 
   <label for="password">Mật khẩu</label>
-  <input id="password" type="password" autocomplete="current-password" placeholder="mật khẩu" />
+  <input id="password" type="password" autocomplete="current-password" placeholder="Nhập mật khẩu..." />
 
-  <div class="row">
-    <label style="margin:0;font-weight:400;display:flex;align-items:center;gap:6px">
-      <input id="autoLogin" type="checkbox" checked /> Tự động đăng nhập
-    </label>
-  </div>
-  <div class="row" style="margin-top:4px">
-    <label style="margin:0;font-weight:400;display:flex;align-items:center;gap:6px;font-size:12px">
-      <input id="dkhpAutoSubmit" type="checkbox" /> Tự động submit ĐKHP (rảnh tay)
-    </label>
+  <div class="check-row">
+    <input id="autoLogin" type="checkbox" checked />
+    <span>Tự động đăng nhập & giữ phiên</span>
   </div>
 
   <div class="row">
-    <button id="save">Lưu</button>
+    <button id="save" class="primary">Lưu cài đặt</button>
+  </div>
+
+  <div class="row">
+    <button id="open" class="ghost">🏛️ Cổng SV</button>
+    <button id="openLms" class="ghost">📚 LMS Moodle</button>
   </div>
   <div class="row">
-    <button id="open" class="ghost">Mở cổng SV</button>
-    <button id="openLms" class="ghost">Mở LMS</button>
-  </div>
-  <div class="row">
-    <button id="openDkhp" class="ghost">Mở ĐKHP</button>
-    <button id="openSchedule" class="ghost">Lịch học</button>
+    <button id="openDkhp" class="ghost">📝 Cổng ĐKHP</button>
+    <button id="openSchedule" class="ghost">📅 Thời khóa biểu</button>
   </div>
 
   <div id="msg"></div>
   <div class="hint">
-    Mật khẩu chỉ lưu trên máy này (chrome.storage.local), không gửi đi đâu khác.
+    Mật khẩu lưu an toàn cục bộ trên máy, tự động giữ cookie sống cả ngày.
   </div>
 
   <script src="popup.js"></script>
