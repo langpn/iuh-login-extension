@@ -903,6 +903,70 @@ function injectThemeStyles() {
     }
 
     /* ========================================================
+       LÀM NỔI BẬT CỘT HÔM NAY (TODAY'S COLUMN HIGHLIGHT)
+       ======================================================== */
+    /* Header cột hôm nay */
+    html.iuh-dark .table-responsive table thead th.iuh-today-header,
+    html.iuh-dark table.fl-table thead th.iuh-today-header,
+    html.iuh-dark table[id*="Lich"] thead th.iuh-today-header,
+    html.iuh-dark th.iuh-today-header,
+    html.iuh-dark thead th.iuh-today-header {
+      background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%) !important;
+      color: #ffffff !important;
+      font-weight: 800 !important;
+      border-color: #38bdf8 !important;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.45) !important;
+      position: relative !important;
+    }
+    .iuh-today-badge {
+      display: inline-block !important;
+      font-size: 10px !important;
+      font-weight: 800 !important;
+      letter-spacing: 0.5px !important;
+      color: #f8fafc !important;
+      background: rgba(14, 165, 233, 0.45) !important;
+      padding: 1px 8px !important;
+      border-radius: 9999px !important;
+      margin-top: 3px !important;
+      border: 1px solid rgba(255, 255, 255, 0.35) !important;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    /* Toàn bộ các ô trong cột hôm nay (Sáng, Chiều, Tối) */
+    html.iuh-dark .table-responsive table tbody tr td.iuh-today-col,
+    html.iuh-dark table.fl-table tbody tr td.iuh-today-col,
+    html.iuh-dark table[id*="Lich"] tbody tr td.iuh-today-col,
+    html.iuh-dark td.iuh-today-col,
+    html.iuh-dark tbody td.iuh-today-col {
+      background-color: rgba(2, 132, 199, 0.16) !important; /* Ánh sáng xanh dịu dàng làm sáng cả cột hôm nay */
+      border-left: 2px solid #38bdf8 !important;
+      border-right: 2px solid #38bdf8 !important;
+    }
+
+    /* Light Mode */
+    html.iuh-light .table-responsive table thead th.iuh-today-header,
+    html.iuh-light th.iuh-today-header,
+    html.iuh-light thead th.iuh-today-header {
+      background: linear-gradient(180deg, #e0f2fe 0%, #bae6fd 100%) !important;
+      color: #0369a1 !important;
+      font-weight: 800 !important;
+      border: 1.5px solid #0284c7 !important;
+      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.2) !important;
+    }
+    html.iuh-light .iuh-today-badge {
+      background: #0284c7 !important;
+      color: #ffffff !important;
+      border: none !important;
+    }
+    html.iuh-light .table-responsive table tbody tr td.iuh-today-col,
+    html.iuh-light td.iuh-today-col,
+    html.iuh-light tbody td.iuh-today-col {
+      background-color: rgba(224, 242, 254, 0.45) !important;
+      border-left: 2px solid #38bdf8 !important;
+      border-right: 2px solid #38bdf8 !important;
+    }
+
+    /* ========================================================
        8. GIAO DIỆN LIGHT MODE (TRẮNG DỊU MẮT, NỔI 3D)
        ======================================================== */
     html.iuh-light, html.iuh-light body {
@@ -1243,7 +1307,60 @@ function removeOneUniQR() {
   });
 }
 
-// 12. Quản lý Dark/Light mode và nút Toggle
+// 12. Làm nổi bật toàn bộ cột ngày hôm nay (Header + Tất cả các ca học)
+function highlightTodayColumn(root) {
+  const today = new Date();
+  const d = today.getDate();
+  const m = today.getMonth() + 1;
+  const y = today.getFullYear();
+  const padD = String(d).padStart(2, "0");
+  const padM = String(m).padStart(2, "0");
+  const fullStr = `${padD}/${padM}/${y}`;
+  const shortStr = `${padD}/${padM}`;
+  const dNoPad = `${d}/${m}`;
+
+  const tables = (root || document).querySelectorAll("table.fl-table, table[id*='Lich'], .table-responsive table, table");
+  tables.forEach((table) => {
+    // Gỡ highlight cũ
+    table.querySelectorAll(".iuh-today-col, .iuh-today-header").forEach((el) => {
+      el.classList.remove("iuh-today-col", "iuh-today-header");
+    });
+    table.querySelectorAll(".iuh-today-badge").forEach((el) => el.remove());
+
+    const ths = table.querySelectorAll("thead th, tr:first-child th");
+    let todayIndex = -1;
+    for (let i = 1; i < ths.length; i++) {
+      const text = ths[i].textContent;
+      if (text.includes(fullStr) || text.includes(shortStr) || text.includes(dNoPad)) {
+        todayIndex = i;
+        break;
+      }
+    }
+
+    if (todayIndex === -1) return;
+
+    // Làm nổi bật Header cột hôm nay
+    const todayTh = ths[todayIndex];
+    todayTh.classList.add("iuh-today-header");
+    if (!todayTh.querySelector(".iuh-today-badge")) {
+      const badge = document.createElement("span");
+      badge.className = "iuh-today-badge";
+      badge.textContent = "HÔM NAY";
+      todayTh.appendChild(badge);
+    }
+
+    // Làm nổi bật tất cả các ô trong cột hôm nay (Sáng, Chiều, Tối)
+    const rows = table.querySelectorAll("tbody tr");
+    rows.forEach((r) => {
+      const cells = r.querySelectorAll("td");
+      if (cells[todayIndex]) {
+        cells[todayIndex].classList.add("iuh-today-col");
+      }
+    });
+  });
+}
+
+// 13. Quản lý Dark/Light mode và nút Toggle
 function setupThemeMode(defaultMode = "dark") {
   injectThemeStyles();
   if (api && api.storage) {
@@ -1294,6 +1411,7 @@ function main() {
   boldTeacherName(document);
   fixBrokenText(document);
   centerLegend(document);
+  highlightTodayColumn(document);
 
   const obs = new MutationObserver(() => {
     removeLogo();
@@ -1306,6 +1424,7 @@ function main() {
     boldTeacherName(document);
     fixBrokenText(document);
     centerLegend(document);
+    highlightTodayColumn(document);
   });
   obs.observe(document.body, { childList: true, subtree: true });
 }
