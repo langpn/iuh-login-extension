@@ -505,7 +505,7 @@ function injectThemeStyles() {
       flex-direction: row !important;
       flex-wrap: nowrap !important;
       align-items: center !important;
-      gap: 28px !important;
+      gap: 32px !important;
       white-space: nowrap !important;
       flex-shrink: 0 !important;
       width: max-content !important;
@@ -520,8 +520,8 @@ function injectThemeStyles() {
       display: inline-flex !important;
       flex-direction: row !important;
       align-items: center !important;
-      gap: 8px !important;
-      margin: 0 !important;
+      gap: 10px !important;
+      margin: 0 6px !important;
       white-space: nowrap !important;
       cursor: pointer !important;
       font-size: 13.5px !important;
@@ -1267,42 +1267,66 @@ function ensureRadioRow() {
       parent.style.setProperty("flex-direction", "row", "important");
       parent.style.setProperty("flex-wrap", "nowrap", "important");
       parent.style.setProperty("align-items", "center", "important");
-      parent.style.setProperty("gap", "28px", "important");
+      parent.style.setProperty("gap", "32px", "important");
       parent.style.setProperty("white-space", "nowrap", "important");
       parent.style.setProperty("flex-shrink", "0", "important");
       parent.style.setProperty("width", "max-content", "important");
     }
+    document.querySelectorAll(".portlet-title label, .box-df label, label:has(input[type='radio'])").forEach((lbl) => {
+      lbl.style.setProperty("display", "inline-flex", "important");
+      lbl.style.setProperty("align-items", "center", "important");
+      lbl.style.setProperty("gap", "10px", "important");
+      lbl.style.setProperty("margin", "0 6px", "important");
+      lbl.style.setProperty("white-space", "nowrap", "important");
+    });
   }
 }
 
 // 10. Xóa nút Zoom / Toàn màn hình
 function removeZoomButton() {
   document.querySelectorAll(".portlet-title .btn, .portlet-title a, .box-df .btn, .box-df a, button, a").forEach((btn) => {
-    if (
+    const hasExpandIcon = btn.querySelector("i.fa-expand, i[class*='expand'], i[class*='compress'], i[class*='arrows-alt']");
+    const isFullscreenBtn = (
       btn.classList.contains("fullscreen") ||
-      btn.querySelector("i.fa-expand, i[class*='expand'], i[class*='compress']") ||
+      btn.id?.toLowerCase().includes("fullscreen") ||
+      btn.id?.toLowerCase().includes("zoom") ||
+      btn.id?.toLowerCase().includes("resize") ||
       (btn.getAttribute("title") && (btn.getAttribute("title").toLowerCase().includes("màn hình") || btn.getAttribute("title").toLowerCase().includes("fullscreen")))
-    ) {
+    );
+    if ((hasExpandIcon || isFullscreenBtn) && (btn.tagName === "BUTTON" || btn.tagName === "A" || btn.classList.contains("btn"))) {
+      btn.style.setProperty("display", "none", "important");
       btn.remove();
     }
   });
 }
 
-// 11. Xóa sạch khối mã QR OneUni trong menu sidebar
+// 11. Xóa sạch khối mã QR OneUni trên toàn trang
 function removeOneUniQR() {
-  const sidebar = (
-    document.querySelector("div.col-md-2.d-none.d-sm-block") ||
-    document.querySelector("div.col-md-2") ||
-    document.querySelector("#iuh-dynamic-sidebar") ||
-    document.querySelector("aside.main-sidebar")
-  );
-  if (!sidebar) return;
-  sidebar.querySelectorAll("div, p, img, a, span").forEach((el) => {
-    const isQRImg = el.tagName === "IMG" && (el.src.toLowerCase().includes("qr") || el.src.toLowerCase().includes("oneuni"));
-    const isOneUniText = el.textContent && (el.textContent.includes("OneUni") || el.textContent.includes("Quét QR") || el.textContent.includes("cài đặt OneUni"));
-    if (isQRImg || isOneUniText) {
-      const card = el.closest(".box-download-app") || el.closest(".down_ungdung") || el.closest("div[style*='background']") || el.closest("div");
-      if (card && card !== sidebar && sidebar.contains(card)) {
+  document.querySelectorAll("div, p, span, a, img, section").forEach((el) => {
+    const text = el.textContent || "";
+    const isQRText = text.includes("OneUni") || text.includes("Quét QR") || text.includes("cài đặt OneUni");
+    const isQRImg = el.tagName === "IMG" && (el.src.toLowerCase().includes("qr") || el.src.toLowerCase().includes("oneuni") || (el.alt && el.alt.toLowerCase().includes("qr")));
+
+    if (isQRText || isQRImg) {
+      const card = (
+        el.closest(".box-download-app") ||
+        el.closest(".down_ungdung") ||
+        el.closest("div[style*='background']") ||
+        el.closest("div[class*='download']") ||
+        el.closest("div[class*='app']") ||
+        (el.tagName === "DIV" ? el : el.parentElement)
+      );
+      if (
+        card &&
+        !card.classList.contains("col-md-2") &&
+        !card.classList.contains("col-md-10") &&
+        !card.classList.contains("main-content") &&
+        !card.classList.contains("container") &&
+        !card.classList.contains("row") &&
+        !card.classList.contains("box-df") &&
+        !card.classList.contains("wrapper")
+      ) {
+        card.style.setProperty("display", "none", "important");
         card.remove();
       }
     }
