@@ -5,11 +5,14 @@
 //
 // Tính năng:
 //   1. Dark Mode mặc định: Nền Aurora Cosmos Gradient đồng bộ 100% toàn trang.
-//   2. Light Mode: Nền trắng xám dịu mắt (Soft Off-White) & nổi 3D.
-//   3. Nút chuyển đổi Dark/Light mode nổi 1-click ở góc trên bên phải.
-//   4. Giữ nguyên 100% nội dung trang (banner, footer, thông tin, bảng biểu).
-//   5. Hiển thị song song: Ảnh gốc đầy đủ nét + 4 ô ký tự khử nhiễu tách biệt.
-//   6. Tự động điền MSSV & Mật khẩu + Tự in hoa + Tự submit khi gõ đủ 4 ký tự hoặc bấm Enter.
+//   2. KHỬ SẠCH NỀN TRẮNG CHÓI & LỆCH BỐ CỤC:
+//      - Xóa sạch 2 banner trên và dưới (không còn logo trắng hay footer xanh).
+//      - Canh giữa trang portal hoàn hảo, không bị lệch sang trái.
+//      - Đổi toàn bộ các hộp trắng thành Dark Slate (#0f172a) sang trọng.
+//      - Fix triệt để các đoạn text khó hiển thị/khó nhìn: làm sáng rõ, dễ đọc.
+//   3. Light Mode: Nền trắng xám dịu mắt (Soft Off-White) & nổi 3D.
+//   4. Hiển thị song song: Ảnh gốc đầy đủ nét + 4 ô ký tự khử nhiễu tách biệt.
+//   5. Tự động điền MSSV & Mật khẩu + Tự in hoa + Tự submit khi gõ đủ 4 ký tự hoặc bấm Enter.
 // =====================================================================
 
 (() => {
@@ -54,7 +57,7 @@
     }
   }
 
-  // Tiêm CSS giao diện Đẳng cấp: Dark Aurora Cosmos & Soft Elevated Light Mode
+  // Tiêm CSS Dark Mode & Light Mode toàn diện cho toàn bộ Cổng ĐKHP
   function injectDKHPTheme() {
     if ($("#iuh-dkhp-theme")) return;
     const style = document.createElement("style");
@@ -68,12 +71,28 @@
         font-family: FontAwesome, 'Glyphicons Halflings', 'font-awesome' !important;
       }
 
+      /* 1. XÓA HOÀN TOÀN 2 BANNER TRÊN VÀ DƯỚI (THEO YÊU CẦU CỦA BẠN) */
+      #page-header, header, img[src*="banner"], .logo-top,
+      footer, .footer, .txt-ft, .info-site-bot, .info-site-top,
+      div[style*="background-color:#0069d9"], div[style*="background-color: #0069d9"] {
+        display: none !important;
+      }
+
+      /* 2. CANH GIỮA TRANG CHUẨN XÁC, KHÔNG LỆCH SANG TRÁI */
+      .container, .body-content {
+        max-width: 1200px !important;
+        margin: 20px auto !important;
+        padding: 0 20px !important;
+        float: none !important;
+        box-sizing: border-box !important;
+      }
+
       /* FORM ĐĂNG NHẬP: ĐƠN KHỐI, BỎ HOÀN TOÀN VIỀN LỒNG BÊN TRONG */
       .center-login {
         border-radius: 20px !important;
         padding: 32px !important;
         max-width: 460px !important;
-        margin: 25px auto 40px auto !important;
+        margin: 30px auto !important;
         transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
         box-sizing: border-box !important;
       }
@@ -139,17 +158,6 @@
         min-height: 100vh;
       }
 
-      /* Banner trường trong Dark Mode: dịu mắt, không lóa */
-      html.iuh-dark #page-header, 
-      html.iuh-dark header {
-        background: rgba(15, 23, 42, 0.8) !important;
-        border-bottom: 1px solid #1e293b !important;
-      }
-      html.iuh-dark #page-header img,
-      html.iuh-dark header img {
-        filter: brightness(0.9) contrast(1.05) !important;
-      }
-
       /* Card đăng nhập trong Dark Mode */
       html.iuh-dark .center-login {
         background: rgba(15, 23, 42, 0.82) !important;
@@ -198,52 +206,71 @@
         box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4) !important;
         cursor: pointer !important;
         width: 100% !important;
+        margin-top: 10px !important;
       }
       html.iuh-dark #btnLogin:hover, html.iuh-dark .center-login .btn-primary:hover {
         transform: translateY(-2px) !important;
         box-shadow: 0 8px 30px rgba(139, 92, 246, 0.55) !important;
       }
 
-      /* ĐỒNG BỘ DARK MODE CHO CÁC TRANG PORTAL SAU KHI ĐĂNG NHẬP (/ThongTinPortal, /DangKyHocPhan...) */
-      html.iuh-dark .container, 
-      html.iuh-dark .body-content {
-        background: transparent !important;
-      }
-      /* Ghi đè toàn bộ các thẻ card của trường thành màu Dark Slate sang trọng */
-      html.iuh-dark .col-sm-12[style*="border"],
-      html.iuh-dark div[style*="border: 1px solid"],
-      html.iuh-dark div[style*="border:1px solid"],
+      /* KHỬ SẠCH MÀU TRẮNG CHÓI Ở TOÀN BỘ CÁC THẺ TRONG PORTAL */
+      html.iuh-dark .info-account,
+      html.iuh-dark .border-box,
+      html.iuh-dark .info-sv,
+      html.iuh-dark .select-card,
+      html.iuh-dark .content-new,
       html.iuh-dark .panel,
       html.iuh-dark .box,
       html.iuh-dark .card,
-      html.iuh-dark .table-responsive {
+      html.iuh-dark .well,
+      html.iuh-dark div[class*="content"],
+      html.iuh-dark div[style*="border"],
+      html.iuh-dark [style*="background: #fff"],
+      html.iuh-dark [style*="background:#fff"],
+      html.iuh-dark [style*="background-color: #fff"],
+      html.iuh-dark [style*="background-color:#fff"],
+      html.iuh-dark [style*="background: white"],
+      html.iuh-dark [style*="background-color: white"],
+      html.iuh-dark [style*="background: rgb(255, 255, 255)"],
+      html.iuh-dark [style*="background-color: rgb(255, 255, 255)"] {
         background: #0f172a !important;
+        background-color: #0f172a !important;
         border-color: #1e293b !important;
         border-radius: 16px !important;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
         color: #f8fafc !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
       }
-      /* Tiêu đề xanh của trường: chuyển thành màu cyan sáng nổi bật */
-      html.iuh-dark h3, 
-      html.iuh-dark h4, 
-      html.iuh-dark .panel-heading,
-      html.iuh-dark span[style*="color: #007bff"],
-      html.iuh-dark span[style*="color:#007bff"],
-      html.iuh-dark div[style*="color: #007bff"] {
+
+      /* CẢI THIỆN ĐỘ RÕ RÀNG CỦA CÁC ĐOẠN TEXT KHÓ HIỂN THỊ / KHÓ NHÌN */
+      html.iuh-dark h1,
+      html.iuh-dark h2,
+      html.iuh-dark h3,
+      html.iuh-dark h4,
+      html.iuh-dark .section-title,
+      html.iuh-dark .section-title-2,
+      html.iuh-dark [style*="color: #007bff"],
+      html.iuh-dark [style*="color:#007bff"],
+      html.iuh-dark [style*="color: #0099ff"] {
         color: #38bdf8 !important;
+        font-weight: 800 !important;
       }
-      /* Nhãn thông tin chi tiết: xám sáng dễ đọc */
-      html.iuh-dark div[style*="border"] b,
-      html.iuh-dark .col-sm-12 b,
-      html.iuh-dark .card b {
+
+      /* Chữ nhãn / label (Đợt đăng ký, Khóa, Ngành, Lớp...): xám sáng rõ nét */
+      html.iuh-dark b,
+      html.iuh-dark strong,
+      html.iuh-dark label,
+      html.iuh-dark .info-account b,
+      html.iuh-dark .border-box b {
         color: #94a3b8 !important;
       }
-      /* Giá trị thông tin: trắng sáng */
-      html.iuh-dark div[style*="border"] span,
-      html.iuh-dark .col-sm-12 span,
-      html.iuh-dark .card span {
+
+      /* Chữ giá trị, nội dung: trắng sáng sắc nét */
+      html.iuh-dark p,
+      html.iuh-dark span,
+      html.iuh-dark td {
         color: #f8fafc !important;
       }
+
       /* Các liên kết menu */
       html.iuh-dark a {
         color: #38bdf8 !important;
@@ -251,9 +278,35 @@
       html.iuh-dark a:hover {
         color: #7dd3fc !important;
       }
+
+      /* Dropdown select (Đợt đăng ký...) */
+      html.iuh-dark select,
+      html.iuh-dark .custom-select,
+      html.iuh-dark select.form-control {
+        background-color: #1e293b !important;
+        color: #f8fafc !important;
+        border: 1px solid #334155 !important;
+        border-radius: 8px !important;
+        padding: 6px 12px !important;
+      }
+
+      /* Radio button & labels (HỌC MỚI, HỌC LẠI, HỌC CẢI THIỆN...) */
+      html.iuh-dark input[type="radio"],
+      html.iuh-dark input[type="checkbox"] {
+        accent-color: #0284c7 !important;
+      }
+      html.iuh-dark .radio label,
+      html.iuh-dark .checkbox label,
+      html.iuh-dark label:has(input[type="radio"]),
+      html.iuh-dark label:has(input[type="checkbox"]) {
+        color: #f8fafc !important;
+        font-weight: 600 !important;
+      }
+
       /* Bảng học phần trong portal */
       html.iuh-dark table.table,
       html.iuh-dark table.table-bordered {
+        background: #0f172a !important;
         border-color: #1e293b !important;
       }
       html.iuh-dark table.table thead th,
@@ -261,6 +314,7 @@
         background: #1e293b !important;
         color: #38bdf8 !important;
         border: 1px solid #334155 !important;
+        font-weight: 700 !important;
       }
       html.iuh-dark table.table tbody td,
       html.iuh-dark table.table-bordered tbody td {
@@ -271,18 +325,20 @@
       html.iuh-dark table.table tbody tr:hover td {
         background: #1e293b !important;
       }
-      /* Footer trường trong Dark Mode: đồng bộ tối màu */
-      html.iuh-dark footer,
-      html.iuh-dark .footer,
-      html.iuh-dark div[style*="background-color:#0069d9"],
-      html.iuh-dark div[style*="background-color: #0069d9"] {
-        background-color: #080f1d !important;
-        border-top: 1px solid #1e293b !important;
-        color: #94a3b8 !important;
+
+      /* Khối thông tin sinh viên góc trái */
+      html.iuh-dark div[style*="background-color: #4a90e2"],
+      html.iuh-dark div[style*="background-color:#4a90e2"],
+      html.iuh-dark div[style*="background: #4a90e2"],
+      html.iuh-dark div[style*="background-color: #007bff"],
+      html.iuh-dark div[style*="background-color: #0099ff"] {
+        background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%) !important;
+        color: #ffffff !important;
+        border-radius: 12px !important;
       }
-      html.iuh-dark footer a,
-      html.iuh-dark .footer a {
-        color: #cbd5e1 !important;
+      html.iuh-dark div[style*="background-color: #4a90e2"] *,
+      html.iuh-dark div[style*="background-color: #007bff"] * {
+        color: #ffffff !important;
       }
 
       /* Nút Toggle Mode */
@@ -527,7 +583,7 @@
       }
     }
 
-    // 5. Cắt 4 ô Canvas đối xứng quanh tâm
+    // 5. Cắt 4 ô Canvas
     const panelWidth = 36;
     const panelHeight = 49;
     const sliceWidth = 28;
@@ -637,11 +693,11 @@
     }
 
     renderOriginalCanvas(imgEl);
-    renderCleanPanels(imgEl);
+    return renderCleanPanels(imgEl);
   }
 
   async function main() {
-    // Kích hoạt theme Dark/Light đồng bộ
+    // Kích hoạt theme Dark/Light đồng bộ cho toàn bộ portal
     setupTheme("dark");
 
     // Nếu đã ở trang portal thì chỉ kích hoạt theme, không can thiệp form login
