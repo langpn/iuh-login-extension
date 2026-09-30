@@ -42,6 +42,7 @@ except ImportError:  # pragma: no cover - phụ thuộc môi trường
 BASE = "https://sv.iuh.edu.vn"
 LOGIN_URL = BASE + "/sinh-vien-dang-nhap.html"
 DASHBOARD = BASE + "/dashboard.html"
+SCHEDULE_URL = BASE + "/lich-theo-tuan.html"
 CONFIRM_PATH = "/SinhVien/ConfirmPortalSession"
 LMS_BASE = "https://lms.iuh.edu.vn"
 LMS_LOGIN_URL = LMS_BASE + "/login/index.php"
@@ -338,7 +339,8 @@ def _confirm_portal_session(page, timeout_ms, debug=False):
 
 def login(user, password, headless=False, channel="chrome", debug=False,
           timeout=30.0, retries=3, retry_wait=8.0, save_cookies=None,
-          keep_open=False, user_data_dir=None, storage_state=None, slow_mo=0):
+          keep_open=False, user_data_dir=None, storage_state=None, slow_mo=0,
+          open_schedule=False):
     """Đăng nhập cổng sinh viên. Trả về (success: bool, info: dict)."""
     timeout_ms = int(timeout * 1000)
     blocked = []
@@ -435,6 +437,15 @@ def login(user, password, headless=False, channel="chrome", debug=False,
             if ok:
                 save_state(ctx, save_cookies=save_cookies,
                            storage_state=storage_state, debug=debug)
+
+            # Tính năng riêng: mở thẳng trang lịch theo tuần sau khi đăng nhập.
+            # Chỉ chạy khi được yêu cầu tường minh (open_schedule=True),
+            # không ảnh hưởng luồng đăng nhập thông thường.
+            if ok and open_schedule:
+                goto(page, SCHEDULE_URL, timeout_ms, debug)
+                info["url"] = page.url
+                info["title"] = page.title()
+                info["schedule_opened"] = True
 
             if keep_open:
                 wait_until_closed(page)
@@ -542,6 +553,8 @@ def build_parser():
     ap.add_argument("--slow-mo", type=int, default=0, help="làm chậm thao tác (ms) để dễ quan sát")
     ap.add_argument("--keep-open", action="store_true", help="giữ trình duyệt mở sau khi login")
     ap.add_argument("--lms", action="store_true", help="đăng nhập LMS Moodle thay vì cổng SV")
+    ap.add_argument("--schedule", action="store_true",
+                    help="sau khi đăng nhập, mở thẳng trang lịch theo tuần")
     ap.add_argument("--json", action="store_true", help="in kết quả dạng JSON")
     ap.add_argument("--debug", action="store_true")
     return ap
@@ -570,6 +583,7 @@ def main(argv=None):
         user_data_dir=args.user_data_dir,
         storage_state=args.storage_state,
         slow_mo=args.slow_mo,
+        open_schedule=(args.schedule and not args.lms),
     )
     info["ok"] = ok
 
