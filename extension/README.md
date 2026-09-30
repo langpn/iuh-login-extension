@@ -42,7 +42,11 @@ Chromium và Firefox:
 2. Bấm **Mở trang login** (hoặc tự mở trang đăng nhập). Extension tự điền và đăng nhập.
 3. Muốn vào LMS: bấm **Mở LMS** (hoặc mở thẳng `https://lms.iuh.edu.vn/login/index.php`).
 4. Muốn vào ĐKHP: bấm **Mở ĐKHP** — form đã điền sẵn, chỉ cần gõ **mã bảo vệ** và Enter.
-5. Tài khoản chỉ lưu cục bộ trên máy (`storage.local`), không gửi đi đâu khác.
+5. Muốn xem lịch học nhanh: bấm **Lịch học** — mở thẳng `sv.iuh.edu.vn/lich-theo-tuan.html`.
+   Nếu chưa có phiên đăng nhập, extension tự đăng nhập rồi **quay lại đúng trang lịch**
+   (trang lịch không tự giữ `ReturnUrl`; cơ chế này dùng cờ `pendingSchedule`, chỉ áp
+   dụng khi bạn bấm nút, không ảnh hưởng đăng nhập thông thường).
+6. Tài khoản chỉ lưu cục bộ trên máy (`storage.local`), không gửi đi đâu khác.
 
 ## Lưu ý
 - Cổng SV giới hạn tần suất đăng nhập (~10 giây/lần). Extension tự chờ rồi thử lại (tối đa 2 lần/tab).

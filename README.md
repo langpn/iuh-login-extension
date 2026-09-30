@@ -59,6 +59,7 @@ python3 iuh_login.py lms                     # đăng nhập LMS, lưu lms_sessi
 python3 iuh_login.py grades                  # xem điểm
 python3 iuh_login.py schedule                # lịch học tuần này
 python3 iuh_login.py info                    # thông tin sinh viên
+python3 iuh_login.py dkhp <MSSV> <MATKHAU>   # đăng nhập ĐKHP (tự đọc captcha)
 ```
 
 **Chọn theo nhu cầu:**
@@ -120,7 +121,13 @@ python3 iuh_browser.py --channel msedge             # dùng Edge
 python3 iuh_browser.py --save-cookies cookies.txt   # lưu cookie để dùng với curl
 ```
 
-Tùy chọn: `--headless`, `--channel chrome|chromium|msedge`, `--keep-open`, `--save-cookies FILE`, `--lms`, `--debug`.
+Tùy chọn: `--headless`, `--channel chrome|chromium|msedge`, `--keep-open`, `--save-cookies FILE`, `--lms`, `--schedule`, `--debug`.
+
+Mở nhanh trang lịch học ngay sau khi đăng nhập (không cần tự bấm menu):
+
+```bash
+python3 iuh_browser.py --schedule <MSSV> <MATKHAU>   # đăng nhập rồi mở lich-theo-tuan.html
+```
 
 Thêm `--lms` để đăng nhập LMS Moodle thay vì cổng SV:
 
@@ -189,6 +196,43 @@ endpoint), nên server bỏ qua captcha.
 
 Nếu server vá lỗ hổng này, `iuh_login.py` vẫn có đường nhập tay / OCR:
 `--captcha manual` (tự nhập), `--captcha ocr` (dùng tesseract), `--captcha text:ABCD` (điền sẵn).
+
+### Riêng trang ĐKHP (`dkhp.iuh.edu.vn`)
+
+ĐKHP là hệ thống khác, **luôn kiểm tra captcha ở phía server** — không dùng được
+mẹo "chặn ảnh" như trên. Cách xử lý:
+
+```bash
+python3 iuh_login.py dkhp <MSSV> <MATKHAU>          # tự đọc captcha (cần ddddocr)
+python3 iuh_login.py dkhp --captcha manual          # tự nhập mã bảo vệ
+python3 iuh_login.py dkhp --captcha text:ABCD       # điền sẵn mã
+python3 iuh_login.py dkhp-harvest --count 200       # thu mẫu để tự huấn luyện
+```
+
+Cơ chế `dkhp` (mặc định `--captcha auto`): thử đọc captcha bằng `ddddocr`, đúng
+**4 ký tự in hoa** mới gửi; sai thì mở phiên mới thử lại. Hết ngân sách
+`--captcha-budget` giây (mặc định 5s) mà chưa được thì **nhờ bạn nhập tay** để
+không bị nghẽn. Mỗi lần đăng nhập thành công, mã đúng được lưu vào
+`captcha_dataset/` làm dữ liệu huấn luyện.
+
+### Dữ liệu huấn luyện captcha
+
+Repo kèm sẵn bộ mẫu chuẩn `captcha_seed/` (~37 ảnh + `labels.csv`), **đã được
+server IUH xác nhận đúng** — để model có dữ liệu ngay khi chưa thu thập gì.
+Lần chạy đầu, tool tự nạp bộ này vào `captcha_dataset/` đang dùng.
+
+```bash
+python3 iuh_login.py dkhp-dataset              # xem thống kê dataset hiện có
+python3 iuh_login.py dkhp-harvest --count 300  # thu thêm mẫu (nhãn do server xác nhận)
+python3 iuh_login.py dkhp-harvest --dataset-target 300   # đủ 300 mẫu thì tự dừng
+```
+
+- Nhãn chỉ được ghi khi **đăng nhập thành công** → dữ liệu không có sai số.
+- Repo kèm sẵn `captcha_seed/` (37 mẫu đã xác nhận) làm dữ liệu chuẩn khởi đầu;
+  lần chạy đầu tự chép vào `captcha_dataset/` nếu dataset còn trống.
+- Khi `captcha_dataset/` đạt `--dataset-target` (mặc định 300), tool **ngừng thu
+  thập** để không tải thêm máy chủ IUH.
+- Ảnh thu thập được là ảnh gốc (JPEG 110×35), dùng trực tiếp để huấn luyện.
 
 ---
 
