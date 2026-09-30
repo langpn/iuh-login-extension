@@ -185,6 +185,105 @@ function injectLayoutStyles() {
     .content span[lang="lichtheotuan-giangvien"] + font {
       font-weight: 700 !important;
     }
+
+    /* ========================================================
+       DARK MODE CHO HEADER
+       ======================================================== */
+    header,
+    header.header,
+    .header,
+    .main-header,
+    .top-header,
+    .wapper-login .header,
+    header[style*="background"],
+    .header[style*="background"] {
+      background: #0f172a !important;
+      background-color: #0f172a !important;
+      border-bottom: 1px solid #1e293b !important;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25) !important;
+      color: #f8fafc !important;
+    }
+
+    /* Các khối chứa bên trong header trong suốt */
+    header .container,
+    header .container-fluid,
+    header div:not([class*="dropdown-menu"]):not([class*="input"]) {
+      background: transparent !important;
+      background-color: transparent !important;
+    }
+
+    /* Logo trường trên nền tối */
+    header img[src*="logo"],
+    header img[src*="Logo"] {
+      filter: brightness(0) invert(1) !important;
+    }
+
+    /* Ô tìm kiếm trong Header */
+    header input[type="text"],
+    header input[type="search"],
+    header input.form-control,
+    .header input {
+      background-color: #1e293b !important;
+      border: 1px solid #334155 !important;
+      border-radius: 20px !important;
+      color: #f8fafc !important;
+      padding: 6px 16px !important;
+    }
+    header input::placeholder,
+    .header input::placeholder {
+      color: #94a3b8 !important;
+    }
+    header input:focus,
+    .header input:focus {
+      border-color: #38bdf8 !important;
+      outline: none !important;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2) !important;
+    }
+    header .fa-search,
+    header i.fa-search {
+      color: #94a3b8 !important;
+    }
+
+    /* Liên kết & chữ trong Header */
+    header a,
+    .header a,
+    header span:not(.badge),
+    .header span:not(.badge),
+    header .user-name {
+      color: #e2e8f0 !important;
+    }
+    header a:hover,
+    .header a:hover {
+      color: #38bdf8 !important;
+    }
+    header i:not(.fa-search),
+    .header i:not(.fa-search) {
+      color: #38bdf8 !important;
+    }
+
+    /* Avatar người dùng */
+    header img:not([src*="logo"]):not([src*="Logo"]) {
+      border-radius: 50% !important;
+      border: 1.5px solid #38bdf8 !important;
+    }
+
+    /* Dropdown menu người dùng */
+    header .dropdown-menu,
+    .header .dropdown-menu {
+      background-color: #0f172a !important;
+      border: 1px solid #334155 !important;
+      border-radius: 10px !important;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5) !important;
+    }
+    header .dropdown-menu a,
+    header .dropdown-menu li > a {
+      color: #cbd5e1 !important;
+    }
+    header .dropdown-menu a:hover,
+    header .dropdown-menu li > a:hover {
+      background-color: #1e293b !important;
+      color: #38bdf8 !important;
+    }
   `;
   (document.head || document.documentElement).appendChild(style);
 }
