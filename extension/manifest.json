@@ -3,7 +3,7 @@
   "name": "IUH Fast Login",
   "version": "1.0.0",
   "description": "Tự động đăng nhập IUH: cổng sinh viên (sv.iuh.edu.vn, bỏ qua captcha), LMS Moodle (lms.iuh.edu.vn) và điền sẵn form Đăng ký học phần (dkhp.iuh.edu.vn).",
-  "permissions": ["storage", "declarativeNetRequest"],
+  "permissions": ["storage", "declarativeNetRequest", "cookies", "alarms"],
   "host_permissions": [
     "*://sv.iuh.edu.vn/*",
     "*://lms.iuh.edu.vn/*",
@@ -37,7 +37,7 @@
     },
     {
       "matches": ["*://dkhp.iuh.edu.vn/Account/Login*"],
-      "js": ["dkhp.js"],
+      "js": ["dkhp_model.js", "dkhp.js"],
       "run_at": "document_idle"
     }
   ],
