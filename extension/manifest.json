@@ -37,7 +37,7 @@
     },
     {
       "matches": ["*://dkhp.iuh.edu.vn/*"],
-      "js": ["dkhp.js"],
+      "js": ["dkhp_glyph_solver.js", "dkhp.js"],
       "run_at": "document_idle"
     }
   ],
