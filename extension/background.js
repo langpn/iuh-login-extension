@@ -52,7 +52,7 @@ if (api.alarms) {
         if (svCookie && svCookie.value) {
           // Gửi request ping nhẹ giữ phiên
           await fetch("https://sv.iuh.edu.vn/dashboard.html", {
-            method: "HEAD",
+            method: "GET",
             credentials: "include"
           });
           api.storage.local.set({ sv_active: true, sv_last_ping: Date.now() });
@@ -69,7 +69,7 @@ if (api.alarms) {
         });
         if (dkhpCookie && dkhpCookie.value) {
           await fetch("https://dkhp.iuh.edu.vn/DangKyHocPhan/ThongTinPortal", {
-            method: "HEAD",
+            method: "GET",
             credentials: "include"
           });
           api.storage.local.set({ dkhp_active: true, dkhp_last_ping: Date.now() });

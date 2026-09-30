@@ -11,11 +11,12 @@ function setMsg(text, cls) {
 
 function load() {
   api.storage.local.get(
-    { username: "", password: "", autoLogin: true },
+    { username: "", password: "", autoLogin: true, dkhpAutoSubmit: false },
     (cfg) => {
       $("username").value = cfg.username || "";
       $("password").value = cfg.password || "";
       $("autoLogin").checked = cfg.autoLogin !== false;
+      $("dkhpAutoSubmit").checked = Boolean(cfg.dkhpAutoSubmit);
     }
   );
 }
@@ -24,11 +25,12 @@ function save() {
   const username = $("username").value.trim();
   const password = $("password").value;
   const autoLogin = $("autoLogin").checked;
+  const dkhpAutoSubmit = $("dkhpAutoSubmit").checked;
   if (!username) {
     setMsg("Vui lòng nhập MSSV.", "err");
     return;
   }
-  api.storage.local.set({ username, password, autoLogin }, () => {
+  api.storage.local.set({ username, password, autoLogin, dkhpAutoSubmit }, () => {
     setMsg("Đã lưu thông tin.", "ok");
     setTimeout(() => setMsg(""), 2000);
   });

@@ -150,16 +150,16 @@
 
     // 3. Tự động giải Captcha
     if (imgEl && capEl) {
-      banner("IUH ĐKHP: Đang tự động giải mã bảo vệ...", "#0284c7");
-      await sleep(200);
+      banner("IUH ĐKHP: Đang nhận diện mã bảo vệ...", "#0284c7");
+      await sleep(150);
 
       const code = await solveCaptcha(imgEl);
       if (code && code.length === 4) {
         setValue(capEl, code);
-        banner(`✓ IUH ĐKHP: Đã điền tài khoản & giải mã [${code}]. Đang đăng nhập...`, "#16a34a");
-        sessionStorage.setItem("iuh_dkhp_tries", (tries + 1).toString());
+        capEl.focus();
+        capEl.select?.();
 
-        // Lắng nghe phím Enter dự phòng
+        // Gắn sự kiện Enter: nhấn Enter là submit ngay
         capEl.addEventListener("keydown", (e) => {
           if (e.key === "Enter") {
             e.preventDefault();
@@ -167,10 +167,18 @@
           }
         });
 
-        // Chờ 350ms để form nhận giá trị rồi bấm submit
-        await sleep(350);
-        submit();
-        return;
+        // Nếu bật chế độ auto-submit rảnh tay
+        if (cfg.dkhpAutoSubmit) {
+          banner(`✓ IUH ĐKHP: Đã điền [${code}]. Đang tự động đăng nhập...`, "#16a34a");
+          sessionStorage.setItem("iuh_dkhp_tries", (tries + 1).toString());
+          await sleep(400);
+          submit();
+          return;
+        } else {
+          // Chế độ hỗ trợ thông minh an toàn 100%: điền sẵn, người dùng chỉ cần gõ Enter
+          banner(`✓ IUH ĐKHP: Đã điền sẵn mã [${code}]. Nhấn Enter để vào ngay!`, "#16a34a");
+          return;
+        }
       }
     }
 
