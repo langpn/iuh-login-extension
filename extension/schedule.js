@@ -520,18 +520,39 @@ function injectThemeStyles() {
       border-radius: 8px !important;
     }
 
-    /* Chân bảng (Legend) Dark Mode */
+    /* ========================================================
+       CHAN BẢNG (LEGEND): HIỂN THỊ CĂN GIỮA 100%
+       ======================================================== */
+    div[class*="ghichu"],
+    div:has(> span[class*="color-"]),
+    div:has(> .color-thuchanh),
+    div.table-legend,
+    .table-legend,
+    .iuh-legend-centered {
+      display: flex !important;
+      justify-content: center !important;
+      align-items: center !important;
+      flex-wrap: wrap !important;
+      gap: 18px !important;
+      text-align: center !important;
+      margin-top: 12px !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
+      box-sizing: border-box !important;
+    }
+
+    /* Chân bảng trong Dark Mode */
     html.iuh-dark div[class*="ghichu"],
     html.iuh-dark div:has(> span[class*="color-"]),
     html.iuh-dark div:has(> .color-thuchanh),
     html.iuh-dark div.table-legend,
-    html.iuh-dark .table-legend {
+    html.iuh-dark .table-legend,
+    html.iuh-dark .iuh-legend-centered {
       background: rgba(15, 23, 42, 0.88) !important;
       border: 1px solid #1e293b !important;
       border-radius: 10px !important;
-      padding: 8px 14px !important;
+      padding: 10px 18px !important;
       color: #cbd5e1 !important;
-      margin-top: 10px !important;
     }
 
     /* ========================================================
@@ -787,7 +808,31 @@ function equalizeColumns() {
   });
 }
 
-// 8. Quản lý Dark/Light mode và nút Toggle
+// 8. Căn giữa thanh chú thích (Legend) ở chân bảng
+function centerLegend(root) {
+  const elements = root.querySelectorAll("div, p, span");
+  for (const el of elements) {
+    if (
+      el.children &&
+      el.children.length >= 3 &&
+      el.textContent.includes("Lịch học lý thuyết") &&
+      el.textContent.includes("Lịch tạm ngưng")
+    ) {
+      el.classList.add("iuh-legend-centered");
+      el.style.setProperty("display", "flex", "important");
+      el.style.setProperty("justify-content", "center", "important");
+      el.style.setProperty("align-items", "center", "important");
+      el.style.setProperty("flex-wrap", "wrap", "important");
+      el.style.setProperty("gap", "18px", "important");
+      el.style.setProperty("text-align", "center", "important");
+      el.style.setProperty("margin-left", "auto", "important");
+      el.style.setProperty("margin-right", "auto", "important");
+      break;
+    }
+  }
+}
+
+// 9. Quản lý Dark/Light mode và nút Toggle
 function setupThemeMode(defaultMode = "dark") {
   injectThemeStyles();
   if (api && api.storage) {
@@ -834,6 +879,7 @@ function main() {
   thayThe(document);
   boldTeacherName(document);
   fixBrokenText(document);
+  centerLegend(document);
 
   const obs = new MutationObserver(() => {
     removeLogo();
@@ -842,6 +888,7 @@ function main() {
     thayThe(document);
     boldTeacherName(document);
     fixBrokenText(document);
+    centerLegend(document);
   });
   obs.observe(document.body, { childList: true, subtree: true });
 }
