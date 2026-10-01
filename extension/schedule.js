@@ -1480,53 +1480,6 @@ function organizeToolbar() {
   if (btnHienTai && rightGroup !== btnHienTai.parentElement) rightGroup.appendChild(btnHienTai);
   if (btnTroVe && rightGroup !== btnTroVe.parentElement) rightGroup.appendChild(btnTroVe);
   if (btnTiep && rightGroup !== btnTiep.parentElement) rightGroup.appendChild(btnTiep);
-
-  attachHienTaiHandler();
-}
-
-// Gắn xử lý cho nút Hiện tại để luôn quay lại ngày hôm nay 100%
-function attachHienTaiHandler() {
-  const btn = document.getElementById("btn_HienTai");
-  if (!btn || btn.dataset.iuhHienTaiBound === "1") return;
-  btn.dataset.iuhHienTaiBound = "1";
-
-  btn.addEventListener("click", () => {
-    const script = document.createElement("script");
-    script.textContent = `
-      (function() {
-        var today = new Date();
-        var d = String(today.getDate()).padStart(2, '0');
-        var m = String(today.getMonth() + 1).padStart(2, '0');
-        var y = today.getFullYear();
-        var todayStr = d + '/' + m + '/' + y;
-
-        var $input = window.jQuery ? window.jQuery("#dateNgayXemLich") : null;
-        if ($input && $input.length) {
-          var picker = $input.data("kendoDatePicker");
-          if (picker) {
-            picker.value(today);
-            picker.trigger("change");
-          } else {
-            $input.val(todayStr).trigger("change");
-          }
-        } else {
-          var input = document.getElementById("dateNgayXemLich");
-          if (input) {
-            input.value = todayStr;
-            input.dispatchEvent(new Event("change", { bubbles: true }));
-          }
-        }
-
-        if (typeof window.GetDanhSachLichTheoTuan === "function") {
-          window.GetDanhSachLichTheoTuan(todayStr);
-        } else if (typeof window.loadLichTheoTuan === "function") {
-          window.loadLichTheoTuan(todayStr);
-        }
-      })();
-    `;
-    (document.head || document.documentElement).appendChild(script);
-    script.remove();
-  });
 }
 
 // 11. Xóa sạch khối mã QR OneUni trên toàn trang
