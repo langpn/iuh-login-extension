@@ -347,21 +347,192 @@ function injectThemeStyles() {
       margin-left: 12px !important;
       flex-shrink: 0 !important;
     }
-    html.iuh-dark header a,
-    html.iuh-dark .header a,
-    html.iuh-dark header span:not(.badge),
+    html.iuh-dark header a:not(.user-account-info a):not(.us-links a),
+    html.iuh-dark .header a:not(.user-account-info a):not(.us-links a),
+    html.iuh-dark header span:not(.badge):not(.user-account-info span):not(.us-links span),
     html.iuh-dark header .user-name {
       color: #e2e8f0 !important;
     }
-    html.iuh-dark header a:hover {
+    html.iuh-dark header a:not(.user-account-info a):not(.us-links a):hover {
       color: #38bdf8 !important;
     }
-    html.iuh-dark header i:not(.fa-search) {
+    html.iuh-dark header i:not(.fa-search):not(.user-account-info i):not(.us-links i) {
       color: #38bdf8 !important;
     }
     html.iuh-dark header img:not([src*="logo"]):not([src*="Logo"]) {
       border-radius: 50% !important;
       border: 1.5px solid #38bdf8 !important;
+    }
+
+    /* ========================================================
+       TỐI ƯU DROPDOWN USER PROFILE (TOOLTIP TÀI KHOẢN)
+       ======================================================== */
+    .user-account-info,
+    .user-account-info.dropdown-menu,
+    .user-account .dropdown-menu {
+      width: 205px !important;
+      min-width: 200px !important;
+      padding: 6px !important;
+      margin: 0 !important;
+      border-radius: 14px !important;
+      box-sizing: border-box !important;
+      overflow: visible !important;
+      transition: opacity 0.2s ease, transform 0.2s ease !important;
+      will-change: transform, opacity;
+    }
+
+    /* DARK MODE: Nền tối Deep Navy siêu sang, viền sáng Cyan Aurora */
+    html.iuh-dark .user-account-info,
+    html.iuh-dark .user-account-info.dropdown-menu,
+    html.iuh-dark .user-account .dropdown-menu {
+      background: rgba(15, 23, 42, 0.96) !important;
+      backdrop-filter: blur(20px) !important;
+      -webkit-backdrop-filter: blur(20px) !important;
+      border: 1px solid rgba(56, 189, 248, 0.3) !important;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65), 0 0 20px rgba(56, 189, 248, 0.1) !important;
+    }
+
+    /* LIGHT MODE: Nền trắng sạch, nổi khối 3D */
+    html.iuh-light .user-account-info,
+    html.iuh-light .user-account-info.dropdown-menu,
+    html.iuh-light .user-account .dropdown-menu {
+      background: #ffffff !important;
+      border: 1px solid #cbd5e1 !important;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12) !important;
+    }
+
+    /* Đổi màu mũi tên chỉ báo (arrow caret tip) đồng bộ với nền */
+    html.iuh-dark .user-account-info:before,
+    html.iuh-dark .user-account-info:after,
+    html.iuh-dark .user-account-info::before,
+    html.iuh-dark .user-account-info::after,
+    html.iuh-dark .user-account .dropdown-menu:before,
+    html.iuh-dark .user-account .dropdown-menu:after,
+    html.iuh-dark .user-account .dropdown-menu::before,
+    html.iuh-dark .user-account .dropdown-menu::after {
+      border-bottom-color: rgba(15, 23, 42, 0.98) !important;
+    }
+
+    html.iuh-light .user-account-info:before,
+    html.iuh-light .user-account-info:after,
+    html.iuh-light .user-account-info::before,
+    html.iuh-light .user-account-info::after,
+    html.iuh-light .user-account .dropdown-menu:before,
+    html.iuh-light .user-account .dropdown-menu:after,
+    html.iuh-light .user-account .dropdown-menu::before,
+    html.iuh-light .user-account .dropdown-menu::after {
+      border-bottom-color: #ffffff !important;
+    }
+
+    /* Danh sách liên kết bên trong */
+    .user-account-info ul.us-links,
+    .user-account-info ul,
+    .user-account .dropdown-menu ul {
+      list-style: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    .user-account-info ul.us-links li,
+    .user-account .dropdown-menu li {
+      margin: 0 !important;
+      padding: 0 !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+      border-radius: 8px !important;
+      overflow: hidden !important;
+    }
+    html.iuh-light .user-account-info ul.us-links li,
+    html.iuh-light .user-account .dropdown-menu li {
+      border-bottom: 1px solid #f1f5f9 !important;
+    }
+    .user-account-info ul.us-links li:last-child,
+    .user-account .dropdown-menu li:last-child {
+      border-bottom: none !important;
+    }
+
+    /* Từng mục chọn: chữ to rõ, tương phản cao, click thoải mái */
+    .user-account-info ul.us-links li a,
+    .user-account .dropdown-menu li a {
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      padding: 10px 14px !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      text-decoration: none !important;
+      border-radius: 8px !important;
+      transition: all 0.18s ease !important;
+      cursor: pointer !important;
+    }
+
+    /* Icon trong từng mục */
+    .user-account-info ul.us-links li a i,
+    .user-account .dropdown-menu li a i {
+      font-size: 14px !important;
+      width: 18px !important;
+      text-align: center !important;
+      color: #38bdf8 !important;
+    }
+
+    /* Dark Mode Text & Hover: khắc phục triệt để chữ trắng trên nền trắng */
+    html.iuh-dark .user-account-info ul.us-links li a,
+    html.iuh-dark .user-account .dropdown-menu li a {
+      color: #f8fafc !important;
+      background: transparent !important;
+    }
+    html.iuh-dark .user-account-info ul.us-links li a:hover,
+    html.iuh-dark .user-account-info ul.us-links li:hover > a,
+    html.iuh-dark .user-account .dropdown-menu li a:hover {
+      background: rgba(56, 189, 248, 0.14) !important;
+      color: #38bdf8 !important;
+      transform: translateX(3px) !important;
+    }
+
+    /* Mục Đăng xuất trong Dark Mode: nổi bật cảnh báo đỏ dịu */
+    html.iuh-dark .user-account-info ul.us-links li:has(a[href*="Logout"]) a,
+    html.iuh-dark .user-account-info ul.us-links li a[href*="Logout"],
+    html.iuh-dark .user-account .dropdown-menu li a[href*="Logout"] {
+      color: #fb7185 !important;
+    }
+    html.iuh-dark .user-account-info ul.us-links li:has(a[href*="Logout"]) a i,
+    html.iuh-dark .user-account-info ul.us-links li a[href*="Logout"] i,
+    html.iuh-dark .user-account .dropdown-menu li a[href*="Logout"] i {
+      color: #fb7185 !important;
+    }
+    html.iuh-dark .user-account-info ul.us-links li:has(a[href*="Logout"]) a:hover,
+    html.iuh-dark .user-account-info ul.us-links li a[href*="Logout"]:hover,
+    html.iuh-dark .user-account .dropdown-menu li a[href*="Logout"]:hover {
+      background: rgba(244, 63, 94, 0.18) !important;
+      color: #f43f5e !important;
+    }
+
+    /* Light Mode Text & Hover */
+    html.iuh-light .user-account-info ul.us-links li a,
+    html.iuh-light .user-account .dropdown-menu li a {
+      color: #1e293b !important;
+      background: transparent !important;
+    }
+    html.iuh-light .user-account-info ul.us-links li a i,
+    html.iuh-light .user-account .dropdown-menu li a i {
+      color: #0284c7 !important;
+    }
+    html.iuh-light .user-account-info ul.us-links li a:hover,
+    html.iuh-light .user-account-info ul.us-links li:hover > a,
+    html.iuh-light .user-account .dropdown-menu li a:hover {
+      background: #f1f5f9 !important;
+      color: #0284c7 !important;
+      transform: translateX(3px) !important;
+    }
+    html.iuh-light .user-account-info ul.us-links li:has(a[href*="Logout"]) a,
+    html.iuh-light .user-account-info ul.us-links li a[href*="Logout"],
+    html.iuh-light .user-account .dropdown-menu li a[href*="Logout"] {
+      color: #e11d48 !important;
+    }
+    html.iuh-light .user-account-info ul.us-links li:has(a[href*="Logout"]) a:hover,
+    html.iuh-light .user-account-info ul.us-links li a[href*="Logout"]:hover,
+    html.iuh-light .user-account .dropdown-menu li a[href*="Logout"]:hover {
+      background: #fff1f2 !important;
+      color: #be123c !important;
     }
 
     /* ========================================================
@@ -1889,6 +2060,29 @@ function removeSearchBar() {
   });
 }
 
+// Tối ưu các mục trong menu tài khoản cá nhân (thêm icon đẹp, trực quan)
+function enhanceUserProfileDropdown() {
+  const links = document.querySelectorAll(".user-account-info ul.us-links li a, .user-account .dropdown-menu li a");
+  if (!links.length) return;
+
+  links.forEach((link) => {
+    if (link.dataset.iuhIconInit === "1" || link.querySelector("i")) return;
+    link.dataset.iuhIconInit = "1";
+    const text = link.textContent.trim();
+    const icon = document.createElement("i");
+    if (text.includes("Thông tin") || text.includes("cá nhân") || text.includes("Profile")) {
+      icon.className = "fa fa-user-circle";
+    } else if (text.includes("mật khẩu") || text.includes("Password")) {
+      icon.className = "fa fa-key";
+    } else if (text.includes("xuất") || text.includes("Logout")) {
+      icon.className = "fa fa-sign-out";
+    } else {
+      icon.className = "fa fa-angle-right";
+    }
+    link.insertBefore(icon, link.firstChild);
+  });
+}
+
 let isUpdating = false;
 let updateTimer = null;
 let obs = null;
@@ -1903,6 +2097,7 @@ function runAll() {
     removeSearchBar();
     organizeToolbar();
     setupSidebarDrawer();
+    enhanceUserProfileDropdown();
     equalizeColumns();
     ensureRadioRow();
     thayThe(document);

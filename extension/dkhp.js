@@ -506,6 +506,107 @@
         color: #ffffff !important;
         font-weight: 700 !important;
       }
+
+      /* Tối ưu Tooltip / Dropdown Tài khoản cá nhân */
+      .user-account-info,
+      .user-account-info.dropdown-menu,
+      .user-account .dropdown-menu {
+        width: 205px !important;
+        min-width: 200px !important;
+        padding: 6px !important;
+        margin: 0 !important;
+        border-radius: 14px !important;
+        box-sizing: border-box !important;
+      }
+      html.iuh-dark .user-account-info,
+      html.iuh-dark .user-account-info.dropdown-menu,
+      html.iuh-dark .user-account .dropdown-menu {
+        background: rgba(15, 23, 42, 0.96) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: 1px solid rgba(56, 189, 248, 0.3) !important;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65), 0 0 20px rgba(56, 189, 248, 0.1) !important;
+      }
+      html.iuh-light .user-account-info,
+      html.iuh-light .user-account-info.dropdown-menu,
+      html.iuh-light .user-account .dropdown-menu {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12) !important;
+      }
+      html.iuh-dark .user-account-info:before,
+      html.iuh-dark .user-account-info:after,
+      html.iuh-dark .dropdown-menu:before,
+      html.iuh-dark .dropdown-menu:after {
+        border-bottom-color: rgba(15, 23, 42, 0.98) !important;
+      }
+      html.iuh-light .user-account-info:before,
+      html.iuh-light .user-account-info:after,
+      html.iuh-light .dropdown-menu:before,
+      html.iuh-light .dropdown-menu:after {
+        border-bottom-color: #ffffff !important;
+      }
+      .user-account-info ul.us-links,
+      .user-account .dropdown-menu ul {
+        list-style: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      .user-account-info ul.us-links li,
+      .user-account .dropdown-menu li {
+        margin: 0 !important;
+        padding: 0 !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+        border-radius: 8px !important;
+        overflow: hidden !important;
+      }
+      html.iuh-light .user-account-info ul.us-links li,
+      html.iuh-light .user-account .dropdown-menu li {
+        border-bottom: 1px solid #f1f5f9 !important;
+      }
+      .user-account-info ul.us-links li a,
+      .user-account .dropdown-menu li a {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        padding: 10px 14px !important;
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        text-decoration: none !important;
+        border-radius: 8px !important;
+        transition: all 0.18s ease !important;
+      }
+      html.iuh-dark .user-account-info ul.us-links li a,
+      html.iuh-dark .user-account .dropdown-menu li a {
+        color: #f8fafc !important;
+        background: transparent !important;
+      }
+      html.iuh-dark .user-account-info ul.us-links li a:hover,
+      html.iuh-dark .user-account .dropdown-menu li a:hover {
+        background: rgba(56, 189, 248, 0.14) !important;
+        color: #38bdf8 !important;
+        transform: translateX(3px) !important;
+      }
+      html.iuh-light .user-account-info ul.us-links li a,
+      html.iuh-light .user-account .dropdown-menu li a {
+        color: #1e293b !important;
+        background: transparent !important;
+      }
+      html.iuh-light .user-account-info ul.us-links li a:hover,
+      html.iuh-light .user-account .dropdown-menu li a:hover {
+        background: #f1f5f9 !important;
+        color: #0284c7 !important;
+        transform: translateX(3px) !important;
+      }
+      html.iuh-dark .user-account-info ul.us-links li:has(a[href*="Logout"]) a,
+      html.iuh-dark .user-account-info ul.us-links li a[href*="Logout"] {
+        color: #fb7185 !important;
+      }
+      html.iuh-dark .user-account-info ul.us-links li:has(a[href*="Logout"]) a:hover,
+      html.iuh-dark .user-account-info ul.us-links li a[href*="Logout"]:hover {
+        background: rgba(244, 63, 94, 0.18) !important;
+        color: #f43f5e !important;
+      }
       /* Ô select và input khác */
       html.iuh-dark select,
       html.iuh-dark .custom-select,
