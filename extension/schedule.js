@@ -35,25 +35,25 @@ function injectThemeStyles() {
   style.id = "iuh-schedule-theme-style";
   style.textContent = `
     /* ========================================================
-       1. XÓA HOÀN TOÀN LOGO TRƯỜNG & KHỐI QR THEO YÊU CẦU
+       1. XÓA HOÀN TOÀN LOGO TRƯỜNG THEO YÊU CẦU
        ======================================================== */
     div.logo,
     .logo,
     header .logo,
     div:has(> a[href*="dashboard.html"] > img),
-    img[src*="iuh7313e0f8"],
-    div.col-md-2 .down_ungdung,
-    div.col-md-2 .box-download-app,
-    div.col-md-2 img[src*="image-qr-code-one-uni"],
-    div.col-md-2 img[src*="one-uni"],
-    div.col-md-2 img[src*="qr"],
-    div.col-md-2 img[src*="QR"],
-    img[src*="image-qr-code-one-uni"],
-    img[src*="one-uni"],
-    img[src*="one_uni"],
-    .box-download-app,
-    .down_ungdung {
+    img[src*="iuh7313e0f8"] {
       display: none !important;
+    }
+
+    /* Hiển thị ảnh QR Code OneUni theo yêu cầu */
+    .col-md-2 img[src*="image-qr-code-one-uni"],
+    img[src*="image-qr-code-one-uni"] {
+      display: block !important;
+      max-width: 100% !important;
+      height: auto !important;
+      border-radius: 8px !important;
+      margin-top: 12px !important;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4) !important;
     }
 
     /* XÓA BUTTON ZOOM / TOÀN MÀN HÌNH */
@@ -364,89 +364,118 @@ function injectThemeStyles() {
       border: 1.5px solid #38bdf8 !important;
     }
 
-    /* Sidebar Drawer Dark Mode */
-    html.iuh-dark div.col-md-2.d-none.d-sm-block,
-    html.iuh-dark div.col-md-2:has(.sidebar-menu),
-    html.iuh-dark div.col-md-2:has(ul),
-    html.iuh-dark div.col-md-2 {
+    /* ========================================================
+       TỐI ƯU MENU BAR CHO DARK MODE (KHỬ SẠCH NỀN TRẮNG VÀ CHỮ MỜ)
+       ======================================================== */
+    html.iuh-dark .col-md-2 .box-df,
+    html.iuh-dark .col-md-2 #accordion-menu,
+    html.iuh-dark .col-md-2 .accordion-menu {
       background: #0f172a !important;
       background-color: #0f172a !important;
       border: 1px solid #1e293b !important;
-      border-left: none !important;
-      border-radius: 0 16px 16px 0 !important;
-      box-shadow: 0 16px 45px rgba(0, 0, 0, 0.75) !important;
-      padding: 14px 0 !important;
-    }
-
-    /* Các khối chứa bên trong menu phải trong suốt */
-    html.iuh-dark div.col-md-2 .box-df,
-    html.iuh-dark div.col-md-2 #accordion-menu,
-    html.iuh-dark div.col-md-2 .accordion-menu,
-    html.iuh-dark div.col-md-2 ul,
-    html.iuh-dark div.col-md-2 li,
-    html.iuh-dark div.col-md-2 div:not(#iuh-sidebar-tab) {
-      background: transparent !important;
-      background-color: transparent !important;
-      border: none !important;
-      box-shadow: none !important;
+      border-radius: 12px !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
+      overflow: hidden !important;
       padding: 0 !important;
       margin: 0 !important;
     }
 
-    /* Từng mục danh mục (TRANG CHỦ, THÔNG TIN CHUNG, HỌC TẬP...): Nhỏ gọn, vừa vặn, thanh lịch */
-    html.iuh-dark div.col-md-2 a,
-    html.iuh-dark div.col-md-2 li a,
-    html.iuh-dark div.col-md-2 ul li a,
-    html.iuh-dark div.col-md-2 span:not(.badge) {
-      color: #f1f5f9 !important;
+    html.iuh-dark .accordion-menu ul,
+    html.iuh-dark .accordion-menu li {
+      background: transparent !important;
+      background-color: transparent !important;
+      border: none !important;
+      margin: 0 !important;
+      list-style: none !important;
+    }
+
+    /* Từng mục menu chính */
+    html.iuh-dark .accordion-menu > ul > li > a {
+      background: #0f172a !important;
+      background-color: #0f172a !important;
+      color: #f8fafc !important;
+      border-bottom: 1px solid #1e293b !important;
       font-size: 13px !important;
       font-weight: 600 !important;
-      padding: 10px 16px !important;
+      padding: 12px 14px !important;
       display: flex !important;
       align-items: center !important;
-      gap: 12px !important;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
-      transition: all 0.2s ease !important;
+      gap: 10px !important;
+      float: none !important;
+      text-decoration: none !important;
+      transition: all 0.15s ease !important;
+    }
+
+    html.iuh-dark .accordion-menu > ul > li > a span {
+      color: #f8fafc !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+    }
+
+    html.iuh-dark .accordion-menu > ul > li > a i {
+      color: #38bdf8 !important;
+      font-size: 15px !important;
+      width: 20px !important;
+      text-align: center !important;
+      float: none !important;
+    }
+
+    html.iuh-dark .accordion-menu .submenu-indicator,
+    html.iuh-dark .accordion-menu .submenu-indicator i {
+      color: #94a3b8 !important;
+      margin-left: auto !important;
+      position: static !important;
+      font-size: 12px !important;
+    }
+
+    html.iuh-dark .accordion-menu > ul > li > a:hover,
+    html.iuh-dark .accordion-menu > ul > li:hover > a {
+      background: #1e293b !important;
+      background-color: #1e293b !important;
+      color: #38bdf8 !important;
+    }
+    html.iuh-dark .accordion-menu > ul > li > a:hover span,
+    html.iuh-dark .accordion-menu > ul > li:hover > a span {
+      color: #38bdf8 !important;
+    }
+
+    /* Submenu (khi mở rộng ra) */
+    html.iuh-dark .accordion-menu ul.submenu {
+      background: #162032 !important;
+      background-color: #162032 !important;
+      border-bottom: 1px solid #1e293b !important;
+      padding: 4px 0 !important;
+    }
+
+    html.iuh-dark .accordion-menu ul.submenu li a {
+      background: #162032 !important;
+      background-color: #162032 !important;
+      color: #cbd5e1 !important;
+      font-size: 12.5px !important;
+      font-weight: 500 !important;
+      padding: 9px 14px 9px 36px !important;
+      border: none !important;
+      border-left: 3px solid transparent !important;
+      display: flex !important;
+      align-items: center !important;
+      float: none !important;
       text-decoration: none !important;
     }
 
-    html.iuh-dark div.col-md-2 a i,
-    html.iuh-dark div.col-md-2 a .fa,
-    html.iuh-dark div.col-md-2 a [class*="fa-"] {
-      color: #38bdf8 !important;
-      font-size: 15px !important;
-      width: 18px !important;
-      text-align: center !important;
-    }
-    html.iuh-dark div.col-md-2 .submenu-indicator,
-    html.iuh-dark div.col-md-2 .submenu-indicator i {
-      color: #64748b !important;
-      font-size: 11px !important;
-      margin-left: auto !important;
+    html.iuh-dark .accordion-menu ul.submenu li a span {
+      color: #cbd5e1 !important;
     }
 
-    html.iuh-dark div.col-md-2 a:hover,
-    html.iuh-dark div.col-md-2 li:hover > a {
-      background: rgba(30, 41, 59, 0.9) !important;
+    html.iuh-dark .accordion-menu ul.submenu li a:hover,
+    html.iuh-dark .accordion-menu ul.submenu li:hover > a {
+      background: #1e293b !important;
+      background-color: #1e293b !important;
       color: #38bdf8 !important;
-      padding-left: 20px !important;
+      border-left-color: #38bdf8 !important;
     }
 
-    /* Submenu xổ xuống bên trong */
-    html.iuh-dark div.col-md-2 .submenu {
-      background: #111c35 !important;
-      padding: 2px 0 !important;
-      list-style: none !important;
-    }
-    html.iuh-dark div.col-md-2 .submenu li a {
-      font-size: 12px !important;
-      padding: 7px 16px 7px 36px !important;
-      color: #94a3b8 !important;
-      border-bottom: none !important;
-    }
-    html.iuh-dark div.col-md-2 .submenu li a:hover {
+    html.iuh-dark .accordion-menu ul.submenu li a:hover span {
       color: #38bdf8 !important;
-      background: rgba(56, 189, 248, 0.08) !important;
     }
 
     /* ========================================================
@@ -1431,44 +1460,7 @@ function organizeToolbar() {
   if (btnTiep && rightGroup !== btnTiep.parentElement) rightGroup.appendChild(btnTiep);
 }
 
-// 11. Xóa sạch khối mã QR OneUni trên toàn trang
-function removeOneUniQR() {
-  document.querySelectorAll("img[src*='image-qr-code-one-uni'], img[src*='one-uni'], img[src*='one_uni']").forEach((img) => {
-    img.style.setProperty("display", "none", "important");
-    img.remove();
-  });
-  document.querySelectorAll("div, p, span, a, img, section").forEach((el) => {
-    const text = el.textContent || "";
-    const isQRText = text.includes("OneUni") || text.includes("Quét QR") || text.includes("cài đặt OneUni");
-    const isQRImg = el.tagName === "IMG" && (el.src.toLowerCase().includes("qr") || el.src.toLowerCase().includes("oneuni") || (el.alt && el.alt.toLowerCase().includes("qr")));
-
-    if (isQRText || isQRImg) {
-      const card = (
-        el.closest(".box-download-app") ||
-        el.closest(".down_ungdung") ||
-        el.closest("div[style*='background']") ||
-        el.closest("div[class*='download']") ||
-        el.closest("div[class*='app']") ||
-        (el.tagName === "DIV" ? el : el.parentElement)
-      );
-      if (
-        card &&
-        !card.classList.contains("col-md-2") &&
-        !card.classList.contains("col-md-10") &&
-        !card.classList.contains("main-content") &&
-        !card.classList.contains("container") &&
-        !card.classList.contains("row") &&
-        !card.classList.contains("box-df") &&
-        !card.classList.contains("wrapper")
-      ) {
-        card.style.setProperty("display", "none", "important");
-        card.remove();
-      }
-    }
-  });
-}
-
-// 12. Làm nổi bật toàn bộ cột ngày hôm nay (Header + Tất cả các ca học)
+// 11. Làm nổi bật toàn bộ cột ngày hôm nay (Header + Tất cả các ca học)
 function highlightTodayColumn(root) {
   const today = new Date();
   const d = today.getDate();
@@ -1600,7 +1592,6 @@ function runAll() {
     removeSearchBar();
     organizeToolbar();
     resetSidebarToDefault();
-    removeOneUniQR();
     equalizeColumns();
     ensureRadioRow();
     thayThe(document);
