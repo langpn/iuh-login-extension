@@ -466,67 +466,136 @@ function injectThemeStyles() {
       padding: 0 !important;
     }
 
-    /* Header Toolbar */
+    /* BỐ CỤC TOOLBAR MỚI (CHỐNG DỒN CỤC CHÍNH GIỮA) */
     .portlet-title,
     .box-df .portlet-title {
       display: flex !important;
       flex-direction: row !important;
-      flex-wrap: wrap !important;
       align-items: center !important;
       justify-content: space-between !important;
-      gap: 12px !important;
-      margin-bottom: 14px !important;
+      gap: 16px !important;
+      margin-bottom: 16px !important;
       border: none !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
     }
 
     /* Tiêu đề "Lịch học, lịch thi theo tuần" */
+    .portlet-title .caption,
+    .portlet-title .caption-subject,
     html.iuh-dark .portlet-title .caption,
-    html.iuh-dark .portlet-title .caption-subject,
-    html.iuh-dark .portlet-title h3,
-    html.iuh-dark .portlet-title h4,
-    html.iuh-dark .box-df [class*="title"] {
+    html.iuh-dark .portlet-title .caption-subject {
       color: #38bdf8 !important;
       font-weight: 700 !important;
-      font-size: 16px !important;
+      font-size: 16.5px !important;
       letter-spacing: 0.2px !important;
+      white-space: nowrap !important;
       flex-shrink: 0 !important;
+    }
+
+    /* THANH ACTIONS CHỨA CÁC ĐIỀU KHIỂN */
+    .portlet-title .actions {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: flex-end !important;
+      gap: 20px !important;
+      margin-left: auto !important;
+      width: auto !important;
+      flex: 1 1 auto !important;
     }
 
     /* ========================================================
        3 RADIO BUTTONS: DÀN TRẢI ĐỀU 1 HÀNG NGANG, GIÃN CÁCH ĐẸP
        ======================================================== */
-    .portlet-title .actions,
-    .portlet-title div:has(> input[type="radio"]),
-    .portlet-title div:has(> label > input[type="radio"]),
-    .box-df div:has(> input[type="radio"]),
-    .box-df div:has(> label > input[type="radio"]),
-    div:has(> label:has(input[value="1"])):has(> label:has(input[value="2"])) {
+    .portlet-title .mt-radio-inline,
+    div.mt-radio-inline {
+      width: auto !important;
+      float: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
       display: inline-flex !important;
-      flex-direction: row !important;
-      flex-wrap: nowrap !important;
       align-items: center !important;
-      gap: 32px !important;
+      gap: 24px !important;
       white-space: nowrap !important;
       flex-shrink: 0 !important;
-      width: max-content !important;
-      min-width: max-content !important;
-      margin: 0 !important;
     }
 
     /* Các nhãn radio: dàn ngang, không bao giờ bị rớt dòng */
-    .portlet-title label:has(input[type="radio"]),
-    .box-df label:has(input[type="radio"]),
-    label:has(input[type="radio"]) {
+    .portlet-title label.mt-radio,
+    .box-df label.mt-radio,
+    label.mt-radio {
       display: inline-flex !important;
       flex-direction: row !important;
       align-items: center !important;
-      gap: 10px !important;
-      margin: 0 6px !important;
+      gap: 8px !important;
+      margin: 0 !important;
+      padding-left: 0 !important;
       white-space: nowrap !important;
       cursor: pointer !important;
       font-size: 13.5px !important;
       font-weight: 600 !important;
       user-select: none !important;
+      color: #e2e8f0 !important;
+    }
+    label.mt-radio label {
+      margin: 0 !important;
+      padding: 0 !important;
+      cursor: pointer !important;
+      color: #e2e8f0 !important;
+    }
+    .mt-radio > span:empty {
+      display: none !important;
+    }
+
+    /* Cụm điều khiển bên phải (Datepicker + Hiện tại + Trở về + Tiếp) */
+    .iuh-right-controls {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      margin-left: auto !important;
+      flex-shrink: 0 !important;
+    }
+
+    /* RESPONSIVE KHI MÀN HÌNH NHỎ HƠN (HOẶC KHI CÓ DEVTOOLS MỞ) */
+    @media (max-width: 1250px) {
+      .portlet-title,
+      .box-df .portlet-title {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+      }
+
+      /* Hàng 1: Title nằm CHÍNH GIỮA */
+      .portlet-title .caption {
+        width: 100% !important;
+        text-align: center !important;
+        display: flex !important;
+        justify-content: center !important;
+        margin: 0 !important;
+      }
+      .portlet-title .caption .caption-subject {
+        font-size: 17px !important;
+        text-align: center !important;
+      }
+
+      /* Hàng 2: Actions chiếm 100% bề ngang */
+      .portlet-title .actions {
+        width: 100% !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        margin: 0 !important;
+      }
+
+      /* Radio dạt về BÊN TRÁI */
+      .portlet-title .actions .mt-radio-inline {
+        margin-right: auto !important;
+      }
+
+      /* Datepicker + Nút bấm dồn về BÊN PHẢI */
+      .iuh-right-controls {
+        margin-left: auto !important;
+      }
     }
 
     /* Nút radio tròn hiện đại */
@@ -746,8 +815,10 @@ function injectThemeStyles() {
     /* CÁC NÚT ĐIỀU HƯỚNG: ĐỒNG BỘ, ĐẸP MẮT */
     html.iuh-dark .box-df .btn,
     html.iuh-dark .portlet-title .btn,
-    html.iuh-dark #btnHienTai,
-    html.iuh-dark #btnInLich {
+    html.iuh-dark .btn-action,
+    html.iuh-dark #btn_HienTai,
+    html.iuh-dark #btn_TroVe,
+    html.iuh-dark #btn_Tiep {
       height: 36px !important;
       line-height: 34px !important;
       padding: 0 14px !important;
@@ -764,27 +835,37 @@ function injectThemeStyles() {
       color: #f8fafc !important;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
       transition: all 0.2s ease !important;
-      margin-left: 5px !important;
+      text-decoration: none !important;
     }
     /* Nút Hiện tại: Gradient xanh nổi bật */
-    html.iuh-dark #btnHienTai,
+    html.iuh-dark #btn_HienTai,
     html.iuh-dark .box-df .btn-primary {
       background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
       border: none !important;
       color: #ffffff !important;
       box-shadow: 0 2px 10px rgba(2, 132, 199, 0.4) !important;
     }
-    html.iuh-dark #btnHienTai:hover,
+    html.iuh-dark #btn_HienTai:hover,
     html.iuh-dark .box-df .btn-primary:hover {
       background: linear-gradient(135deg, #0369a1 0%, #075985 100%) !important;
       transform: translateY(-1px) !important;
     }
     html.iuh-dark .box-df .btn:hover,
-    html.iuh-dark .portlet-title .btn:hover {
+    html.iuh-dark .portlet-title .btn:hover,
+    html.iuh-dark #btn_TroVe:hover,
+    html.iuh-dark #btn_Tiep:hover {
       background: #334155 !important;
       color: #38bdf8 !important;
       border-color: #0284c7 !important;
       transform: translateY(-1px) !important;
+    }
+
+    /* XÓA NÚT IN LỊCH VÀ PHÓNG TO */
+    #btn_InLich,
+    #full-table,
+    .portlet-title a#btn_InLich,
+    .portlet-title a#full-table {
+      display: none !important;
     }
 
     /* ========================================================
@@ -1262,38 +1343,52 @@ function centerLegend(root) {
 
 // 9. Đảm bảo 3 nút radio dàn trải thành 1 hàng ngang duy nhất & giãn cách đẹp
 function ensureRadioRow() {
-  const radios = document.querySelectorAll("input[type='radio']");
-  if (radios.length >= 2) {
-    const parent = radios[0].closest(".actions") || radios[0].closest("div:has(> label)") || radios[0].parentElement?.parentElement;
-    if (parent) {
-      parent.style.setProperty("display", "inline-flex", "important");
-      parent.style.setProperty("flex-direction", "row", "important");
-      parent.style.setProperty("flex-wrap", "nowrap", "important");
-      parent.style.setProperty("align-items", "center", "important");
-      parent.style.setProperty("gap", "32px", "important");
-      parent.style.setProperty("white-space", "nowrap", "important");
-      parent.style.setProperty("flex-shrink", "0", "important");
-      parent.style.setProperty("width", "max-content", "important");
-    }
-    document.querySelectorAll(".portlet-title label, .box-df label, label:has(input[type='radio'])").forEach((lbl) => {
-      lbl.style.setProperty("display", "inline-flex", "important");
-      lbl.style.setProperty("align-items", "center", "important");
-      lbl.style.setProperty("gap", "10px", "important");
-      lbl.style.setProperty("margin", "0 6px", "important");
-      lbl.style.setProperty("white-space", "nowrap", "important");
-    });
+  const radioInline = document.querySelector(".mt-radio-inline") || document.querySelector("div:has(> input[type='radio'])");
+  if (radioInline) {
+    radioInline.style.setProperty("display", "inline-flex", "important");
+    radioInline.style.setProperty("flex-direction", "row", "important");
+    radioInline.style.setProperty("flex-wrap", "nowrap", "important");
+    radioInline.style.setProperty("align-items", "center", "important");
+    radioInline.style.setProperty("gap", "28px", "important");
+    radioInline.style.setProperty("white-space", "nowrap", "important");
+    radioInline.style.setProperty("flex-shrink", "0", "important");
+    radioInline.style.setProperty("width", "auto", "important");
+    radioInline.style.setProperty("float", "none", "important");
   }
+  const actions = document.querySelector(".portlet-title .actions");
+  if (actions) {
+    actions.style.removeProperty("width");
+    actions.style.removeProperty("min-width");
+  }
+  document.querySelectorAll(".portlet-title label.mt-radio, .box-df label.mt-radio, label:has(input[type='radio'])").forEach((lbl) => {
+    lbl.style.setProperty("display", "inline-flex", "important");
+    lbl.style.setProperty("align-items", "center", "important");
+    lbl.style.setProperty("gap", "8px", "important");
+    lbl.style.setProperty("margin", "0", "important");
+    lbl.style.setProperty("padding-left", "0", "important");
+    lbl.style.setProperty("white-space", "nowrap", "important");
+  });
 }
 
-// 10. Xóa nút Zoom / Toàn màn hình
-function removeZoomButton() {
+// 10. Xóa nút Zoom / Toàn màn hình & nút In lịch, gom cụm điều hướng dồn về bên phải
+function organizeToolbar() {
+  const actions = document.querySelector(".portlet-title .actions");
+  if (!actions) return;
+
+  // Xóa nút In lịch và Phóng to
+  const inLich = document.getElementById("btn_InLich") || actions.querySelector("a[onclick*='PrintElem']");
+  if (inLich) inLich.remove();
+
+  const fullTable = document.getElementById("full-table") || actions.querySelector("a:has(.glyphicon-resize-full), a:has(.fa-expand)");
+  if (fullTable) fullTable.remove();
+
+  // Xóa bất kỳ nút fullscreen nào còn sót
   document.querySelectorAll(".portlet-title .btn, .portlet-title a, .box-df .btn, .box-df a, button, a").forEach((btn) => {
-    const hasExpandIcon = btn.querySelector("i.fa-expand, i[class*='expand'], i[class*='compress'], i[class*='arrows-alt']");
+    const hasExpandIcon = btn.querySelector("i.fa-expand, i[class*='expand'], i[class*='compress'], i[class*='arrows-alt'], span.glyphicon-resize-full");
     const isFullscreenBtn = (
+      btn.id === "full-table" ||
+      btn.id === "btn_InLich" ||
       btn.classList.contains("fullscreen") ||
-      btn.id?.toLowerCase().includes("fullscreen") ||
-      btn.id?.toLowerCase().includes("zoom") ||
-      btn.id?.toLowerCase().includes("resize") ||
       (btn.getAttribute("title") && (btn.getAttribute("title").toLowerCase().includes("màn hình") || btn.getAttribute("title").toLowerCase().includes("fullscreen")))
     );
     if ((hasExpandIcon || isFullscreenBtn) && (btn.tagName === "BUTTON" || btn.tagName === "A" || btn.classList.contains("btn"))) {
@@ -1301,6 +1396,24 @@ function removeZoomButton() {
       btn.remove();
     }
   });
+
+  // Tạo cụm điều khiển bên phải (Datepicker + Hiện tại + Trở về + Tiếp) dồn về phải
+  let rightGroup = actions.querySelector(".iuh-right-controls");
+  if (!rightGroup) {
+    rightGroup = document.createElement("div");
+    rightGroup.className = "iuh-right-controls";
+    actions.appendChild(rightGroup);
+  }
+
+  const datepicker = actions.querySelector(".k-datepicker, span:has(#dateNgayXemLich)");
+  const btnHienTai = document.getElementById("btn_HienTai");
+  const btnTroVe = document.getElementById("btn_TroVe");
+  const btnTiep = document.getElementById("btn_Tiep");
+
+  if (datepicker && rightGroup !== datepicker.parentElement) rightGroup.appendChild(datepicker);
+  if (btnHienTai && rightGroup !== btnHienTai.parentElement) rightGroup.appendChild(btnHienTai);
+  if (btnTroVe && rightGroup !== btnTroVe.parentElement) rightGroup.appendChild(btnTroVe);
+  if (btnTiep && rightGroup !== btnTiep.parentElement) rightGroup.appendChild(btnTiep);
 }
 
 // 11. Xóa sạch khối mã QR OneUni trên toàn trang
@@ -1450,7 +1563,7 @@ function runAll() {
     if (obs) obs.disconnect();
 
     removeLogo();
-    removeZoomButton();
+    organizeToolbar();
     setupSidebarCollapse();
     removeOneUniQR();
     equalizeColumns();
