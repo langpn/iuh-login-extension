@@ -146,16 +146,13 @@
          1. DARK MODE: AURORA COSMOS GRADIENT (MẶC ĐỊNH)
          ======================================================== */
       html.iuh-dark, html.iuh-dark body {
-        background-color: #020617 !important;
+        background-color: #030712 !important;
         background-image: 
-          radial-gradient(at 10% 0%, rgba(99, 102, 241, 0.26) 0px, transparent 40%),
-          radial-gradient(at 90% 0%, rgba(6, 182, 212, 0.20) 0px, transparent 40%),
-          radial-gradient(at 0% 30%, rgba(168, 85, 247, 0.16) 0px, transparent 45%),
-          radial-gradient(at 100% 45%, rgba(59, 130, 246, 0.18) 0px, transparent 45%),
-          radial-gradient(at 30% 65%, rgba(236, 72, 153, 0.12) 0px, transparent 40%),
-          radial-gradient(at 90% 80%, rgba(14, 165, 233, 0.18) 0px, transparent 45%),
-          radial-gradient(at 10% 100%, rgba(139, 92, 246, 0.16) 0px, transparent 50%),
-          radial-gradient(at 70% 100%, rgba(16, 185, 129, 0.14) 0px, transparent 45%) !important;
+          radial-gradient(at 15% 10%, rgba(99, 102, 241, 0.25) 0px, transparent 45%),
+          radial-gradient(at 85% 15%, rgba(6, 182, 212, 0.20) 0px, transparent 45%),
+          radial-gradient(at 50% 50%, rgba(147, 51, 234, 0.14) 0px, transparent 55%),
+          radial-gradient(at 80% 85%, rgba(59, 130, 246, 0.18) 0px, transparent 50%),
+          radial-gradient(at 20% 90%, rgba(236, 72, 153, 0.10) 0px, transparent 50%) !important;
         background-attachment: fixed !important;
         background-size: cover !important;
         color: #f8fafc !important;
@@ -422,102 +419,12 @@
         color: #f8fafc;
       }
 
-      /* FIX TOÀN BỘ SELECT2 & DROPDOWN POPUPS TRONG DARK MODE (KHỬ SẠCH NỀN TRẮNG CHÓI & CHỮ TÀNG HÌNH) */
-      html.iuh-dark .select2-container--default .select2-selection--single,
-      html.iuh-dark .select2-selection,
-      html.iuh-dark .select2-container .select2-selection--single {
-        background-color: #1e293b !important;
-        border: 1.5px solid #334155 !important;
-        border-radius: 8px !important;
-        color: #f8fafc !important;
-        height: 38px !important;
-      }
-      html.iuh-dark .select2-selection__rendered {
-        color: #f8fafc !important;
-        line-height: 36px !important;
-        padding-left: 12px !important;
-        font-weight: 600 !important;
-      }
-      html.iuh-dark .select2-selection__arrow {
-        height: 36px !important;
-        color: #94a3b8 !important;
-      }
-      /* Menu popup dropdown (.select2-dropdown) */
-      html.iuh-dark .select2-dropdown,
-      html.iuh-dark .select2-container--open .select2-dropdown,
-      html.iuh-dark .select2-container .select2-dropdown,
-      html.iuh-dark .dropdown-menu,
-      html.iuh-dark .k-popup,
-      html.iuh-dark .k-list-container {
-        background-color: #0f172a !important;
-        border: 1.5px solid #334155 !important;
-        border-radius: 10px !important;
-        box-shadow: 0 14px 35px rgba(0, 0, 0, 0.75) !important;
-        overflow: hidden !important;
-        z-index: 9999999 !important;
-      }
-      /* Ô tìm kiếm bên trong popup dropdown */
-      html.iuh-dark .select2-search--dropdown,
-      html.iuh-dark .select2-search {
-        background-color: #0f172a !important;
-        padding: 8px !important;
-      }
-      html.iuh-dark .select2-search--dropdown .select2-search__field,
-      html.iuh-dark .select2-search__field {
-        background-color: #1e293b !important;
-        border: 1.5px solid #0284c7 !important;
-        border-radius: 6px !important;
-        color: #f8fafc !important;
-        font-size: 13.5px !important;
-        padding: 6px 10px !important;
-        outline: none !important;
-      }
-      /* Danh sách các lựa chọn (.select2-results__option) - KHỬ SẠCH CHỮ TRẮNG TRÊN NỀN TRẮNG */
-      html.iuh-dark .select2-results,
-      html.iuh-dark .select2-results__options,
-      html.iuh-dark .k-list {
-        background-color: #0f172a !important;
-        color: #f8fafc !important;
-      }
-      html.iuh-dark .select2-results__option,
-      html.iuh-dark .k-item,
-      html.iuh-dark .dropdown-menu > li > a {
-        background-color: #0f172a !important;
-        color: #cbd5e1 !important;
-        font-size: 13px !important;
-        font-weight: 500 !important;
-        padding: 8px 12px !important;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
-        transition: all 0.15s ease !important;
-      }
-      /* Hàng hover */
-      html.iuh-dark .select2-container--default .select2-results__option--highlighted[aria-selected],
-      html.iuh-dark .select2-results__option:hover,
-      html.iuh-dark .k-item:hover,
-      html.iuh-dark .dropdown-menu > li > a:hover {
-        background-color: #1e293b !important;
-        color: #38bdf8 !important;
-      }
-      /* Hàng đang chọn (Active) */
-      html.iuh-dark .select2-container--default .select2-results__option[aria-selected="true"],
-      html.iuh-dark .k-state-selected,
-      html.iuh-dark .dropdown-menu > .active > a {
-        background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
-        color: #ffffff !important;
-        font-weight: 700 !important;
-      }
-      /* Ô select và input khác */
-      html.iuh-dark select,
-      html.iuh-dark .custom-select,
-      html.iuh-dark select.form-control,
-      html.iuh-dark input[type="text"]:not(#Captcha),
-      html.iuh-dark input[type="number"],
-      html.iuh-dark input[type="search"] {
+      /* Dropdown select */
+      html.iuh-dark select, html.iuh-dark select.form-control {
         background-color: #1e293b !important;
         color: #f8fafc !important;
         border: 1px solid #334155 !important;
         border-radius: 8px !important;
-        padding: 6px 12px !important;
       }
       html.iuh-dark input[type="radio"], html.iuh-dark input[type="checkbox"] {
         accent-color: #0284c7 !important;
