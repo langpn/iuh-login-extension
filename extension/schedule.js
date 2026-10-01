@@ -122,102 +122,7 @@ function injectThemeStyles() {
     }
 
     /* ========================================================
-       3. NÚT ICON TAB VÀ DRAWER SIDEBAR MẸP TRÁI
-       ======================================================== */
-    #iuh-sidebar-tab {
-      position: fixed !important;
-      top: 110px !important;
-      left: 0 !important;
-      width: 38px !important;
-      height: 46px !important;
-      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
-      color: #ffffff !important;
-      border-radius: 0 12px 12px 0 !important;
-      box-shadow: 2px 4px 15px rgba(2, 132, 199, 0.4) !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      cursor: pointer !important;
-      transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
-      z-index: 9999999 !important;
-      opacity: 1 !important;
-      transform: scale(1) !important;
-    }
-    #iuh-sidebar-tab:hover {
-      width: 44px !important;
-      background: linear-gradient(135deg, #0369a1 0%, #075985 100%) !important;
-      box-shadow: 4px 6px 18px rgba(2, 132, 199, 0.55) !important;
-    }
-
-    /* KHI MỞ MENU RA THÌ ẨN ICON ĐI ĐỂ KHÔNG ĐÈ LÊN NỘI DUNG */
-    #iuh-sidebar-tab.iuh-tab-hidden,
-    body:has(div.col-md-2:hover) #iuh-sidebar-tab,
-    body:has(div.col-md-2.iuh-open) #iuh-sidebar-tab,
-    div.col-md-2:hover ~ #iuh-sidebar-tab {
-      opacity: 0 !important;
-      pointer-events: none !important;
-      transform: scale(0.7) !important;
-    }
-
-    div.col-md-2.d-none.d-sm-block,
-    div.col-md-2:has(.sidebar-menu),
-    div.col-md-2:has(ul) {
-      position: fixed !important;
-      top: 85px !important;
-      left: 0 !important;
-      width: 250px !important;
-      max-width: 270px !important;
-      box-sizing: border-box !important;
-      height: auto !important;
-      max-height: calc(100vh - 100px) !important;
-      overflow-y: auto !important;
-      z-index: 999999 !important;
-      border-radius: 0 16px 16px 0 !important;
-      transform: translateX(-100%) !important;
-      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-      padding: 14px 8px !important;
-    }
-
-    body:has(#iuh-sidebar-tab:hover) div.col-md-2.d-none.d-sm-block,
-    body:has(#iuh-sidebar-tab:hover) div.col-md-2:has(.sidebar-menu),
-    body:has(#iuh-sidebar-tab:hover) div.col-md-2:has(ul),
-    div.col-md-2.d-none.d-sm-block:hover,
-    div.col-md-2:has(.sidebar-menu):hover,
-    div.col-md-2:has(ul):hover,
-    div.col-md-2.iuh-open {
-      transform: translateX(0) !important;
-    }
-
-    /* ========================================================
-       4. KHUNG CHỨA LỊCH HỌC BUNG 100% DIỆN TÍCH
-       ======================================================== */
-    div.col-md-10,
-    div[class*="col-md-10"],
-    .col-md-10 {
-      width: 100% !important;
-      max-width: 100% !important;
-      flex: 0 0 100% !important;
-      padding-left: 12px !important;
-      padding-right: 12px !important;
-      box-sizing: border-box !important;
-    }
-
-    .container:has(div.col-md-2),
-    div:has(> .row > div.col-md-2) {
-      width: 100% !important;
-      max-width: 100% !important;
-      padding-left: 16px !important;
-      padding-right: 16px !important;
-    }
-
-    .row:has(> div.col-md-2) {
-      margin-left: 0 !important;
-      margin-right: 0 !important;
-      width: 100% !important;
-    }
-
-    /* ========================================================
-       5. BẢNG THỜI KHÓA BIỂU: BO GÓC VÀ CHIA ĐỀU CÁC CỘT CHUẨN XÁC
+       3. BẢNG THỜI KHÓA BIỂU: BO GÓC VÀ CHIA ĐỀU CÁC CỘT CHUẨN XÁC
        ======================================================== */
     .table-responsive,
     div:has(> table.fl-table),
@@ -377,24 +282,25 @@ function injectThemeStyles() {
       display: none !important;
     }
 
-    /* Bố cục Header: Dồn toàn bộ sang bên trái */
+    /* Bố cục Header: Dàn 2 bên (Trái và Phải) */
     .header .container,
     .header .header-content,
     .header-content {
       display: flex !important;
       flex-direction: row !important;
       align-items: center !important;
-      justify-content: flex-start !important;
-      gap: 20px !important;
-      float: none !important;
+      justify-content: space-between !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
     }
 
-    /* Menu top (Trang chủ, Tin tức) */
+    /* Menu top (Trang chủ, Tin tức): NẰM BÊN TRÁI */
     .header .menu-top,
     .header-content .menu-top,
     .menu-top {
       float: none !important;
       margin: 0 !important;
+      margin-right: auto !important;
       padding: 0 !important;
       display: inline-flex !important;
       align-items: center !important;
@@ -415,12 +321,13 @@ function injectThemeStyles() {
       align-items: center !important;
     }
 
-    /* User account dropdown */
+    /* User account: NẰM BÊN PHẢI */
     .header .user-account,
     .header-content .user-account,
     .user-account {
       float: none !important;
       margin: 0 !important;
+      margin-left: auto !important;
       padding: 0 !important;
       display: inline-flex !important;
       align-items: center !important;
@@ -433,11 +340,11 @@ function injectThemeStyles() {
       cursor: pointer !important;
     }
 
-    /* Nút Dark/Light mode xếp tiếp theo ở bên trái */
+    /* Nút Dark/Light mode: NẰM KẾ BÊN TÀI KHOẢN Ở BÊN PHẢI */
     #iuh-theme-toggle-btn {
       order: 3 !important;
       position: static !important;
-      margin-left: 6px !important;
+      margin-left: 12px !important;
       flex-shrink: 0 !important;
     }
     html.iuh-dark header a,
@@ -1248,104 +1155,22 @@ function removeLogo() {
   }
 }
 
-// 3. Gắn nút Icon tab độc lập sát mép trái
-function setupSidebarCollapse() {
-  const sidebar = (
-    document.querySelector("div.col-md-2.d-none.d-sm-block") ||
-    document.querySelector("div.col-md-2") ||
-    Array.from(document.querySelectorAll("div[class*='col-md-2']")).find(
-      (el) => el.textContent.includes("TRANG CHỦ") && el.textContent.includes("HỌC TẬP")
-    )
-  );
+// 3. Khôi phục menu bar về mặc định ban đầu theo yêu cầu
+function resetSidebarToDefault() {
+  const tab = document.getElementById("iuh-sidebar-tab");
+  if (tab) tab.remove();
 
-  if (!sidebar) return;
-
-  // Xóa khối QR OneUni
-  sidebar.querySelectorAll("div, p, img, a").forEach((el) => {
-    if (
-      (el.tagName === "IMG" && (el.src.includes("qr") || el.src.includes("QR"))) ||
-      (el.textContent && (el.textContent.includes("OneUni") || el.textContent.includes("cài đặt OneUni")))
-    ) {
-      const box = el.closest(".down_ungdung") || el.closest(".box-download-app") || el.parentElement;
-      if (box && sidebar.contains(box) && box !== sidebar) {
-        box.remove();
-      }
-    }
+  document.querySelectorAll(".col-md-2, div[class*='col-md-2']").forEach((el) => {
+    el.classList.remove("iuh-open");
+    el.style.removeProperty("position");
+    el.style.removeProperty("transform");
+    el.style.removeProperty("transition");
   });
 
-  // Gắn nút icon tab vào body sát mép trái
-  let tab = document.getElementById("iuh-sidebar-tab");
-  if (!tab) {
-    tab = document.createElement("div");
-    tab.id = "iuh-sidebar-tab";
-    tab.title = "Menu Sinh Viên (Rê chuột để mở)";
-    tab.innerHTML = `
-      <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="3" y1="12" x2="21" y2="12"></line>
-        <line x1="3" y1="6" x2="21" y2="6"></line>
-        <line x1="3" y1="18" x2="21" y2="18"></line>
-      </svg>
-    `;
-
-    tab.addEventListener("mouseenter", () => {
-      sidebar.classList.add("iuh-open");
-      tab.classList.add("iuh-tab-hidden");
-    });
-
-    tab.addEventListener("click", (e) => {
-      e.stopPropagation();
-      sidebar.classList.toggle("iuh-open");
-      if (sidebar.classList.contains("iuh-open")) {
-        tab.classList.add("iuh-tab-hidden");
-      } else {
-        tab.classList.remove("iuh-tab-hidden");
-      }
-    });
-
-    sidebar.addEventListener("mouseleave", () => {
-      sidebar.classList.remove("iuh-open");
-      tab.classList.remove("iuh-tab-hidden");
-    });
-
-    document.addEventListener("click", (e) => {
-      if (!sidebar.contains(e.target) && e.target !== tab && !tab.contains(e.target)) {
-        sidebar.classList.remove("iuh-open");
-        tab.classList.remove("iuh-tab-hidden");
-      }
-    });
-
-    document.addEventListener("mousemove", (e) => {
-      if (sidebar.classList.contains("iuh-open")) {
-        const r = sidebar.getBoundingClientRect();
-        if (e.clientX > r.right + 35) {
-          sidebar.classList.remove("iuh-open");
-          tab.classList.remove("iuh-tab-hidden");
-        }
-      }
-    });
-
-    document.body.appendChild(tab);
-  }
-
-  // Mở rộng cha (container & col-md-10) chiếm full width
-  const row = sidebar.parentElement;
+  const row = document.querySelector(".row:has(.col-md-2)");
   if (row) {
-    row.style.setProperty("width", "100%", "important");
-    row.style.setProperty("margin", "0", "important");
-
-    const container = row.parentElement;
-    if (container) {
-      container.style.setProperty("width", "100%", "important");
-      container.style.setProperty("max-width", "100%", "important");
-      container.style.setProperty("padding", "0 16px", "important");
-    }
-
-    const contentCol = row.querySelector("div.col-md-10, div[class*='col-md-10']");
-    if (contentCol) {
-      contentCol.style.setProperty("width", "100%", "important");
-      contentCol.style.setProperty("max-width", "100%", "important");
-      contentCol.style.setProperty("flex", "0 0 100%", "important");
-    }
+    row.style.removeProperty("width");
+    row.style.removeProperty("margin");
   }
 }
 
@@ -1774,7 +1599,7 @@ function runAll() {
     removeLogo();
     removeSearchBar();
     organizeToolbar();
-    setupSidebarCollapse();
+    resetSidebarToDefault();
     removeOneUniQR();
     equalizeColumns();
     ensureRadioRow();
