@@ -642,6 +642,74 @@ function injectThemeStyles() {
     }
 
     /* ========================================================
+       CỤM 4 NÚT ĐIỀU KHIỂN BÊN PHẢI (DATEPICKER + HIỆN TẠI + TRỞ VỀ + TIẾP)
+       Tuyệt đối không bao giờ bị xếp chồng lên nhau
+       ======================================================== */
+    .iuh-right-controls {
+      display: inline-flex !important;
+      flex-direction: row !important;
+      flex-wrap: nowrap !important;
+      align-items: center !important;
+      gap: 8px !important;
+      margin-left: auto !important;
+      flex-shrink: 0 !important;
+      white-space: nowrap !important;
+    }
+    .iuh-right-controls > * {
+      flex-shrink: 0 !important;
+      white-space: nowrap !important;
+    }
+
+    /* ========================================================
+       RESPONSIVE KHI MÀN HÌNH NHỎ HƠN (DƯỚI 1350PX HOẶC MỞ DEVTOOLS)
+       ======================================================== */
+    @media (max-width: 1350px) {
+      .portlet-title,
+      .box-df .portlet-title {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 14px !important;
+      }
+
+      /* Hàng 1: Title nằm CHÍNH GIỮA màn hình */
+      .portlet-title .caption,
+      html.iuh-dark .portlet-title .caption {
+        width: 100% !important;
+        text-align: center !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        margin: 0 !important;
+      }
+      .portlet-title .caption .caption-subject {
+        font-size: 17px !important;
+        text-align: center !important;
+      }
+
+      /* Hàng 2: Actions chiếm 100% bề ngang, chia 2 bên */
+      .portlet-title .actions {
+        width: 100% !important;
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        margin: 0 !important;
+      }
+
+      /* 3 nút Radio dạt về BÊN TRÁI */
+      .portlet-title .actions .mt-radio-inline {
+        margin-right: auto !important;
+      }
+
+      /* Cụm 4 nút điều khiển (Datepicker + Hiện tại + Trở về + Tiếp) dồn về BÊN PHẢI */
+      .iuh-right-controls {
+        margin-left: auto !important;
+      }
+    }
+
+    /* ========================================================
        TỐI ƯU KENDO DATEPICKER & LỊCH POPUP
        ======================================================== */
     /* Khung Datepicker Wrapper */
@@ -1412,6 +1480,53 @@ function organizeToolbar() {
   if (btnHienTai && rightGroup !== btnHienTai.parentElement) rightGroup.appendChild(btnHienTai);
   if (btnTroVe && rightGroup !== btnTroVe.parentElement) rightGroup.appendChild(btnTroVe);
   if (btnTiep && rightGroup !== btnTiep.parentElement) rightGroup.appendChild(btnTiep);
+
+  attachHienTaiHandler();
+}
+
+// Gắn xử lý cho nút Hiện tại để luôn quay lại ngày hôm nay 100%
+function attachHienTaiHandler() {
+  const btn = document.getElementById("btn_HienTai");
+  if (!btn || btn.dataset.iuhHienTaiBound === "1") return;
+  btn.dataset.iuhHienTaiBound = "1";
+
+  btn.addEventListener("click", () => {
+    const script = document.createElement("script");
+    script.textContent = `
+      (function() {
+        var today = new Date();
+        var d = String(today.getDate()).padStart(2, '0');
+        var m = String(today.getMonth() + 1).padStart(2, '0');
+        var y = today.getFullYear();
+        var todayStr = d + '/' + m + '/' + y;
+
+        var $input = window.jQuery ? window.jQuery("#dateNgayXemLich") : null;
+        if ($input && $input.length) {
+          var picker = $input.data("kendoDatePicker");
+          if (picker) {
+            picker.value(today);
+            picker.trigger("change");
+          } else {
+            $input.val(todayStr).trigger("change");
+          }
+        } else {
+          var input = document.getElementById("dateNgayXemLich");
+          if (input) {
+            input.value = todayStr;
+            input.dispatchEvent(new Event("change", { bubbles: true }));
+          }
+        }
+
+        if (typeof window.GetDanhSachLichTheoTuan === "function") {
+          window.GetDanhSachLichTheoTuan(todayStr);
+        } else if (typeof window.loadLichTheoTuan === "function") {
+          window.loadLichTheoTuan(todayStr);
+        }
+      })();
+    `;
+    (document.head || document.documentElement).appendChild(script);
+    script.remove();
+  });
 }
 
 // 11. Xóa sạch khối mã QR OneUni trên toàn trang
