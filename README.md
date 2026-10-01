@@ -20,17 +20,22 @@ Bộ công cụ tự động đăng nhập, giữ sống phiên và tối ưu h�
 
 ## 📸 Hình ảnh giao diện thực tế
 
-### 1. Thời khóa biểu tuần Dark Mode Aurora (Mở rộng 100% Full Width & Menu Hover mép trái)
+### 1. Bảng điều khiển Popup tiện ích (⚡ IUH Portal Sync)
+<p align="center">
+  <img src="docs/screenshots/extension_popup.jpg" alt="IUH Portal Sync Popup" width="340px" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.5);" />
+</p>
+
+### 2. Thời khóa biểu tuần Dark Mode Aurora (Mở rộng 100% Full Width & Menu Hover mép trái)
 <p align="center">
   <img src="docs/screenshots/schedule_dark_mode.jpg" alt="Thời khóa biểu tuần Dark Mode" width="95%" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.5);" />
 </p>
 
-### 2. Cổng Đăng ký học phần — Đăng nhập & Captcha phóng to khử nhiễu 4 ô ký tự
+### 3. Cổng Đăng ký học phần — Đăng nhập & Captcha phóng to khử nhiễu 4 ô ký tự
 <p align="center">
   <img src="docs/screenshots/dkhp_login_captcha.jpg" alt="Cổng ĐKHP Đăng nhập và Captcha Khử nhiễu" width="95%" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.5);" />
 </p>
 
-### 3. Cổng Đăng ký học phần — Giao diện Portal Dark Mode
+### 4. Cổng Đăng ký học phần — Giao diện Portal Dark Mode
 <p align="center">
   <img src="docs/screenshots/dkhp_portal.jpg" alt="Cổng ĐKHP Portal Dark Mode" width="95%" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.5);" />
 </p>
