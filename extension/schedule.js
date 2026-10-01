@@ -1667,7 +1667,7 @@ function setupSidebarDrawer() {
   }
 }
 
-// 4. Đổi "Tiết: X - Y" thành giờ cụ thể và IN ĐẬM thời gian học
+// 4. Giữ nguyên số tiết (Tiết: X - Y) và hiển thị thêm khung giờ cụ thể ngay phía dưới
 function thayThe(root) {
   const table = document.getElementById("tableLich");
   const target = table || root || document;
@@ -1685,17 +1685,21 @@ function thayThe(root) {
     if (!a || !b) return;
     const gio = `${a.split(" - ")[0]} - ${b.split(" - ")[1]}`;
 
-    // Tạo thẻ in đậm riêng cho thời gian
+    // Giữ nguyên số tiết gốc: ví dụ ": 1 - 3"
+    const tietText = document.createTextNode(m[0]);
+
+    // Tạo dòng mới hiển thị giờ học cụ thể in đậm ngay bên dưới số tiết
+    const br = document.createElement("br");
     const bTime = document.createElement("b");
     bTime.className = "iuh-time-bold";
     bTime.style.setProperty("font-weight", "800", "important");
     bTime.style.setProperty("color", "#000000", "important");
     bTime.textContent = gio;
 
-    const colon = document.createTextNode(m[1]);
     const remainingText = after.nodeValue.slice(m[0].length);
     const parent = after.parentNode;
-    parent.insertBefore(colon, after);
+    parent.insertBefore(tietText, after);
+    parent.insertBefore(br, after);
     parent.insertBefore(bTime, after);
     if (remainingText) {
       parent.insertBefore(document.createTextNode(remainingText), after);

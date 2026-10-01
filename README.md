@@ -10,11 +10,30 @@
 
 Bộ công cụ tự động đăng nhập, giữ sống phiên và tối ưu hóa giao diện toàn diện cho sinh viên **Đại học Công nghiệp TP.HCM (IUH)**:
 - 🏛️ **Cổng sinh viên** (`sv.iuh.edu.vn`) — Tự động đăng nhập, vượt captcha ở tầng mạng (server bỏ qua kiểm tra captcha).
-- 📅 **Thời khóa biểu tuần siêu tối ưu** (`sv.iuh.edu.vn/lich-theo-tuan.html`) — Giao diện Dark/Light Mode Aurora hiện đại, mở rộng 100% full width, menu hover mép trái, chia đều 7 cột, chữ đen sắc nét 100%, in đậm giờ học thực tế và giảng viên.
+- 📅 **Thời khóa biểu tuần siêu tối ưu** (`sv.iuh.edu.vn/lich-theo-tuan.html`) — Giao diện Dark/Light Mode Aurora hiện đại, mở rộng 100% full width, menu hover mép trái, chia đều 7 cột, chữ đen sắc nét 100%, hiển thị song song số tiết và giờ học cụ thể in đậm phía dưới.
 - 📚 **LMS Moodle** (`lms.iuh.edu.vn`) — Tự động điền tài khoản và đăng nhập siêu tốc.
 - 📝 **Cổng ĐKHP** (`dkhp.iuh.edu.vn`) — Tự động điền tài khoản, giao diện phóng to captcha khử nhiễu 4 ô ký tự sắc nét, tự động in hoa và tự submit khi gõ đủ 4 ký tự.
 - 🔄 **Giữ phiên sống liên tục (Keepalive)** — Tự động ping ngầm định kỳ 10 phút để không bao giờ bị văng sau 20 phút.
 - ⚡ **Siêu nhẹ & Tối ưu hiệu năng** — Áp dụng `document_start` triệt tiêu chớp nháy (0ms FOUC), tăng tốc phần cứng GPU (`will-change: transform`), giảm ~85% xung nhịp CPU.
+
+---
+
+## 📸 Hình ảnh giao diện thực tế
+
+### 1. Thời khóa biểu tuần Dark Mode Aurora (Mở rộng 100% Full Width & Menu Hover mép trái)
+<p align="center">
+  <img src="docs/screenshots/schedule_dark_mode.jpg" alt="Thời khóa biểu tuần Dark Mode" width="95%" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.5);" />
+</p>
+
+### 2. Cổng Đăng ký học phần — Đăng nhập & Captcha phóng to khử nhiễu 4 ô ký tự
+<p align="center">
+  <img src="docs/screenshots/dkhp_login_captcha.jpg" alt="Cổng ĐKHP Đăng nhập và Captcha Khử nhiễu" width="95%" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.5);" />
+</p>
+
+### 3. Cổng Đăng ký học phần — Giao diện Portal Dark Mode
+<p align="center">
+  <img src="docs/screenshots/dkhp_portal.jpg" alt="Cổng ĐKHP Portal Dark Mode" width="95%" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.5);" />
+</p>
 
 ---
 
@@ -31,68 +50,88 @@ Dự án gồm **4 vùng công cụ độc lập**, bạn chỉ cần lấy ph�
 
 ---
 
-## 🌟 1. Browser Extension (Khuyên dùng)
+## 📖 HƯỚNG DẪN DÀNH CHO NGƯỜI DÙNG CHỈ CÀI EXTENSION
 
-> Tương thích hoàn hảo với **Google Chrome, Microsoft Edge, Brave, Cốc Cốc, Opera và Mozilla Firefox**.
+> Dành riêng cho các bạn sinh viên chỉ muốn cài tiện ích vào trình duyệt để sử dụng hằng ngày nhanh gọn và tiện lợi nhất.
 
-### 💎 Tính năng nổi bật
+### 🛠️ Bước 1: Cài đặt tiện ích vào trình duyệt (Chỉ làm 1 lần)
 
-#### 1. Giao diện Thời khóa biểu hoàn toàn mới (`sv.iuh.edu.vn/lich-theo-tuan.html`):
-- **Chế độ Sáng / Tối (Dark & Light Mode 1-Click)**:
-  - Tích hợp nút chuyển đổi nhanh ở góc phải thanh tiêu đề (`☀️ Chế độ sáng` / `🌙 Chế độ tối`), tự động lưu trạng thái vào `storage.local`.
-  - Dark Mode mang phong cách **Aurora Cosmos Glassmorphism** (tông Deep Navy huyền bí, viền Cyan phát sáng, hiệu ứng làm mờ kính 20px).
-  - Light Mode phong cách **Soft Elevation 3D** dịu mắt, sạch sẽ.
-- **Mở rộng 100% Full Width**:
-  - Khung thời khóa biểu chiếm trọn 100% diện tích màn hình, giải phóng hơn 230px chiều ngang.
-  - Cột thời gian 75px cố định; **7 cột Thứ 2 đến Chủ nhật tự chia đều tuyệt đối** (`calc((100% - 75px) / 7)`).
-- **Thu gọn Menu Bar thành Icon Hover mép trái (`☰ MENU`)**:
-  - Cột menu chuyển thành ngăn kéo trượt **Off-canvas Drawer** ẩn bên mép trái (`translateX(-100%)`).
-  - Rê chuột vào icon `☰ MENU` để menu trượt ra mượt mà 60fps; tích hợp **bộ đệm chống giật 250ms** giúp điều khiển đầm tay, không bị đóng đột ngột.
-  - Giữ nguyên ảnh mã QR OneUni và hiệu ứng accordion dropdown trơn tru.
-- **Tối ưu khả năng đọc & Tiếp cận (Accessibility)**:
-  - **100% Chữ đen sắc nét** (`#000000`) bên trong các thẻ môn học, xóa sạch chữ trắng mờ khó nhìn.
-  - **In đậm thời gian học thực tế** (vd: `06:30 - 09:00`) và **in đậm tên Giảng viên**.
-  - **Nổi bật cột ngày hôm nay**: Tự động nhận diện chính xác ngày hiện tại theo lịch hệ thống kèm huy hiệu nổi bật `[HÔM NAY]`.
-  - Tự động sửa lỗi font hiển thị `Tr?c tuy?n` thành `Trực tuyến`.
-  - Căn giữa thanh chú thích (Legend) ở chân bảng.
-- **Menu Hồ sơ người dùng sang trọng**:
-  - Khắc phục triệt để lỗi chữ trắng trên nền trắng trong dropdown tài khoản cá nhân.
-  - Tự động gắn icon trực quan (👤 *Thông tin cá nhân*, 🔑 *Đổi mật khẩu*, 🚪 *Đăng xuất* kèm cảnh báo đỏ).
-  - Loại bỏ các thành phần rác: logo trường, thanh tìm kiếm, nút In lịch và nút Zoom toàn màn hình.
+#### 👉 Dành cho Chrome, Edge, Cốc Cốc, Brave, Opera:
+1. Bạn tải hoặc clone mã nguồn về máy, bạn sẽ thấy thư mục tên là **`extension/`**.
+2. Mở trình duyệt, nhập vào thanh địa chỉ:
+   - Trên Chrome / Cốc Cốc / Brave: `chrome://extensions`
+   - Trên Microsoft Edge: `edge://extensions`
+3. Gạt bật công tắc **Chế độ dành cho nhà phát triển (Developer mode)** ở góc trên bên phải.
+4. Bấm nút **Tải tiện ích đã giải nén (Load unpacked)** ở góc trên bên trái.
+5. Chọn đúng thư mục **`extension/`** vừa tải về.
+6. *Mẹo nhỏ:* Bấm vào biểu tượng **Mảnh ghép (Extensions)** trên thanh công cụ trình duyệt rồi bấm **Ghim (Pin 📌)** icon của IUH Fast Login ra ngoài để tiện click mở nhanh.
 
-#### 2. Cổng Đăng ký học phần (`dkhp.iuh.edu.vn`):
-- Đồng bộ Dark/Light Mode với Cổng sinh viên.
-- Tự động điền **MSSV** và **Mật khẩu**.
-- **Khối Captcha khử nhiễu phóng to**: Hiển thị song song ảnh gốc và 4 ô ký tự đã khử sạch nhiễu hạt, gạch ngang.
-- Tự động chuyển chữ in hoa và **tự động Submit** ngay khi gõ đủ 4 ký tự.
-
-#### 3. Cổng sinh viên & LMS Moodle:
-- Bỏ qua captcha Cổng SV 100% tự động bằng DeclarativeNetRequest ở tầng mạng.
-- Tự động điền và đăng nhập LMS Moodle trong chớp mắt.
-
-#### 4. Phiên đăng nhập sống cả ngày (Session Keepalive):
-- Chạy ngầm định kỳ 10 phút gửi ping nhẹ giữ cookie (`ASC.AUTH`, `.ASPXFORMSAUTH`, `MoodleSession`).
-- Không còn nỗi lo bị văng ra trang đăng nhập sau 20 phút không hoạt động.
-
-#### 5. Hiệu năng siêu tốc:
-- Áp dụng `document_start` giúp nạp theme tức thì, **0ms chớp nháy (FOUC)**.
-- Tăng tốc phần cứng GPU (`will-change: transform`).
-- Tối ưu hóa `MutationObserver` và bộ nhớ đệm cache, thời gian xử lý chỉ mất **~0.79ms**.
+#### 👉 Dành cho Mozilla Firefox:
+1. Mở Firefox, nhập `about:debugging#/runtime/this-firefox` vào thanh địa chỉ.
+2. Bấm **Load Temporary Add-on…** (Tải tiện ích tạm thời) → Chọn file `manifest.json` trong thư mục `extension/`.
 
 ---
 
-### 📦 Hướng dẫn cài đặt Extension (chỉ 1 lần)
+### 🔐 Bước 2: Thiết lập tài khoản ban đầu (Chỉ làm 1 lần)
 
-1. Tải hoặc clone thư mục `extension/` về máy tính.
-2. Trên trình duyệt **Chrome / Edge / Brave / Cốc Cốc**:
-   - Truy cập `chrome://extensions` (hoặc `edge://extensions`).
-   - Bật công tắc **Developer mode** (Chế độ cho nhà phát triển) ở góc trên bên phải.
-   - Bấm nút **Load unpacked** (Tải tiện ích đã giải nén) → chọn thư mục `extension/`.
-3. Trên **Mozilla Firefox**:
-   - Truy cập `about:debugging#/runtime/this-firefox`.
-   - Bấm **Load Temporary Add-on…** → chọn file `extension/manifest.json`.
-4. Bấm vào icon tiện ích trên thanh công cụ → nhập **MSSV** và **Mật khẩu** → bấm **Lưu cài đặt**.
-5. Mở Cổng sinh viên, ĐKHP hoặc Thời khóa biểu để tận hưởng trải nghiệm!
+1. Click vào biểu tượng **Tia sét ⚡ IUH Fast Login** trên thanh công cụ trình duyệt.
+2. Bảng điều khiển nhỏ (Popup) xuất hiện:
+   - **Mã sinh viên:** Nhập mã số sinh viên của bạn (ví dụ: `21000000`).
+   - **Mật khẩu:** Nhập mật khẩu Cổng sinh viên của bạn.
+   - Tích chọn: **Tự động đăng nhập & giữ phiên**.
+3. Bấm **Lưu cài đặt** (xuất hiện dòng chữ xanh *"Đã lưu thông tin"* là hoàn tất).
+
+> 🔒 **Bảo mật an toàn 100%:** Mật khẩu của bạn chỉ lưu trữ cục bộ trong bộ nhớ an toàn của trình duyệt (`chrome.storage.local`), tuyệt đối không gửi về bất kỳ máy chủ nào khác.
+
+---
+
+### 🚀 Bước 3: Trải nghiệm các tính năng hằng ngày
+
+#### 1. Truy cập nhanh qua Popup 1-Click
+Bất cứ lúc nào bạn bấm vào icon tiện ích, có sẵn 4 nút truy cập tốc độ cao:
+* 🏛️ **Cổng SV**: Mở cổng sinh viên. Nếu đã có phiên, tiện ích sẽ đưa bạn vào thẳng Dashboard.
+* 📚 **LMS Moodle**: Mở thẳng trang học trực tuyến LMS Moodle.
+* 📝 **Cổng ĐKHP**: Mở cổng Đăng ký học phần. Nếu phiên còn sống, sẽ tự vào thẳng trang đăng ký học phần.
+* 📅 **Thời khóa biểu**: Mở thẳng trang Lịch học tuần với giao diện nâng cao tràn viền.
+
+#### 2. Tự động đăng nhập siêu tốc & Bỏ qua Captcha
+* **Tại Cổng sinh viên (`sv.iuh.edu.vn`):**
+  - Tự động chặn ảnh captcha ở tầng mạng, server trường tự động bỏ qua kiểm tra captcha.
+  - Tự động điền MSSV, mật khẩu và đăng nhập ngay khi mở trang mà không cần thao tác tay.
+* **Tại LMS Moodle (`lms.iuh.edu.vn`):**
+  - Tự động điền tài khoản và đăng nhập ngay lập tức.
+* **Tại Cổng ĐKHP (`dkhp.iuh.edu.vn`):**
+  - Tự động điền sẵn MSSV và Mật khẩu.
+  - Mã captcha được phóng to và **khử sạch nhiễu hạt, chia thành 4 ô ký tự to rõ** giúp bạn nhìn cực dễ.
+  - Bạn chỉ cần gõ 4 chữ cái (tiện ích **tự chuyển thành chữ IN HOA**). Ngay khi bạn gõ xong chữ thứ 4, tiện ích sẽ **tự động bấm Đăng nhập luôn**, giúp bạn đăng ký môn cực nhanh!
+
+#### 3. Giữ phiên đăng nhập sống cả ngày (Session Keepalive)
+* Bình thường, nếu không thao tác khoảng 20 phút thì cổng trường sẽ tự out và bắt đăng nhập lại.
+* Khi cài tiện ích, hệ thống ngầm sẽ **tự động gửi tín hiệu giữ phiên 10 phút/lần**. Bạn có thể treo máy làm việc cả ngày mà không lo bị văng ra ngoài.
+
+#### 4. Giao diện Thời khóa biểu mới (`sv.iuh.edu.vn/lich-theo-tuan.html`)
+Khi bạn vào trang Lịch theo tuần, giao diện đã được nâng cấp toàn diện:
+* 🌙 / ☀️ **Đổi giao diện Dark / Light Mode:**
+  - Nút **`☀️ Chế độ sáng` / `🌙 Chế độ tối`** ở góc phải thanh tiêu đề. Bấm 1 click là đổi màu toàn bộ trang, tiện ích tự nhớ chế độ bạn chọn.
+* ☰ **Menu Bar thu gọn mép trái:**
+  - Thanh menu bên trái được thu gọn vào icon tab **`☰ MENU`** ở sát mép trái màn hình để nhường chỗ cho bảng học.
+  - Chỉ cần **rê chuột vào nút `☰ MENU`**, menu sẽ tự động trượt êm ra. Rê chuột trở lại bảng học là menu tự thu gọn lại.
+  - Mã QR ứng dụng OneUni vẫn nằm đầy đủ bên dưới menu khi mở ra.
+* 📅 **Bảng lịch học mở rộng 100% tràn viền:**
+  - Bảng học rộng hơn trước 230px, **7 ngày từ Thứ 2 đến Chủ nhật chia đều tăm tắp**.
+  - Toàn bộ chữ trong thẻ môn học là **màu đen sắc nét 100%** dễ đọc.
+  - **Hiển thị song song cả Số tiết và Giờ học thực tế ngay phía dưới** (ví dụ dòng trên `Tiết: 1 - 3`, dòng dưới `06:30 - 09:00` in đậm sắc nét).
+  - Tên Giảng viên được in đậm rõ ràng.
+  - Cột ngày hôm nay tự động phát sáng nổi bật với huy hiệu **`[HÔM NAY]`**.
+* 👤 **Menu tài khoản cá nhân:**
+  - Click vào tên của bạn ở góc trên bên phải để mở menu: Giao diện nền tối kính mờ sang trọng, chữ trắng rõ nét, có đầy đủ icon (👤 *Thông tin cá nhân*, 🔑 *Đổi mật khẩu*, 🚪 *Đăng xuất* có màu đỏ cảnh báo chống bấm nhầm).
+
+---
+
+### 🔄 Bước 4: Cách cập nhật khi có phiên bản mới
+Mỗi khi có bản cập nhật mới từ tác giả:
+1. Bạn chỉ cần tải/kéo code mới về đè vào thư mục `extension/`.
+2. Vào `chrome://extensions` bấm nút **Làm mới (Reload 🔄)** trên thẻ tiện ích IUH Fast Login là mọi tính năng mới sẽ được cập nhật ngay lập tức!
 
 ---
 
