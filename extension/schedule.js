@@ -403,7 +403,7 @@ function injectThemeStyles() {
       gap: 10px !important;
       float: none !important;
       text-decoration: none !important;
-      transition: all 0.15s ease !important;
+      transition: color 0.15s ease, background-color 0.15s ease !important;
     }
 
     html.iuh-dark .accordion-menu > ul > li > a span {
@@ -426,6 +426,21 @@ function injectThemeStyles() {
       margin-left: auto !important;
       position: static !important;
       font-size: 12px !important;
+      transition: transform 0.25s ease !important;
+    }
+
+    html.iuh-dark .accordion-menu a.submenu-indicator-minus .submenu-indicator i,
+    html.iuh-dark .accordion-menu a.submenu-indicator-minus .submenu-indicator {
+      transform: rotate(180deg) !important;
+      color: #38bdf8 !important;
+    }
+
+    html.iuh-dark .accordion-menu > ul > li > a.submenu-indicator-minus {
+      background: #111c35 !important;
+      color: #38bdf8 !important;
+    }
+    html.iuh-dark .accordion-menu > ul > li > a.submenu-indicator-minus span {
+      color: #38bdf8 !important;
     }
 
     html.iuh-dark .accordion-menu > ul > li > a:hover,
@@ -439,12 +454,14 @@ function injectThemeStyles() {
       color: #38bdf8 !important;
     }
 
-    /* Submenu (khi mở rộng ra) */
+    /* Submenu (khi mở rộng ra) - Không đặt padding/border trên container để slideDown mượt 100% */
     html.iuh-dark .accordion-menu ul.submenu {
       background: #162032 !important;
       background-color: #162032 !important;
-      border-bottom: 1px solid #1e293b !important;
-      padding: 4px 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      border: none !important;
+      overflow: hidden;
     }
 
     html.iuh-dark .accordion-menu ul.submenu li a {
@@ -460,6 +477,7 @@ function injectThemeStyles() {
       align-items: center !important;
       float: none !important;
       text-decoration: none !important;
+      transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease !important;
     }
 
     html.iuh-dark .accordion-menu ul.submenu li a span {
