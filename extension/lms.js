@@ -66,19 +66,22 @@
     if (!cfg.username || !cfg.password) return;
     if (!cfg.autoLogin) return;
 
-    let userEl = null, passEl = null;
-    for (let i = 0; i < 40; i++) {
-      userEl = $("#username") || $("input[name=username]");
-      passEl = $("#password") || $("input[name=password]");
-      if (userEl && passEl) break;
-      await sleep(150);
+    let userEl = $("#username") || $("input[name=username]");
+    let passEl = $("#password") || $("input[name=password]");
+    if (!userEl || !passEl) {
+      for (let i = 0; i < 30; i++) {
+        await sleep(50);
+        userEl = $("#username") || $("input[name=username]");
+        passEl = $("#password") || $("input[name=password]");
+        if (userEl && passEl) break;
+      }
     }
     if (!userEl || !passEl) return;
 
     banner("IUH LMS: đang tự động đăng nhập...", "#0b6e99");
     setValue(userEl, cfg.username);
     setValue(passEl, cfg.password);
-    await sleep(200);
+    await sleep(100);
 
     const btn = $("#loginbtn") ||
       $("form#login button[type=submit]") ||

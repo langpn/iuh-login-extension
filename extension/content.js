@@ -82,13 +82,16 @@
     }
     if (!cfg.autoLogin) return;
 
-    // Chờ form xuất hiện (trang dùng jQuery, có thể render chậm).
-    let userEl = null, passEl = null;
-    for (let i = 0; i < 40; i++) {
-      userEl = $("#UserName") || $("input[name=UserName]");
-      passEl = $("#Password") || $("input[name=Password]");
-      if (userEl && passEl) break;
-      await sleep(150);
+    // Chờ form xuất hiện (nhanh chóng bắt ngay khi có)
+    let userEl = $("#UserName") || $("input[name=UserName]");
+    let passEl = $("#Password") || $("input[name=Password]");
+    if (!userEl || !passEl) {
+      for (let i = 0; i < 30; i++) {
+        await sleep(50);
+        userEl = $("#UserName") || $("input[name=UserName]");
+        passEl = $("#Password") || $("input[name=Password]");
+        if (userEl && passEl) break;
+      }
     }
     if (!userEl || !passEl) {
       banner("IUH: không tìm thấy form đăng nhập.", "#b00020");
@@ -123,7 +126,7 @@
     const cap = $("#Captcha") || $("input[name=Captcha]");
     if (cap) setValue(cap, ""); // để trống — server đã bỏ qua captcha
 
-    await sleep(250);
+    await sleep(120);
 
     const btn = $(
       "#btnLogin, form#form-login button[type=submit], " +

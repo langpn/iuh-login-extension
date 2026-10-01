@@ -18,27 +18,27 @@
     {
       "matches": ["*://sv.iuh.edu.vn/*"],
       "js": ["redirect.js"],
-      "run_at": "document_idle"
+      "run_at": "document_start"
     },
     {
       "matches": ["*://sv.iuh.edu.vn/sinh-vien-dang-nhap.html*"],
       "js": ["content.js"],
-      "run_at": "document_idle"
+      "run_at": "document_end"
     },
     {
       "matches": ["*://lms.iuh.edu.vn/login/index.php*"],
       "js": ["lms.js"],
-      "run_at": "document_idle"
+      "run_at": "document_end"
     },
     {
       "matches": ["*://sv.iuh.edu.vn/lich-theo-tuan.html*"],
       "js": ["schedule.js"],
-      "run_at": "document_idle"
+      "run_at": "document_start"
     },
     {
       "matches": ["*://dkhp.iuh.edu.vn/*"],
       "js": ["dkhp.js"],
-      "run_at": "document_idle"
+      "run_at": "document_start"
     }
   ],
   "background": {

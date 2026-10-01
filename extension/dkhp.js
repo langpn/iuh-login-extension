@@ -1003,6 +1003,9 @@
     }
   }
 
+  // Tiêm CSS Theme ngay tức thì khi script nạp để loại bỏ hoàn toàn FOUC
+  injectDKHPTheme();
+
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", main, { once: true });
   } else {

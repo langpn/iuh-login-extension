@@ -13,24 +13,33 @@ function load() {
   api.storage.local.get(
     { username: "", password: "", autoLogin: true, dkhpAutoSubmit: false },
     (cfg) => {
-      $("username").value = cfg.username || "";
-      $("password").value = cfg.password || "";
-      $("autoLogin").checked = cfg.autoLogin !== false;
-      $("dkhpAutoSubmit").checked = Boolean(cfg.dkhpAutoSubmit);
+      const u = $("username");
+      const p = $("password");
+      const a = $("autoLogin");
+      const d = $("dkhpAutoSubmit");
+      if (u) u.value = cfg.username || "";
+      if (p) p.value = cfg.password || "";
+      if (a) a.checked = cfg.autoLogin !== false;
+      if (d) d.checked = Boolean(cfg.dkhpAutoSubmit);
     }
   );
 }
 
 function save() {
-  const username = $("username").value.trim();
-  const password = $("password").value;
-  const autoLogin = $("autoLogin").checked;
-  const dkhpAutoSubmit = $("dkhpAutoSubmit").checked;
+  const u = $("username");
+  const p = $("password");
+  const a = $("autoLogin");
+  const d = $("dkhpAutoSubmit");
+  const username = u ? u.value.trim() : "";
+  const password = p ? p.value : "";
+  const autoLogin = a ? a.checked : true;
   if (!username) {
     setMsg("Vui lòng nhập MSSV.", "err");
     return;
   }
-  api.storage.local.set({ username, password, autoLogin, dkhpAutoSubmit }, () => {
+  const data = { username, password, autoLogin };
+  if (d) data.dkhpAutoSubmit = d.checked;
+  api.storage.local.set(data, () => {
     setMsg("Đã lưu thông tin.", "ok");
     setTimeout(() => setMsg(""), 2000);
   });

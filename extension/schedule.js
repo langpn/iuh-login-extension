@@ -411,6 +411,8 @@ function injectThemeStyles() {
       transform: translateX(-100%) !important;
       transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s ease !important;
       border-radius: 0 16px 16px 0 !important;
+      will-change: transform;
+      backface-visibility: hidden;
     }
 
     /* Thanh cuộn siêu mỏng cho drawer */
@@ -480,6 +482,8 @@ function injectThemeStyles() {
       white-space: nowrap !important;
       box-shadow: 3px 4px 16px rgba(0, 0, 0, 0.35) !important;
       transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease, opacity 0.2s ease !important;
+      will-change: transform;
+      backface-visibility: hidden;
     }
 
     html.iuh-dark #iuh-sidebar-trigger-btn {
@@ -1405,6 +1409,7 @@ function setupSidebarDrawer() {
   );
 
   if (!sidebar) return;
+  if (sidebar.dataset.iuhDrawerInit === "1" && document.getElementById("iuh-sidebar-trigger-btn")) return;
 
   sidebar.classList.add("iuh-sidebar-drawer");
 
@@ -1493,7 +1498,9 @@ function setupSidebarDrawer() {
 
 // 4. Đổi "Tiết: X - Y" thành giờ cụ thể và IN ĐẬM thời gian học
 function thayThe(root) {
-  const spans = root.querySelectorAll('span[lang="lichtheotuan-tiet"]');
+  const table = document.getElementById("tableLich");
+  const target = table || root || document;
+  const spans = target.querySelectorAll('span[lang="lichtheotuan-tiet"]');
   spans.forEach((sp) => {
     if (sp.dataset.iuhGio === "1") return;
     const after = sp.nextSibling;
@@ -1529,7 +1536,9 @@ function thayThe(root) {
 
 // 5. In đậm tên Giảng viên cho toàn bộ các môn học
 function boldTeacherName(root) {
-  const gvSpans = root.querySelectorAll('span[lang="lichtheotuan-giangvien"]');
+  const table = document.getElementById("tableLich");
+  const target = table || root || document;
+  const gvSpans = target.querySelectorAll('span[lang="lichtheotuan-giangvien"]');
   gvSpans.forEach((sp) => {
     if (sp.dataset.iuhGvBold === "1") return;
     sp.dataset.iuhGvBold = "1";
@@ -1569,7 +1578,7 @@ function boldTeacherName(root) {
   });
 
   // Quét các thẻ có chữ GV: để chắc chắn 100% không sót tên GV nào
-  const contents = root.querySelectorAll(".content");
+  const contents = target.querySelectorAll(".content");
   contents.forEach((card) => {
     if (card.dataset.iuhGvBold === "1") return;
     const walker = document.createTreeWalker(card, NodeFilter.SHOW_TEXT);
@@ -1598,19 +1607,31 @@ function boldTeacherName(root) {
 
 // 6. Sửa lỗi hiển thị "Tr?c tuy?n" thành "Trực tuyến"
 function fixBrokenText(root) {
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-  let n;
-  while ((n = walker.nextNode())) {
-    if (n.nodeValue && n.nodeValue.includes("Tr?c tuy?n")) {
-      n.nodeValue = n.nodeValue.replace(/Tr\?c tuy\?n/g, "Trực tuyến");
+  const table = document.getElementById("tableLich") || (root && root.querySelector ? root.querySelector("table.fl-table, table[id*='Lich']") : null);
+  if (!table) return;
+
+  const cells = table.querySelectorAll("td:not([data-iuh-fixed='1'])");
+  if (!cells.length) return;
+
+  cells.forEach((cell) => {
+    if (cell.textContent.includes("Tr?c tuy?n")) {
+      const walker = document.createTreeWalker(cell, NodeFilter.SHOW_TEXT);
+      let n;
+      while ((n = walker.nextNode())) {
+        if (n.nodeValue && n.nodeValue.includes("Tr?c tuy?n")) {
+          n.nodeValue = n.nodeValue.replace(/Tr\?c tuy\?n/g, "Trực tuyến");
+        }
+      }
     }
-  }
+    cell.dataset.iuhFixed = "1";
+  });
 }
 
 // 7. Chia đều khoảng cách các cột thời khóa biểu chuẩn xác 100%
 function equalizeColumns() {
-  const tables = document.querySelectorAll("table.fl-table, table[id*='Lich'], .table-responsive table, table");
+  const tables = document.querySelectorAll("table.fl-table, table[id*='Lich'], .table-responsive table");
   tables.forEach((table) => {
+    if (table.dataset.iuhEqualized === "1") return;
     const ths = table.querySelectorAll("thead th, tr:first-child th");
     if (ths.length >= 8) {
       table.style.setProperty("table-layout", "fixed", "important");
@@ -1621,18 +1642,17 @@ function equalizeColumns() {
         ths[i].style.setProperty("width", "calc((100% - 75px) / 7)", "important");
         ths[i].style.setProperty("word-break", "break-word", "important");
       }
+      table.dataset.iuhEqualized = "1";
     }
   });
 }
 
 // 8. Căn giữa thanh chú thích (Legend) ở chân bảng (nền trong suốt, không đè lên .wrapper)
 function centerLegend(root) {
-  // Gỡ bỏ class iuh-legend-centered nếu từng bị gán nhầm lên .wrapper hoặc container lớn
-  root.querySelectorAll(".wrapper, .main-content, .container, .box-df, div[class*='wrapper']").forEach((el) => {
-    el.classList.remove("iuh-legend-centered");
-  });
+  if (document.querySelector(".iuh-legend-centered")) return;
 
-  const textNodes = Array.from(root.querySelectorAll("span, p, b, strong")).filter(
+  const container = document.querySelector(".box-df") || (root || document);
+  const textNodes = Array.from(container.querySelectorAll("span, p, b, strong")).filter(
     (el) => el.textContent.trim() === "Lịch học lý thuyết" || el.textContent.includes("Lịch học lý thuyết")
   );
   for (const t of textNodes) {
@@ -1714,8 +1734,8 @@ function organizeToolbar() {
   const fullTable = document.getElementById("full-table") || actions.querySelector("a:has(.glyphicon-resize-full), a:has(.fa-expand)");
   if (fullTable) fullTable.remove();
 
-  // Xóa bất kỳ nút fullscreen nào còn sót
-  document.querySelectorAll(".portlet-title .btn, .portlet-title a, .box-df .btn, .box-df a, button, a").forEach((btn) => {
+  // Xóa bất kỳ nút fullscreen nào còn sót trong portlet-title
+  actions.querySelectorAll("a, button, .btn").forEach((btn) => {
     const hasExpandIcon = btn.querySelector("i.fa-expand, i[class*='expand'], i[class*='compress'], i[class*='arrows-alt'], span.glyphicon-resize-full");
     const isFullscreenBtn = (
       btn.id === "full-table" ||
@@ -1723,8 +1743,7 @@ function organizeToolbar() {
       btn.classList.contains("fullscreen") ||
       (btn.getAttribute("title") && (btn.getAttribute("title").toLowerCase().includes("màn hình") || btn.getAttribute("title").toLowerCase().includes("fullscreen")))
     );
-    if ((hasExpandIcon || isFullscreenBtn) && (btn.tagName === "BUTTON" || btn.tagName === "A" || btn.classList.contains("btn"))) {
-      btn.style.setProperty("display", "none", "important");
+    if (hasExpandIcon || isFullscreenBtn) {
       btn.remove();
     }
   });
@@ -1754,61 +1773,66 @@ function highlightTodayColumn(root) {
   const d = today.getDate();
   const m = today.getMonth() + 1;
   const y = today.getFullYear();
+  const todayKey = `${d}/${m}/${y}`;
 
-  const tables = (root || document).querySelectorAll("table.fl-table, table[id*='Lich'], .table-responsive table, table");
-  tables.forEach((table) => {
-    const ths = table.querySelectorAll("thead th, tr:first-child th");
-    let todayIndex = -1;
-    for (let i = 1; i < ths.length; i++) {
-      const dateMatch = ths[i].textContent.match(/(\d{1,2})\/(\d{1,2})(?:\/(\d{4}))?/);
-      if (dateMatch) {
-        const colD = parseInt(dateMatch[1], 10);
-        const colM = parseInt(dateMatch[2], 10);
-        const colY = dateMatch[3] ? parseInt(dateMatch[3], 10) : y;
-        if (colD === d && colM === m && colY === y) {
-          todayIndex = i;
-          break;
-        }
+  const table = document.getElementById("tableLich") || (root || document).querySelector("table.fl-table, table[id*='Lich']");
+  if (!table) return;
+
+  // Nếu đã đánh dấu đúng cho ngày hôm nay và header còn tồn tại thì bỏ qua ngay lập tức
+  if (table.dataset.iuhTodayMarked === todayKey && table.querySelector(".iuh-today-header")) {
+    return;
+  }
+
+  const ths = table.querySelectorAll("thead th, tr:first-child th");
+  let todayIndex = -1;
+  for (let i = 1; i < ths.length; i++) {
+    const dateMatch = ths[i].textContent.match(/(\d{1,2})\/(\d{1,2})(?:\/(\d{4}))?/);
+    if (dateMatch) {
+      const colD = parseInt(dateMatch[1], 10);
+      const colM = parseInt(dateMatch[2], 10);
+      const colY = dateMatch[3] ? parseInt(dateMatch[3], 10) : y;
+      if (colD === d && colM === m && colY === y) {
+        todayIndex = i;
+        break;
       }
     }
+  }
 
-    if (todayIndex === -1) {
-      // Tuần này không chứa ngày hôm nay -> Gỡ sạch toàn bộ highlight cũ
-      table.querySelectorAll(".iuh-today-col, .iuh-today-header").forEach((el) => {
-        el.classList.remove("iuh-today-col", "iuh-today-header");
-      });
-      table.querySelectorAll(".iuh-today-badge").forEach((el) => el.remove());
-      return;
-    }
-
-    const todayTh = ths[todayIndex];
-    if (todayTh.classList.contains("iuh-today-header") && todayTh.querySelector(".iuh-today-badge")) {
-      // Đã có highlight hôm nay rồi, không lặp lại
-      return;
-    }
-
-    // Reset highlight cũ nếu có
+  if (todayIndex === -1) {
+    // Tuần này không chứa ngày hôm nay -> Gỡ sạch toàn bộ highlight cũ
     table.querySelectorAll(".iuh-today-col, .iuh-today-header").forEach((el) => {
       el.classList.remove("iuh-today-col", "iuh-today-header");
     });
     table.querySelectorAll(".iuh-today-badge").forEach((el) => el.remove());
+    table.dataset.iuhTodayMarked = "none";
+    return;
+  }
 
-    // Highlight header
-    todayTh.classList.add("iuh-today-header");
-    const badge = document.createElement("div");
-    badge.className = "iuh-today-badge";
-    badge.textContent = "HÔM NAY";
-    todayTh.appendChild(badge);
+  const todayTh = ths[todayIndex];
 
-    // Highlight body cells
-    const rows = table.querySelectorAll("tbody tr");
-    rows.forEach((r) => {
-      const cells = r.querySelectorAll("td");
-      if (cells[todayIndex]) {
-        cells[todayIndex].classList.add("iuh-today-col");
-      }
-    });
+  // Reset highlight cũ nếu có
+  table.querySelectorAll(".iuh-today-col, .iuh-today-header").forEach((el) => {
+    el.classList.remove("iuh-today-col", "iuh-today-header");
   });
+  table.querySelectorAll(".iuh-today-badge").forEach((el) => el.remove());
+
+  // Highlight header
+  todayTh.classList.add("iuh-today-header");
+  const badge = document.createElement("div");
+  badge.className = "iuh-today-badge";
+  badge.textContent = "HÔM NAY";
+  todayTh.appendChild(badge);
+
+  // Highlight body cells
+  const rows = table.querySelectorAll("tbody tr");
+  rows.forEach((r) => {
+    const cells = r.querySelectorAll("td");
+    if (cells[todayIndex]) {
+      cells[todayIndex].classList.add("iuh-today-col");
+    }
+  });
+
+  table.dataset.iuhTodayMarked = todayKey;
 }
 
 // 13. Quản lý Dark/Light mode và nút Toggle
@@ -1873,7 +1897,6 @@ function runAll() {
   if (isUpdating) return;
   isUpdating = true;
   try {
-    // Tạm ngắt observer để tránh vòng lặp DOM mutation gây treo tab
     if (obs) obs.disconnect();
 
     removeLogo();
@@ -1888,25 +1911,41 @@ function runAll() {
     centerLegend(document);
     highlightTodayColumn(document);
   } finally {
-    if (obs) {
-      obs.observe(document.body, { childList: true, subtree: true });
-    }
+    attachObserver();
     isUpdating = false;
   }
 }
 
 function scheduleUpdate() {
   if (updateTimer) clearTimeout(updateTimer);
-  updateTimer = setTimeout(runAll, 300);
+  updateTimer = setTimeout(() => {
+    requestAnimationFrame(runAll);
+  }, 200);
+}
+
+function attachObserver() {
+  if (!obs) obs = new MutationObserver(scheduleUpdate);
+  obs.disconnect();
+
+  // Nhắm mục tiêu cụ thể vào container lịch thay vì toàn bộ document.body
+  const target = (
+    document.getElementById("viewLichTheoTuan") ||
+    document.querySelector(".table-responsive") ||
+    document.querySelector(".col-md-10") ||
+    document.body
+  );
+  if (target) {
+    obs.observe(target, { childList: true, subtree: true });
+  }
 }
 
 function main() {
   setupThemeMode("dark");
   runAll();
-
-  obs = new MutationObserver(scheduleUpdate);
-  obs.observe(document.body, { childList: true, subtree: true });
 }
+
+// Tiêm CSS Theme ngay tức thì khi script nạp để loại bỏ hoàn toàn FOUC
+injectThemeStyles();
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", main);
