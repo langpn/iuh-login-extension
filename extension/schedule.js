@@ -365,15 +365,80 @@ function injectThemeStyles() {
     html.iuh-dark header div:not([class*="dropdown-menu"]):not([class*="input"]) {
       background: transparent !important;
     }
-    html.iuh-dark header input[type="text"] {
-      background-color: #1e293b !important;
-      border: 1px solid #334155 !important;
-      border-radius: 20px !important;
-      color: #f8fafc !important;
-      padding: 6px 16px !important;
+
+    /* ========================================================
+       XÓA BỎ THANH TÌM KIẾM VÀ DỒN HEADER SANG BÊN TRÁI
+       ======================================================== */
+    .search-bar,
+    .header .search-bar,
+    .header-content .search-bar,
+    div:has(> form[action*="search.html"]),
+    .menu-btn {
+      display: none !important;
     }
-    html.iuh-dark header input::placeholder {
-      color: #94a3b8 !important;
+
+    /* Bố cục Header: Dồn toàn bộ sang bên trái */
+    .header .container,
+    .header .header-content,
+    .header-content {
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      justify-content: flex-start !important;
+      gap: 20px !important;
+      float: none !important;
+    }
+
+    /* Menu top (Trang chủ, Tin tức) */
+    .header .menu-top,
+    .header-content .menu-top,
+    .menu-top {
+      float: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      order: 1 !important;
+    }
+    .menu-top ul {
+      margin: 0 !important;
+      padding: 0 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 18px !important;
+      list-style: none !important;
+    }
+    .menu-top ul li {
+      margin: 0 !important;
+      padding: 0 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+    }
+
+    /* User account dropdown */
+    .header .user-account,
+    .header-content .user-account,
+    .user-account {
+      float: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      order: 2 !important;
+    }
+    .user-account .user-info {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      cursor: pointer !important;
+    }
+
+    /* Nút Dark/Light mode xếp tiếp theo ở bên trái */
+    #iuh-theme-toggle-btn {
+      order: 3 !important;
+      position: static !important;
+      margin-left: 6px !important;
+      flex-shrink: 0 !important;
     }
     html.iuh-dark header a,
     html.iuh-dark .header a,
@@ -1664,7 +1729,14 @@ function applyThemeMode(mode) {
     toggleBtn = document.createElement("button");
     toggleBtn.id = "iuh-theme-toggle-btn";
     toggleBtn.type = "button";
-    document.body.appendChild(toggleBtn);
+
+    const hc = document.querySelector(".header-content") || document.querySelector("header .container");
+    if (hc) {
+      hc.appendChild(toggleBtn);
+    } else {
+      document.body.appendChild(toggleBtn);
+    }
+
     toggleBtn.addEventListener("click", () => {
       const currentIsDark = document.documentElement.classList.contains("iuh-dark");
       const newMode = currentIsDark ? "light" : "dark";
@@ -1680,6 +1752,14 @@ function applyThemeMode(mode) {
   toggleBtn.innerHTML = isDark ? "☀️ Chế độ sáng" : "🌙 Chế độ tối";
 }
 
+// Xóa thanh tìm kiếm trong header
+function removeSearchBar() {
+  document.querySelectorAll(".search-bar, form[action*='search.html'], .menu-btn").forEach((el) => {
+    el.style.setProperty("display", "none", "important");
+    el.remove();
+  });
+}
+
 let isUpdating = false;
 let updateTimer = null;
 let obs = null;
@@ -1692,6 +1772,7 @@ function runAll() {
     if (obs) obs.disconnect();
 
     removeLogo();
+    removeSearchBar();
     organizeToolbar();
     setupSidebarCollapse();
     removeOneUniQR();
