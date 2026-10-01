@@ -524,133 +524,119 @@ function injectThemeStyles() {
     .portlet-title label.mt-radio,
     .box-df label.mt-radio,
     label.mt-radio {
+      position: relative !important;
       display: inline-flex !important;
-      flex-direction: row !important;
       align-items: center !important;
-      gap: 8px !important;
+      padding-left: 26px !important;
       margin: 0 !important;
-      padding-left: 0 !important;
-      white-space: nowrap !important;
       cursor: pointer !important;
       font-size: 13.5px !important;
       font-weight: 600 !important;
       user-select: none !important;
-      color: #e2e8f0 !important;
+      white-space: nowrap !important;
+      line-height: 20px !important;
+      min-height: 20px !important;
     }
-    label.mt-radio label {
+    label.mt-radio label,
+    .mt-radio label {
       margin: 0 !important;
       padding: 0 !important;
       cursor: pointer !important;
       color: #e2e8f0 !important;
-    }
-    .mt-radio > span:empty {
-      display: none !important;
-    }
-
-    /* Cụm điều khiển bên phải (Datepicker + Hiện tại + Trở về + Tiếp) */
-    .iuh-right-controls {
-      display: inline-flex !important;
-      align-items: center !important;
-      gap: 8px !important;
-      margin-left: auto !important;
-      flex-shrink: 0 !important;
+      font-size: 13.5px !important;
+      font-weight: 600 !important;
+      display: inline-block !important;
     }
 
-    /* RESPONSIVE KHI MÀN HÌNH NHỎ HƠN (HOẶC KHI CÓ DEVTOOLS MỞ) */
-    @media (max-width: 1250px) {
-      .portlet-title,
-      .box-df .portlet-title {
-        flex-direction: column !important;
-        align-items: stretch !important;
-        gap: 12px !important;
-      }
-
-      /* Hàng 1: Title nằm CHÍNH GIỮA */
-      .portlet-title .caption {
-        width: 100% !important;
-        text-align: center !important;
-        display: flex !important;
-        justify-content: center !important;
-        margin: 0 !important;
-      }
-      .portlet-title .caption .caption-subject {
-        font-size: 17px !important;
-        text-align: center !important;
-      }
-
-      /* Hàng 2: Actions chiếm 100% bề ngang */
-      .portlet-title .actions {
-        width: 100% !important;
-        display: flex !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-        margin: 0 !important;
-      }
-
-      /* Radio dạt về BÊN TRÁI */
-      .portlet-title .actions .mt-radio-inline {
-        margin-right: auto !important;
-      }
-
-      /* Datepicker + Nút bấm dồn về BÊN PHẢI */
-      .iuh-right-controls {
-        margin-left: auto !important;
-      }
-    }
-
-    /* Nút radio tròn hiện đại */
-    input[type="radio"] {
-      appearance: none !important;
-      -webkit-appearance: none !important;
-      width: 17px !important;
-      height: 17px !important;
-      border-radius: 50% !important;
-      margin: 0 !important;
+    /* Đảm bảo input radio nằm gọn trong label */
+    label.mt-radio > input[type="radio"],
+    .mt-radio > input[type="radio"] {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      opacity: 0 !important;
       cursor: pointer !important;
-      display: inline-grid !important;
-      place-content: center !important;
-      transition: all 0.2s ease !important;
+      z-index: 2 !important;
+      margin: 0 !important;
     }
 
-    /* Radio trong Dark Mode */
-    html.iuh-dark input[type="radio"] {
-      border: 2px solid #64748b !important;
-      background-color: #1e293b !important;
+    /* VÒNG TRÒN NÚT RADIO (.mt-radio > span) */
+    label.mt-radio > span,
+    .mt-radio > span {
+      display: block !important;
+      position: absolute !important;
+      top: 1px !important;
+      left: 0 !important;
+      width: 18px !important;
+      height: 18px !important;
+      border-radius: 50% !important;
+      box-sizing: border-box !important;
+      transition: all 0.2s ease !important;
+      pointer-events: none !important;
+      z-index: 1 !important;
     }
-    html.iuh-dark input[type="radio"]:checked {
+
+    /* Vòng tròn trong Dark Mode */
+    html.iuh-dark label.mt-radio > span,
+    html.iuh-dark .mt-radio > span {
+      background-color: #1e293b !important;
+      border: 2px solid #64748b !important;
+    }
+    html.iuh-dark label.mt-radio:hover > span {
+      border-color: #38bdf8 !important;
+    }
+    html.iuh-dark label.mt-radio > input:checked ~ span,
+    html.iuh-dark .mt-radio > input:checked ~ span {
       border-color: #38bdf8 !important;
       background-color: #1e293b !important;
     }
-    html.iuh-dark input[type="radio"]:checked::before {
+    html.iuh-dark label.mt-radio > input:checked ~ span:after,
+    html.iuh-dark .mt-radio > input:checked ~ span:after {
       content: "" !important;
-      width: 9px !important;
-      height: 9px !important;
+      position: absolute !important;
+      display: block !important;
+      top: 3px !important;
+      left: 3px !important;
+      width: 8px !important;
+      height: 8px !important;
       border-radius: 50% !important;
       background-color: #38bdf8 !important;
-      box-shadow: 0 0 8px rgba(56, 189, 248, 0.6) !important;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.7) !important;
     }
-    html.iuh-dark label:has(input[type="radio"]:checked) {
+    html.iuh-dark label.mt-radio:has(input:checked) label {
       color: #38bdf8 !important;
       font-weight: 700 !important;
     }
 
-    /* Radio trong Light Mode */
-    html.iuh-light input[type="radio"] {
-      border: 2px solid #94a3b8 !important;
+    /* Vòng tròn trong Light Mode */
+    html.iuh-light label.mt-radio > span,
+    html.iuh-light .mt-radio > span {
       background-color: #ffffff !important;
+      border: 2px solid #94a3b8 !important;
     }
-    html.iuh-light input[type="radio"]:checked {
+    html.iuh-light label.mt-radio:hover > span {
+      border-color: #0284c7 !important;
+    }
+    html.iuh-light label.mt-radio > input:checked ~ span,
+    html.iuh-light .mt-radio > input:checked ~ span {
       border-color: #0284c7 !important;
       background-color: #ffffff !important;
     }
-    html.iuh-light input[type="radio"]:checked::before {
+    html.iuh-light label.mt-radio > input:checked ~ span:after,
+    html.iuh-light .mt-radio > input:checked ~ span:after {
       content: "" !important;
-      width: 9px !important;
-      height: 9px !important;
+      position: absolute !important;
+      display: block !important;
+      top: 3px !important;
+      left: 3px !important;
+      width: 8px !important;
+      height: 8px !important;
       border-radius: 50% !important;
       background-color: #0284c7 !important;
     }
-    html.iuh-light label:has(input[type="radio"]:checked) {
+    html.iuh-light label.mt-radio:has(input:checked) label {
       color: #0284c7 !important;
       font-weight: 700 !important;
     }
@@ -1360,13 +1346,25 @@ function ensureRadioRow() {
     actions.style.removeProperty("width");
     actions.style.removeProperty("min-width");
   }
-  document.querySelectorAll(".portlet-title label.mt-radio, .box-df label.mt-radio, label:has(input[type='radio'])").forEach((lbl) => {
+  document.querySelectorAll(".portlet-title label.mt-radio, .box-df label.mt-radio, label.mt-radio").forEach((lbl) => {
     lbl.style.setProperty("display", "inline-flex", "important");
     lbl.style.setProperty("align-items", "center", "important");
-    lbl.style.setProperty("gap", "8px", "important");
+    lbl.style.setProperty("padding-left", "26px", "important");
     lbl.style.setProperty("margin", "0", "important");
-    lbl.style.setProperty("padding-left", "0", "important");
     lbl.style.setProperty("white-space", "nowrap", "important");
+    lbl.style.setProperty("cursor", "pointer", "important");
+
+    const input = lbl.querySelector("input[type='radio']");
+    if (input && !lbl.dataset.iuhClickBound) {
+      lbl.dataset.iuhClickBound = "1";
+      lbl.addEventListener("click", () => {
+        if (!input.checked) {
+          input.checked = true;
+          input.dispatchEvent(new Event("change", { bubbles: true }));
+          input.dispatchEvent(new Event("click", { bubbles: true }));
+        }
+      });
+    }
   });
 }
 
