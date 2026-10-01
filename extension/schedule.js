@@ -365,6 +365,198 @@ function injectThemeStyles() {
     }
 
     /* ========================================================
+       1. MỞ RỘNG BẢNG THỜI KHÓA BIỂU RA 100% CHIẾM TRỌN KHÔNG GIAN CỦA MENU BAR
+       ======================================================== */
+    .col-md-10,
+    div.col-md-10,
+    .row > .col-md-10,
+    div:has(> .box-df #tableLich),
+    div:has(> .box-df .table-responsive) {
+      flex: 0 0 100% !important;
+      max-width: 100% !important;
+      width: 100% !important;
+      padding-left: 15px !important;
+      padding-right: 15px !important;
+      box-sizing: border-box !important;
+      transition: width 0.3s ease !important;
+    }
+
+    .row:has(.col-md-10),
+    .row:has(#tableLich) {
+      width: 100% !important;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+    }
+
+    /* ========================================================
+       2. THU GỌN SIDEBAR THÀNH OFF-CANVAS DRAWER BÊN MÉP TRÁI
+       ======================================================== */
+    .col-md-2:has(#accordion-menu),
+    .col-md-2:has(.accordion-menu),
+    div[class*="col-md-2"]:has(#accordion-menu),
+    .iuh-sidebar-drawer {
+      display: block !important;
+      position: fixed !important;
+      top: 65px !important;
+      left: 0 !important;
+      bottom: 0 !important;
+      width: 290px !important;
+      max-width: 88vw !important;
+      height: calc(100vh - 65px) !important;
+      z-index: 99999 !important;
+      padding: 16px 14px 24px 14px !important;
+      box-sizing: border-box !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      transform: translateX(-100%) !important;
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s ease !important;
+      border-radius: 0 16px 16px 0 !important;
+    }
+
+    /* Thanh cuộn siêu mỏng cho drawer */
+    .col-md-2::-webkit-scrollbar,
+    .iuh-sidebar-drawer::-webkit-scrollbar {
+      width: 5px !important;
+    }
+    .col-md-2::-webkit-scrollbar-thumb,
+    .iuh-sidebar-drawer::-webkit-scrollbar-thumb {
+      background: rgba(56, 189, 248, 0.4) !important;
+      border-radius: 4px !important;
+    }
+
+    /* Styling Dark Mode cho drawer */
+    html.iuh-dark .col-md-2:has(#accordion-menu),
+    html.iuh-dark .col-md-2:has(.accordion-menu),
+    html.iuh-dark div[class*="col-md-2"]:has(#accordion-menu),
+    html.iuh-dark .iuh-sidebar-drawer {
+      background: rgba(15, 23, 42, 0.96) !important;
+      backdrop-filter: blur(20px) !important;
+      -webkit-backdrop-filter: blur(20px) !important;
+      border: 1px solid rgba(56, 189, 248, 0.25) !important;
+      border-left: none !important;
+      box-shadow: 10px 0 40px rgba(0, 0, 0, 0.65) !important;
+    }
+
+    /* Styling Light Mode cho drawer */
+    html.iuh-light .col-md-2:has(#accordion-menu),
+    html.iuh-light .col-md-2:has(.accordion-menu),
+    html.iuh-light div[class*="col-md-2"]:has(#accordion-menu),
+    html.iuh-light .iuh-sidebar-drawer {
+      background: #ffffff !important;
+      border: 1px solid #cbd5e1 !important;
+      border-left: none !important;
+      box-shadow: 8px 0 30px rgba(0, 0, 0, 0.18) !important;
+    }
+
+    /* Khi mở (hover hoặc class open): trượt êm ra màn hình */
+    body.iuh-drawer-is-open .col-md-2:has(#accordion-menu),
+    body.iuh-drawer-is-open .col-md-2:has(.accordion-menu),
+    body.iuh-drawer-is-open div[class*="col-md-2"]:has(#accordion-menu),
+    body.iuh-drawer-is-open .iuh-sidebar-drawer,
+    .col-md-2.iuh-drawer-open,
+    .iuh-sidebar-drawer.iuh-drawer-open {
+      transform: translateX(0) !important;
+    }
+
+    /* ========================================================
+       3. NÚT ICON HOVER Ở MÉP TRÁI MÀN HÌNH (☰ MENU)
+       ======================================================== */
+    #iuh-sidebar-trigger-btn {
+      position: fixed !important;
+      left: 0 !important;
+      top: 135px !important;
+      z-index: 99990 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 7px !important;
+      padding: 9px 13px 9px 10px !important;
+      border-radius: 0 12px 12px 0 !important;
+      cursor: pointer !important;
+      user-select: none !important;
+      font-size: 13px !important;
+      font-weight: 700 !important;
+      letter-spacing: 0.5px !important;
+      white-space: nowrap !important;
+      box-shadow: 3px 4px 16px rgba(0, 0, 0, 0.35) !important;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease, opacity 0.2s ease !important;
+    }
+
+    html.iuh-dark #iuh-sidebar-trigger-btn {
+      background: linear-gradient(135deg, #0284c7, #0369a1) !important;
+      color: #ffffff !important;
+      border: 1px solid rgba(56, 189, 248, 0.4) !important;
+      border-left: none !important;
+    }
+
+    html.iuh-light #iuh-sidebar-trigger-btn {
+      background: linear-gradient(135deg, #0284c7, #0369a1) !important;
+      color: #ffffff !important;
+      border: 1px solid #0369a1 !important;
+      border-left: none !important;
+    }
+
+    #iuh-sidebar-trigger-btn:hover {
+      transform: scale(1.06) translateX(2px) !important;
+    }
+
+    /* Khi drawer đang mở, nút icon ẩn để không che lấp nội dung */
+    body.iuh-drawer-is-open #iuh-sidebar-trigger-btn {
+      opacity: 0 !important;
+      pointer-events: none !important;
+      transform: translateX(-100%) !important;
+    }
+
+    /* Header bên trong drawer */
+    .iuh-drawer-header {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      padding-bottom: 12px !important;
+      margin-bottom: 12px !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+    html.iuh-light .iuh-drawer-header {
+      border-bottom: 1px solid #e2e8f0 !important;
+    }
+    .iuh-drawer-header span {
+      font-size: 13px !important;
+      font-weight: 700 !important;
+      letter-spacing: 0.5px !important;
+      color: #38bdf8 !important;
+    }
+    html.iuh-light .iuh-drawer-header span {
+      color: #0284c7 !important;
+    }
+    .iuh-drawer-close-btn {
+      background: transparent !important;
+      border: none !important;
+      color: #94a3b8 !important;
+      font-size: 16px !important;
+      line-height: 1 !important;
+      cursor: pointer !important;
+      padding: 4px 6px !important;
+      border-radius: 6px !important;
+      transition: color 0.15s ease, background-color 0.15s ease !important;
+    }
+    .iuh-drawer-close-btn:hover {
+      color: #f43f5e !important;
+      background: rgba(244, 63, 94, 0.12) !important;
+    }
+
+    /* QR Code bên trong drawer */
+    .iuh-sidebar-drawer img[src*="image-qr-code-one-uni"],
+    .col-md-2 img[src*="image-qr-code-one-uni"] {
+      display: block !important;
+      max-width: 220px !important;
+      width: 100% !important;
+      height: auto !important;
+      border-radius: 10px !important;
+      margin: 16px auto 0 auto !important;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45) !important;
+    }
+
+    /* ========================================================
        TỐI ƯU MENU BAR CHO DARK MODE (KHỬ SẠCH NỀN TRẮNG VÀ CHỮ MỜ)
        ======================================================== */
     html.iuh-dark .col-md-2 .box-df,
@@ -1202,22 +1394,100 @@ function removeLogo() {
   }
 }
 
-// 3. Khôi phục menu bar về mặc định ban đầu theo yêu cầu
-function resetSidebarToDefault() {
-  const tab = document.getElementById("iuh-sidebar-tab");
-  if (tab) tab.remove();
+// 3. Thu gọn Sidebar (div.col-md-2) thành icon mép trái, hover "nẩy" menu ra
+function setupSidebarDrawer() {
+  const sidebar = (
+    document.querySelector(".col-md-2:has(#accordion-menu)") ||
+    document.querySelector("div[class*='col-md-2']:has(#accordion-menu)") ||
+    document.querySelector(".col-md-2:has(.accordion-menu)") ||
+    document.querySelector(".col-md-2.d-none.d-sm-block") ||
+    document.querySelector(".col-md-2")
+  );
 
-  document.querySelectorAll(".col-md-2, div[class*='col-md-2']").forEach((el) => {
-    el.classList.remove("iuh-open");
-    el.style.removeProperty("position");
-    el.style.removeProperty("transform");
-    el.style.removeProperty("transition");
-  });
+  if (!sidebar) return;
 
-  const row = document.querySelector(".row:has(.col-md-2)");
-  if (row) {
-    row.style.removeProperty("width");
-    row.style.removeProperty("margin");
+  sidebar.classList.add("iuh-sidebar-drawer");
+
+  // 1. Thêm thanh tiêu đề và nút đóng vào đầu drawer nếu chưa có
+  if (!sidebar.querySelector(".iuh-drawer-header")) {
+    const header = document.createElement("div");
+    header.className = "iuh-drawer-header";
+    header.innerHTML = `
+      <span>DANH MỤC TIỆN ÍCH</span>
+      <button class="iuh-drawer-close-btn" type="button" title="Đóng menu">✕</button>
+    `;
+    sidebar.insertBefore(header, sidebar.firstChild);
+
+    const closeBtn = header.querySelector(".iuh-drawer-close-btn");
+    if (closeBtn) {
+      closeBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        sidebar.classList.remove("iuh-drawer-open");
+        document.body.classList.remove("iuh-drawer-is-open");
+      });
+    }
+  }
+
+  // 2. Thêm nút trigger hover ở mép trái màn hình nếu chưa có
+  let triggerBtn = document.getElementById("iuh-sidebar-trigger-btn");
+  if (!triggerBtn) {
+    triggerBtn = document.createElement("div");
+    triggerBtn.id = "iuh-sidebar-trigger-btn";
+    triggerBtn.title = "Di chuột hoặc bấm để mở Menu";
+    triggerBtn.innerHTML = `
+      <span style="font-size: 16px; line-height: 1;">☰</span>
+      <span>MENU</span>
+    `;
+    document.body.appendChild(triggerBtn);
+  }
+
+  // 3. Cơ chế hover mở/đóng mượt mà với grace period 250ms chống giật
+  let closeTimer = null;
+
+  function openDrawer() {
+    if (closeTimer) {
+      clearTimeout(closeTimer);
+      closeTimer = null;
+    }
+    sidebar.classList.add("iuh-drawer-open");
+    document.body.classList.add("iuh-drawer-is-open");
+  }
+
+  function scheduleClose() {
+    if (closeTimer) clearTimeout(closeTimer);
+    closeTimer = setTimeout(() => {
+      sidebar.classList.remove("iuh-drawer-open");
+      document.body.classList.remove("iuh-drawer-is-open");
+    }, 250);
+  }
+
+  function closeDrawerImmediately() {
+    if (closeTimer) {
+      clearTimeout(closeTimer);
+      closeTimer = null;
+    }
+    sidebar.classList.remove("iuh-drawer-open");
+    document.body.classList.remove("iuh-drawer-is-open");
+  }
+
+  // Đính kèm các sự kiện hover và click (chỉ gắn 1 lần duy nhất)
+  if (!sidebar.dataset.iuhDrawerInit) {
+    sidebar.dataset.iuhDrawerInit = "1";
+
+    triggerBtn.addEventListener("mouseenter", openDrawer);
+    sidebar.addEventListener("mouseenter", openDrawer);
+
+    triggerBtn.addEventListener("mouseleave", scheduleClose);
+    sidebar.addEventListener("mouseleave", scheduleClose);
+
+    triggerBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (sidebar.classList.contains("iuh-drawer-open")) {
+        closeDrawerImmediately();
+      } else {
+        openDrawer();
+      }
+    });
   }
 }
 
@@ -1609,7 +1879,7 @@ function runAll() {
     removeLogo();
     removeSearchBar();
     organizeToolbar();
-    resetSidebarToDefault();
+    setupSidebarDrawer();
     equalizeColumns();
     ensureRadioRow();
     thayThe(document);
