@@ -29,7 +29,7 @@
 </head>
 <body>
   <h1>IUH Fast Login</h1>
-  <p>Tự động đăng nhập <code>sv.iuh.edu.vn</code> mà không cần nhập captcha.</p>
+  <p>Tự động đăng nhập Cổng Sinh Viên (<code>sv.iuh.edu.vn</code>), LMS Moodle (<code>lms.iuh.edu.vn</code>) và hỗ trợ Cổng ĐKHP (<code>dkhp.iuh.edu.vn</code>).</p>
 
   <label for="username">Mã sinh viên (MSSV)</label>
   <input id="username" type="text" autocomplete="username" placeholder="vd: 12345678" />
@@ -51,11 +51,9 @@
 
   <h2>Cách hoạt động</h2>
   <ol>
-    <li>Extension chặn request ảnh captcha <code>/WebCommon/GetCaptcha</code> ngay ở tầng mạng
-        (declarativeNetRequest).</li>
-    <li>Server chỉ bật kiểm tra captcha khi ảnh đó đã được tải trong phiên — nên khi bị chặn,
-        server bỏ qua captcha.</li>
-    <li>Content script điền MSSV/mật khẩu và bấm nút đăng nhập; JS của trang tự mã hoá mật khẩu.</li>
+    <li><strong>Cổng SV (sv.iuh.edu.vn):</strong> Extension chặn request ảnh captcha <code>/WebCommon/GetCaptcha</code> ở tầng mạng (declarativeNetRequest), server tự động bỏ qua captcha.</li>
+    <li><strong>Cổng LMS Moodle (lms.iuh.edu.vn):</strong> Tự động điền tài khoản và đăng nhập trực tiếp.</li>
+    <li><strong>Cổng ĐKHP (dkhp.iuh.edu.vn):</strong> Tự động điền form, tối ưu giao diện Dark/Light mode và định kỳ gửi keepalive giữ phiên cookie (.ASPXFORMSAUTH) không bị văng.</li>
   </ol>
 
   <div class="note">
