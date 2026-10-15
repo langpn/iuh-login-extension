@@ -16,6 +16,7 @@ venv/
 extension/_metadata/
 *.crx
 *.pem
+dist/
 
 # Ảnh captcha / file tạm khi debug
 captcha*.png
