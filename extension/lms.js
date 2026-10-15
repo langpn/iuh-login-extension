@@ -94,6 +94,17 @@
   }
 
   async function main() {
+    const path = location.pathname;
+
+    // 1. Nếu đang ở trang dashboard chung (/my/ hoặc /my/index.php hoặc /) -> Chuyển thẳng vào trang Khóa học
+    if (path === "/my/" || path === "/my/index.php" || path === "/") {
+      location.replace("https://lms.iuh.edu.vn/my/courses.php");
+      return;
+    }
+
+    // Nếu không phải trang đăng nhập -> bỏ qua
+    if (!path.includes("/login/")) return;
+
     const [cfg, formEls] = await Promise.all([
       getStorage({ username: "", password: "", autoLogin: true }),
       waitForForm()
@@ -108,13 +119,26 @@
     banner("IUH LMS: đang tự động đăng nhập...", "#0b6e99");
     setValue(userEl, cfg.username);
     setValue(passEl, cfg.password);
+
+    // Gắn wantsurl để Moodle sau khi login chuyển thẳng vào trang Khóa học
+    const form = $("#login") || $("form");
+    if (form) {
+      let wants = form.querySelector("input[name=wantsurl]");
+      if (!wants) {
+        wants = document.createElement("input");
+        wants.type = "hidden";
+        wants.name = "wantsurl";
+        form.appendChild(wants);
+      }
+      wants.value = "https://lms.iuh.edu.vn/my/courses.php";
+    }
+
     await sleep(40);
 
     const btn = $("#loginbtn") ||
       $("form#login button[type=submit]") ||
       $("form#login input[type=submit]") ||
       $("button[type=submit]");
-    const form = $("#login") || $("form");
 
     if (form && typeof form.requestSubmit === "function") {
       try {

@@ -126,9 +126,48 @@
       border: 1px solid #1e293b;
     }
     button.ghost:hover {
-      background: #1c2b46;
-      border-color: #38bdf8;
-      color: #38bdf8;
+      transform: translateY(-1px);
+    }
+    /* Các nút điều hướng ưu tiên màu sắc tương phản cao cho mắt yếu */
+    button.btn-schedule {
+      background: rgba(16, 185, 129, 0.12) !important;
+      border: 1.5px solid #059669 !important;
+      color: #34d399 !important;
+    }
+    button.btn-schedule:hover {
+      background: rgba(16, 185, 129, 0.25) !important;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3) !important;
+      border-color: #34d399 !important;
+    }
+    button.btn-lms {
+      background: rgba(139, 92, 246, 0.12) !important;
+      border: 1.5px solid #7c3aed !important;
+      color: #c084fc !important;
+    }
+    button.btn-lms:hover {
+      background: rgba(139, 92, 246, 0.25) !important;
+      box-shadow: 0 4px 14px rgba(139, 92, 246, 0.3) !important;
+      border-color: #c084fc !important;
+    }
+    button.btn-sv {
+      background: rgba(56, 189, 248, 0.1) !important;
+      border: 1.5px solid #0284c7 !important;
+      color: #38bdf8 !important;
+    }
+    button.btn-sv:hover {
+      background: rgba(56, 189, 248, 0.22) !important;
+      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.25) !important;
+      border-color: #38bdf8 !important;
+    }
+    button.btn-dkhp {
+      background: rgba(245, 158, 11, 0.1) !important;
+      border: 1.5px solid #d97706 !important;
+      color: #fbbf24 !important;
+    }
+    button.btn-dkhp:hover {
+      background: rgba(245, 158, 11, 0.22) !important;
+      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25) !important;
+      border-color: #fbbf24 !important;
     }
     .check-row {
       display: flex;
@@ -191,12 +230,12 @@
   </div>
 
   <div class="row">
-    <button id="open" class="ghost">🏛️ Cổng SV</button>
-    <button id="openLms" class="ghost">📚 LMS Moodle</button>
+    <button id="openSchedule" class="ghost btn-schedule">📅 Thời khóa biểu</button>
+    <button id="openLms" class="ghost btn-lms">📚 LMS Khóa học</button>
   </div>
   <div class="row">
-    <button id="openDkhp" class="ghost">📝 Cổng ĐKHP</button>
-    <button id="openSchedule" class="ghost">📅 Thời khóa biểu</button>
+    <button id="open" class="ghost btn-sv">🏛️ Cổng SV</button>
+    <button id="openDkhp" class="ghost btn-dkhp">📝 Cổng ĐKHP</button>
   </div>
 
   <div id="msg"></div>

@@ -129,7 +129,7 @@ $("open").addEventListener("click", async () => {
 });
 
 $("openLms").addEventListener("click", () => {
-  api.tabs.create({ url: "https://lms.iuh.edu.vn/login/index.php" });
+  api.tabs.create({ url: "https://lms.iuh.edu.vn/my/courses.php" });
 });
 
 $("openDkhp").addEventListener("click", async () => {
