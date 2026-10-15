@@ -73,8 +73,44 @@
     el.dispatchEvent(new Event("change", { bubbles: true }));
   }
 
+  // Chờ form xuất hiện bằng MutationObserver ngay trong lúc HTML đang stream tải về
+  function waitForForm(timeoutMs = 6000) {
+    return new Promise((resolve) => {
+      const check = () => {
+        const u = $("#UserName") || $("input[name=UserName]");
+        const p = $("#Password") || $("input[name=Password]");
+        if (u && p) return { userEl: u, passEl: p };
+        return null;
+      };
+
+      const found = check();
+      if (found) return resolve(found);
+
+      const observer = new MutationObserver(() => {
+        const res = check();
+        if (res) {
+          observer.disconnect();
+          resolve(res);
+        }
+      });
+
+      if (document.documentElement) {
+        observer.observe(document.documentElement, { childList: true, subtree: true });
+      }
+
+      setTimeout(() => {
+        observer.disconnect();
+        resolve(check());
+      }, timeoutMs);
+    });
+  }
+
   async function main() {
-    const cfg = await getStorage({ username: "", password: "", autoLogin: true });
+    // Chạy song song: đọc storage & chờ form xuất hiện trong DOM
+    const [cfg, formEls] = await Promise.all([
+      getStorage({ username: "", password: "", autoLogin: true }),
+      waitForForm()
+    ]);
 
     if (!cfg.username || !cfg.password) {
       banner("IUH: chưa lưu tài khoản — mở tiện ích để nhập.", "#b00020");
@@ -82,21 +118,12 @@
     }
     if (!cfg.autoLogin) return;
 
-    // Chờ form xuất hiện (nhanh chóng bắt ngay khi có)
-    let userEl = $("#UserName") || $("input[name=UserName]");
-    let passEl = $("#Password") || $("input[name=Password]");
-    if (!userEl || !passEl) {
-      for (let i = 0; i < 30; i++) {
-        await sleep(50);
-        userEl = $("#UserName") || $("input[name=UserName]");
-        passEl = $("#Password") || $("input[name=Password]");
-        if (userEl && passEl) break;
-      }
-    }
-    if (!userEl || !passEl) {
+    if (!formEls || !formEls.userEl || !formEls.passEl) {
       banner("IUH: không tìm thấy form đăng nhập.", "#b00020");
       return;
     }
+
+    const { userEl, passEl } = formEls;
 
     // Đếm số lần thử trong tab này (sessionStorage sống qua điều hướng).
     let state = null;
@@ -126,16 +153,26 @@
     const cap = $("#Captcha") || $("input[name=Captcha]");
     if (cap) setValue(cap, ""); // để trống — server đã bỏ qua captcha
 
-    await sleep(120);
+    // Đợi 50ms để framework trang bind event
+    await sleep(50);
 
     const btn = $(
       "#btnLogin, form#form-login button[type=submit], " +
       "form#form-login input[type=submit], button[type=submit], input[type=submit]"
     );
-    if (btn) btn.click();
-    else {
-      const form = $("#form-login") || $("form");
-      if (form) form.submit();
+    const form = $("#form-login") || $("form");
+
+    if (form && typeof form.requestSubmit === "function") {
+      try {
+        form.requestSubmit(btn || undefined);
+      } catch (_) {
+        if (btn) btn.click();
+        else form.submit();
+      }
+    } else if (btn) {
+      btn.click();
+    } else if (form) {
+      form.submit();
     }
   }
 

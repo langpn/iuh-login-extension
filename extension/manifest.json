@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "IUH Fast Login",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Tự động đăng nhập IUH: cổng sinh viên (sv.iuh.edu.vn, bỏ qua captcha), LMS Moodle (lms.iuh.edu.vn) và điền sẵn form Đăng ký học phần (dkhp.iuh.edu.vn).",
   "permissions": ["storage", "declarativeNetRequest", "cookies", "alarms"],
   "host_permissions": [
@@ -23,12 +23,12 @@
     {
       "matches": ["*://sv.iuh.edu.vn/sinh-vien-dang-nhap.html*"],
       "js": ["content.js"],
-      "run_at": "document_end"
+      "run_at": "document_start"
     },
     {
       "matches": ["*://lms.iuh.edu.vn/login/index.php*"],
       "js": ["lms.js"],
-      "run_at": "document_end"
+      "run_at": "document_start"
     },
     {
       "matches": ["*://sv.iuh.edu.vn/lich-theo-tuan.html*"],

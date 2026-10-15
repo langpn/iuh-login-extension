@@ -61,36 +61,72 @@
     el.dispatchEvent(new Event("change", { bubbles: true }));
   }
 
+  // Bắt form LMS ngay khi DOM node xuất hiện
+  function waitForForm(timeoutMs = 5000) {
+    return new Promise((resolve) => {
+      const check = () => {
+        const u = $("#username") || $("input[name=username]");
+        const p = $("#password") || $("input[name=password]");
+        if (u && p) return { userEl: u, passEl: p };
+        return null;
+      };
+
+      const found = check();
+      if (found) return resolve(found);
+
+      const observer = new MutationObserver(() => {
+        const res = check();
+        if (res) {
+          observer.disconnect();
+          resolve(res);
+        }
+      });
+
+      if (document.documentElement) {
+        observer.observe(document.documentElement, { childList: true, subtree: true });
+      }
+
+      setTimeout(() => {
+        observer.disconnect();
+        resolve(check());
+      }, timeoutMs);
+    });
+  }
+
   async function main() {
-    const cfg = await getStorage({ username: "", password: "", autoLogin: true });
+    const [cfg, formEls] = await Promise.all([
+      getStorage({ username: "", password: "", autoLogin: true }),
+      waitForForm()
+    ]);
+
     if (!cfg.username || !cfg.password) return;
     if (!cfg.autoLogin) return;
+    if (!formEls || !formEls.userEl || !formEls.passEl) return;
 
-    let userEl = $("#username") || $("input[name=username]");
-    let passEl = $("#password") || $("input[name=password]");
-    if (!userEl || !passEl) {
-      for (let i = 0; i < 30; i++) {
-        await sleep(50);
-        userEl = $("#username") || $("input[name=username]");
-        passEl = $("#password") || $("input[name=password]");
-        if (userEl && passEl) break;
-      }
-    }
-    if (!userEl || !passEl) return;
+    const { userEl, passEl } = formEls;
 
     banner("IUH LMS: đang tự động đăng nhập...", "#0b6e99");
     setValue(userEl, cfg.username);
     setValue(passEl, cfg.password);
-    await sleep(100);
+    await sleep(40);
 
     const btn = $("#loginbtn") ||
       $("form#login button[type=submit]") ||
       $("form#login input[type=submit]") ||
       $("button[type=submit]");
-    if (btn) btn.click();
-    else {
-      const form = $("#login") || $("form");
-      if (form) form.submit();
+    const form = $("#login") || $("form");
+
+    if (form && typeof form.requestSubmit === "function") {
+      try {
+        form.requestSubmit(btn || undefined);
+      } catch (_) {
+        if (btn) btn.click();
+        else form.submit();
+      }
+    } else if (btn) {
+      btn.click();
+    } else if (form) {
+      form.submit();
     }
   }
 

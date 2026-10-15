@@ -50,6 +50,13 @@
   }
 
   async function main() {
+    const path = location.pathname;
+
+    // Khi đã vào được trang trong (dashboard hoặc lịch) -> reset trạng thái đếm số lần thử đăng nhập
+    if (path.indexOf("dang-nhap") === -1) {
+      try { sessionStorage.removeItem("iuh_fl_state"); } catch (_) {}
+    }
+
     const setAt = await getFlag();
     if (!setAt) return;
 
@@ -58,8 +65,6 @@
       clearFlag();
       return;
     }
-
-    const path = location.pathname;
 
     // Đã tới đích.
     if (path.indexOf("lich-theo-tuan") !== -1) {

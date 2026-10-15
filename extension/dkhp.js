@@ -1065,13 +1065,13 @@
     setValue(userEl, cfg.username);
     setValue(passEl, cfg.password);
 
-    // 2. Tự động chuyển chữ in hoa & Tự submit khi gõ đủ 4 ký tự
+    // 2. Tự động chuyển chữ in hoa, lọc ký tự & Tự submit khi gõ đủ 4 ký tự
     capEl.addEventListener("input", (e) => {
-      const upper = capEl.value.toUpperCase();
-      if (capEl.value !== upper) {
-        capEl.value = upper;
+      const sanitized = capEl.value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+      if (capEl.value !== sanitized) {
+        capEl.value = sanitized;
       }
-      if (e.isTrusted && capEl.value.trim().length === 4) {
+      if (e.isTrusted && sanitized.length === 4) {
         submit();
       }
     });
@@ -1083,7 +1083,7 @@
       }
     });
 
-    // 3. Hiển thị thẻ captcha to rõ & để trống để người dùng gõ
+    // 3. Hiển thị thẻ captcha to rõ & để người dùng gõ
     const runProcess = async () => {
       for (let i = 0; i < 25; i++) {
         if (imgEl.complete && imgEl.naturalWidth >= 40) break;
@@ -1091,8 +1091,9 @@
       }
 
       attachCaptchaCard(imgEl, capEl);
-      capEl.value = "";
-      capEl.focus();
+      if (!capEl.value) {
+        capEl.focus();
+      }
     };
 
     await runProcess();
