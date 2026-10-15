@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         IUH Fast Login
-// @namespace    https://github.com/langpn/iuh-bypass-login
+// @namespace    https://github.com/langpn/iuh-login-extension
 // @version      2.2.0
 // @description  Tự động đăng nhập cổng sinh viên IUH (sv.iuh.edu.vn) và LMS (lms.iuh.edu.vn). Cổng SV chặn ảnh captcha ở tầng mạng nên server bỏ qua captcha; LMS (Moodle) đăng nhập POST thường.
 // @author       langpn
@@ -12,6 +12,8 @@
 // @run-at       document-start
 // @noframes
 // @webRequest   [{"selector":"*://sv.iuh.edu.vn/WebCommon/GetCaptcha*","action":"cancel"}]
+// @updateURL    https://raw.githubusercontent.com/langpn/iuh-login-extension/main/iuh-autologin.user.js
+// @downloadURL  https://raw.githubusercontent.com/langpn/iuh-login-extension/main/iuh-autologin.user.js
 // ==/UserScript==
 
 (function () {

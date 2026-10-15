@@ -24,6 +24,7 @@ function load() {
     }
   );
   updateSessionStatus();
+  checkForUpdates();
 }
 
 function updateSessionStatus() {
@@ -45,14 +46,47 @@ function updateSessionStatus() {
   } catch (_) {}
 }
 
+function checkForUpdates() {
+  try {
+    const manifest = api.runtime.getManifest ? api.runtime.getManifest() : null;
+    const curVer = manifest ? manifest.version : "1.0.0";
+    api.storage.local.get({ lastUpdateCheck: 0, latestVer: "" }, (cache) => {
+      const now = Date.now();
+      if (cache.latestVer && cache.latestVer > curVer) {
+        showUpdateBanner(cache.latestVer);
+      }
+      if (now - cache.lastUpdateCheck < 2 * 3600 * 1000) return;
+      fetch("https://api.github.com/repos/langpn/iuh-login-extension/releases/latest")
+        .then((r) => r.json())
+        .then((data) => {
+          const tag = data && data.tag_name ? data.tag_name.replace(/^v/, "") : "";
+          if (tag) {
+            api.storage.local.set({ lastUpdateCheck: now, latestVer: tag });
+            if (tag > curVer) showUpdateBanner(tag);
+          }
+        })
+        .catch(() => {});
+    });
+  } catch (_) {}
+}
+
+function showUpdateBanner(ver) {
+  const banner = $("updateBanner");
+  if (banner) {
+    banner.style.display = "block";
+    const link = $("updateLink");
+    if (link) link.textContent = `Tải v${ver} ➔`;
+  }
+}
+
 const shareBtn = $("shareBtn");
 if (shareBtn) {
   shareBtn.addEventListener("click", (e) => {
     e.preventDefault();
     const text =
       "⚡ Hướng dẫn cài đặt IUH Fast Login (Tự động đăng nhập, Dark Mode, TKB tràn viền):\n" +
-      "1. Tải bản nén tiện ích: https://github.com/langpn/iuh-bypass-login\n" +
-      "2. Mở chrome://extensions (hoặc edge://extensions) bật Developer Mode -> Bấm Load Unpacked chọn thư mục extension/\n" +
+      "1. Tải bản nén tiện ích: https://github.com/langpn/iuh-login-extension/releases/latest/download/iuh-fast-login-latest.zip\n" +
+      "2. Mở chrome://extensions (hoặc edge://extensions) bật Developer Mode -> Bấm Load Unpacked chọn thư mục vừa giải nén\n" +
       "3. Nhập MSSV & Mật khẩu trên icon tiện ích để tự động hóa hoàn toàn!";
     navigator.clipboard.writeText(text).then(() => {
       setMsg("Đã sao chép hướng dẫn!", "ok");
