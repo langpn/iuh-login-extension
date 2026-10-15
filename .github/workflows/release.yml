@@ -1,0 +1,47 @@
+name: Release Extension
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'extension/**'
+      - 'scripts/**'
+      - 'iuh-autologin.user.js'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Package extension
+        id: pkg
+        run: |
+          python3 scripts/package_extension.py
+          VERSION=$(python3 -c "import json; print(json.load(open('extension/manifest.json'))['version'])")
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "v${{ steps.pkg.outputs.version }}"
+          name: "⚡ v${{ steps.pkg.outputs.version }}: IUH Fast Login & Enhanced Student Portal"
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            dist/iuh-fast-login-v${{ steps.pkg.outputs.version }}.zip
+            dist/iuh-fast-login-latest.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
