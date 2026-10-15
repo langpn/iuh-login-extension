@@ -63,9 +63,15 @@ Tiện ích mở rộng (Browser Extension) Manifest V3 tự động đăng nh�
 5. Chọn đúng thư mục **`extension/`** vừa tải về.
 6. *Mẹo nhỏ:* Bấm vào biểu tượng **Mảnh ghép (Extensions)** trên thanh công cụ trình duyệt rồi bấm **Ghim (Pin 📌)** icon của IUH Fast Login ra ngoài để tiện click mở nhanh.
 
-#### 👉 Dành cho Mozilla Firefox:
+#### 👉 Dành cho Mozilla Firefox (Bản thường):
 1. Mở Firefox, nhập `about:debugging#/runtime/this-firefox` vào thanh địa chỉ.
 2. Bấm nút **Load Temporary Add-on…** (Tải tiện ích tạm thời) → Chọn file `extension/manifest.json`.
+
+#### 🔥 Dành cho Mozilla Firefox Developer Edition (Cài vĩnh viễn & Tự động Update 100%):
+1. Mở tab mới, nhập `about:config` ➔ Tìm kiếm `xpinstall.signatures.required` ➔ Nhấp đúp để chuyển thành **`false`**.
+2. Tải trực tiếp gói cài đặt: **[iuh-fast-login-latest.xpi](https://github.com/langpn/iuh-login-extension/releases/latest/download/iuh-fast-login-latest.xpi)**.
+3. Kéo thả file `.xpi` vừa tải vào trình duyệt Firefox Developer Edition ➔ Bấm **Add (Thêm)**.
+4. Tiện ích sẽ được cài vĩnh viễn và tự động kiểm tra, cập nhật ngầm qua `updates.json` mỗi khi Thuyền trưởng push code lên GitHub!
 
 ---
 

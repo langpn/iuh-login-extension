@@ -81,9 +81,15 @@ Dự án gồm **4 vùng công cụ độc lập**, bạn chỉ cần lấy ph�
 5. Chọn đúng thư mục **`extension/`** vừa tải về.
 6. *Mẹo nhỏ:* Bấm vào biểu tượng **Mảnh ghép (Extensions)** trên thanh công cụ trình duyệt rồi bấm **Ghim (Pin 📌)** icon của IUH Fast Login ra ngoài để tiện click mở nhanh.
 
-#### 👉 Dành cho Mozilla Firefox:
+#### 👉 Dành cho Mozilla Firefox (Bản thường):
 1. Mở Firefox, nhập `about:debugging#/runtime/this-firefox` vào thanh địa chỉ.
 2. Bấm **Load Temporary Add-on…** (Tải tiện ích tạm thời) → Chọn file `manifest.json` trong thư mục `extension/`.
+
+#### 🔥 Dành cho Mozilla Firefox Developer Edition (Cài vĩnh viễn & Tự động Update 100%):
+1. Mở tab mới, nhập `about:config` ➔ Tìm kiếm `xpinstall.signatures.required` ➔ Nhấp đúp chuột để chuyển thành **`false`** (chỉ làm 1 lần để cho phép cài tiện ích tự lưu trữ).
+2. Tải trực tiếp gói cài đặt: **[iuh-fast-login-latest.xpi](https://github.com/langpn/iuh-login-extension/releases/latest/download/iuh-fast-login-latest.xpi)**.
+3. Kéo thả file `.xpi` vừa tải vào bất kỳ tab nào của Firefox Developer Edition (hoặc vào `about:addons` ➔ Bấm icon Bánh răng ⚙️ ➔ **Install Add-on From File...**).
+4. Bấm **Add (Thêm)**. Tiện ích sẽ được cài đặt **vĩnh viễn** và **tự động cập nhật ngầm** qua `updates.json` mỗi khi Thuyền trưởng push code lên GitHub!
 
 ---
 
