@@ -43,7 +43,15 @@ Tiện ích mở rộng (Browser Extension) Manifest V3 tự động đăng nh�
 
 ## 🚀 Hướng dẫn cài đặt & sử dụng (Dành cho người chỉ cài Extension)
 
-### 🛠️ Bước 1: Cài đặt tiện ích vào trình duyệt (Chỉ làm 1 lần)
+### ⚡ Cách 1: Tải bản đóng gói sẵn (.ZIP) — Nhanh nhất (Khuyên dùng)
+1. Tải file **`iuh-fast-login.zip`** từ mục **Releases** của repository về máy và giải nén.
+2. Mở trình duyệt, truy cập `chrome://extensions` (hoặc `edge://extensions` trên Microsoft Edge).
+3. Bật **Chế độ dành cho nhà phát triển (Developer mode)** ở góc trên bên phải.
+4. Bấm **Tải tiện ích đã giải nén (Load unpacked)** ➔ Chọn thư mục vừa giải nén. Xong!
+
+---
+
+### 🛠️ Cách 2: Cài đặt từ mã nguồn (Dành cho Dev / Clone Repo)
 
 #### 👉 Dành cho Chrome, Edge, Cốc Cốc, Brave, Opera:
 1. Bạn tải hoặc clone mã nguồn về máy, bạn sẽ thấy thư mục tên là **`extension/`**.

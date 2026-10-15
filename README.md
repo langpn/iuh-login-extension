@@ -59,7 +59,15 @@ Dự án gồm **4 vùng công cụ độc lập**, bạn chỉ cần lấy ph�
 
 > Dành riêng cho các bạn sinh viên chỉ muốn cài tiện ích vào trình duyệt để sử dụng hằng ngày nhanh gọn và tiện lợi nhất.
 
-### 🛠️ Bước 1: Cài đặt tiện ích vào trình duyệt (Chỉ làm 1 lần)
+### ⚡ Cách 1: Tải bản đóng gói sẵn (.ZIP) — Nhanh nhất (Khuyên dùng)
+1. Tải file **`iuh-fast-login.zip`** từ mục **Releases** của repository về máy và giải nén.
+2. Mở trình duyệt, truy cập `chrome://extensions` (hoặc `edge://extensions` trên Microsoft Edge).
+3. Bật **Chế độ dành cho nhà phát triển (Developer mode)** ở góc trên bên phải.
+4. Bấm **Tải tiện ích đã giải nén (Load unpacked)** ➔ Chọn thư mục vừa giải nén. Xong!
+
+---
+
+### 🛠️ Cách 2: Cài đặt từ mã nguồn (Dành cho Dev / Clone Repo)
 
 #### 👉 Dành cho Chrome, Edge, Cốc Cốc, Brave, Opera:
 1. Bạn tải hoặc clone mã nguồn về máy, bạn sẽ thấy thư mục tên là **`extension/`**.
