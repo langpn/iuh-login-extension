@@ -60,10 +60,12 @@ Dự án gồm **4 vùng công cụ độc lập**, bạn chỉ cần lấy ph�
 > Dành riêng cho các bạn sinh viên chỉ muốn cài tiện ích vào trình duyệt để sử dụng hằng ngày nhanh gọn và tiện lợi nhất.
 
 ### ⚡ Cách 1: Tải bản đóng gói sẵn (.ZIP) — Nhanh nhất (Khuyên dùng)
-1. Tải file **`iuh-fast-login.zip`** từ mục **Releases** của repository về máy và giải nén.
+1. Tải trực tiếp file bản mới nhất: **[iuh-fast-login-latest.zip](https://github.com/langpn/iuh-login-extension/releases/latest/download/iuh-fast-login-latest.zip)** về máy và giải nén.
 2. Mở trình duyệt, truy cập `chrome://extensions` (hoặc `edge://extensions` trên Microsoft Edge).
 3. Bật **Chế độ dành cho nhà phát triển (Developer mode)** ở góc trên bên phải.
 4. Bấm **Tải tiện ích đã giải nén (Load unpacked)** ➔ Chọn thư mục vừa giải nén. Xong!
+
+> 💡 **Cơ chế cập nhật tự động:** Khi có phiên bản mới trên GitHub, biểu tượng tiện ích sẽ tự động hiện thông báo kèm nút bấm tải bản mới để bạn cập nhật trong 1 click!
 
 ---
 
