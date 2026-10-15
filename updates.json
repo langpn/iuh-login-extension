@@ -1,0 +1,12 @@
+{
+  "addons": {
+    "iuh-fast-login@langpn": {
+      "updates": [
+        {
+          "version": "1.0.1",
+          "update_link": "https://github.com/langpn/iuh-login-extension/releases/download/v1.0.1/iuh-fast-login-v1.0.1.xpi"
+        }
+      ]
+    }
+  }
+}

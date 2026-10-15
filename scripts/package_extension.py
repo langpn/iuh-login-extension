@@ -64,16 +64,41 @@ def package():
                 file_count += 1
                 print(f"  + {arcname}")
 
-    # Copy to latest
+    # Copy to latest zip & Firefox xpi packages
     import shutil
     shutil.copyfile(out_path, latest_path)
+
+    xpi_path = DIST_DIR / f"iuh-fast-login-v{version}.xpi"
+    latest_xpi_path = DIST_DIR / "iuh-fast-login-latest.xpi"
+    shutil.copyfile(out_path, xpi_path)
+    shutil.copyfile(out_path, latest_xpi_path)
+
+    # Sync updates.json for Firefox native auto-update
+    updates_path = ROOT_DIR / "updates.json"
+    updates_manifest = {
+        "addons": {
+            "iuh-fast-login@langpn": {
+                "updates": [
+                    {
+                        "version": version,
+                        "update_link": f"https://github.com/langpn/iuh-login-extension/releases/download/v{version}/iuh-fast-login-v{version}.xpi",
+                    }
+                ]
+            }
+        }
+    }
+    with open(updates_path, "w", encoding="utf-8") as f:
+        json.dump(updates_manifest, f, indent=2)
+        f.write("\n")
 
     size_kb = out_path.stat().st_size / 1024
     with open(out_path, "rb") as f:
         sha256 = hashlib.sha256(f.read()).hexdigest()
 
     print(f"\n✅ Packaged {file_count} files successfully!")
-    print(f"📍 Output : {out_path.relative_to(ROOT_DIR)} & {latest_path.relative_to(ROOT_DIR)}")
+    print(f"📍 Chrome/Edge : {out_path.name} & {latest_path.name}")
+    print(f"📍 Firefox Dev : {xpi_path.name} & {latest_xpi_path.name}")
+    print(f"🔄 Mozilla Manifest: {updates_path.name} (v{version})")
     print(f"📊 Size   : {size_kb:.2f} KB")
     print(f"🔑 SHA256 : {sha256}")
 

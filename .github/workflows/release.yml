@@ -43,5 +43,7 @@ jobs:
           files: |
             dist/iuh-fast-login-v${{ steps.pkg.outputs.version }}.zip
             dist/iuh-fast-login-latest.zip
+            dist/iuh-fast-login-v${{ steps.pkg.outputs.version }}.xpi
+            dist/iuh-fast-login-latest.xpi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

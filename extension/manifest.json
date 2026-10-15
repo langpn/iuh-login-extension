@@ -66,7 +66,8 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "iuh-fast-login@langpn",
-      "strict_min_version": "113.0"
+      "strict_min_version": "113.0",
+      "update_url": "https://raw.githubusercontent.com/langpn/iuh-login-extension/main/updates.json"
     }
   }
 }
