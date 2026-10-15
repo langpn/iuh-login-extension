@@ -23,6 +23,42 @@ function load() {
       if (d) d.checked = Boolean(cfg.dkhpAutoSubmit);
     }
   );
+  updateSessionStatus();
+}
+
+function updateSessionStatus() {
+  if (!api.runtime || !api.runtime.sendMessage) return;
+  try {
+    api.runtime.sendMessage({ action: "check_session" }, (res) => {
+      if (api.runtime.lastError || !res) return;
+      const sv = $("statusSv");
+      const dk = $("statusDkhp");
+      if (sv) {
+        sv.className = "pill" + (res.hasSv ? " active" : "");
+        sv.title = res.hasSv ? "Phiên Cổng SV: Đang hoạt động" : "Phiên Cổng SV: Chưa đăng nhập";
+      }
+      if (dk) {
+        dk.className = "pill" + (res.hasDkhp ? " active" : "");
+        dk.title = res.hasDkhp ? "Phiên ĐKHP: Đang hoạt động" : "Phiên ĐKHP: Chưa đăng nhập";
+      }
+    });
+  } catch (_) {}
+}
+
+const shareBtn = $("shareBtn");
+if (shareBtn) {
+  shareBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    const text =
+      "⚡ Hướng dẫn cài đặt IUH Fast Login (Tự động đăng nhập, Dark Mode, TKB tràn viền):\n" +
+      "1. Tải bản nén tiện ích: https://github.com/langpn/iuh-bypass-login\n" +
+      "2. Mở chrome://extensions (hoặc edge://extensions) bật Developer Mode -> Bấm Load Unpacked chọn thư mục extension/\n" +
+      "3. Nhập MSSV & Mật khẩu trên icon tiện ích để tự động hóa hoàn toàn!";
+    navigator.clipboard.writeText(text).then(() => {
+      setMsg("Đã sao chép hướng dẫn!", "ok");
+      setTimeout(() => setMsg(""), 2500);
+    });
+  });
 }
 
 function save() {

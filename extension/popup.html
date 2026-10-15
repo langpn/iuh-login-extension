@@ -41,6 +41,41 @@
       color: #38bdf8;
       border: 1px solid #0369a1;
     }
+    .status-bar {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .pill {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      padding: 4px 6px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 600;
+      background: #0d1929;
+      border: 1px solid #1e3a5f;
+      color: #94a3b8;
+      transition: all 0.2s ease;
+    }
+    .pill.active {
+      border-color: #059669;
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.12);
+    }
+    .pill .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #64748b;
+    }
+    .pill.active .dot {
+      background: #10b981;
+      box-shadow: 0 0 6px #10b981;
+    }
     label {
       display: block;
       margin: 9px 0 4px;
@@ -130,6 +165,11 @@
     <div class="badge-status">Cloud 2.0</div>
   </div>
 
+  <div class="status-bar">
+    <div id="statusSv" class="pill"><span class="dot"></span> Cổng SV</div>
+    <div id="statusDkhp" class="pill"><span class="dot"></span> Cổng ĐKHP</div>
+  </div>
+
   <label for="username">Mã sinh viên (MSSV)</label>
   <input id="username" type="text" autocomplete="username" placeholder="vd: 21000000" />
 
@@ -157,6 +197,9 @@
   <div id="msg"></div>
   <div class="hint">
     Mật khẩu lưu an toàn cục bộ trên máy, tự động giữ cookie sống cả ngày.
+    <div style="margin-top: 6px;">
+      <a href="#" id="shareBtn" style="color: #38bdf8; text-decoration: none; font-weight: 600;">📋 Sao chép hướng dẫn cài đặt</a>
+    </div>
   </div>
 
   <script src="popup.js"></script>
